@@ -1,4 +1,4 @@
-#A toolbox (under development for processing two-photon imaging data in python
+#A toolbox (under development) for processing two-photon imaging data in python
 
 
 DEPENDENCIES
