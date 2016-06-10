@@ -54,7 +54,6 @@ def add_session_groups(file_handle,session_ID):
 	dayGroup.create_group('raw_data')
 	dayGroup.create_group('registered_data')
 	dayGroup.create_group('triggers')
-	ROIS = dayGroup.create_group('ROIS')
 	#In ROIS there should be datasets called:
 	#1. ROI_centres
 	#2. ROI_images

@@ -10,44 +10,60 @@ import h5py
 def register_dayData(HDF_File,session_ID):
 
     HDF_PATH = str(HDF_File.filename)
+
+
+    if 'registered_data' not in HDF_File[session_ID].keys():
+        HDF_File[session_ID].create_group('registered_data')
+        HDF_File.close()
+        HDF_File = h5py.File(HDF_PATH,'a',libver='latest')
+        print 'Creating Registered Data Group'
+
+
     for f_idx, file_key in enumerate(HDF_File[session_ID]['raw_data'].keys()):
 
         if f_idx >0:
             HDF_File = h5py.File(HDF_PATH,'a',libver='latest')
+
+
+
+
 
         if file_key in  HDF_File[session_ID]['registered_data'].keys():
             del HDF_File[session_ID]['registered_data'][file_key]
             print 'deleting old version'
 
         st = time.time()
-        raw_file = HDF_File[session_ID]['raw_data'][file_key]
-        #print 'file open %ss' %(time.time() - st)
-        #________________________________________________________________
-        st = time.time()
-        regIms, shifts, tot_shifts = motion_register(raw_file,2)
-        print 'Motion Register Duration %ss' %(time.time() - st)
-        #________________________________________________________________
-        st = time.time()
-        regFile = HDF_File[session_ID]['registered_data'].create_dataset(name=file_key,
-                      	                                                 data=regIms.astype('int16'),
-             	                                                         chunks=(10,512,512),dtype='int16')
+        try:
+            raw_file = np.array(HDF_File[session_ID]['raw_data'][file_key])
+            #print 'file open %ss' %(time.time() - st)
+            #________________________________________________________________
+            st = time.time()
+            regIms, shifts, tot_shifts = motion_register(raw_file,2)
+            print 'Motion Register Duration %ss' %(time.time() - st)
+            #________________________________________________________________
+            st = time.time()
+            regFile = HDF_File[session_ID]['registered_data'].create_dataset(name=file_key,
+                          	                                                 data=regIms.astype('int16'),
+                 	                                                         chunks=(10,512,512),dtype='int16')
 
-        HDF_File.close()
-        HDF_File = h5py.File(HDF_PATH,'a',libver='latest')
-        regFile =  HDF_File[session_ID]['registered_data'][file_key]
-        raw_file = HDF_File[session_ID]['raw_data'][file_key]
-        #print shifts
+            HDF_File.close()
+            HDF_File = h5py.File(HDF_PATH,'a',libver='latest')
+            regFile =  HDF_File[session_ID]['registered_data'][file_key]
+            raw_file = HDF_File[session_ID]['raw_data'][file_key]
+            #print shifts
 
-        #print 'success'
-        regFile.attrs['shifts'] = shifts
-        regFile.attrs['mean_image'] = np.mean(regIms.astype('int16'),axis=0)
-        regFile.attrs['tot_shifts'] = tot_shifts
-        for key,value in raw_file.attrs.iteritems():
-                if (key=='trigger_DM' or key=='ROI_centres' or key=='ROI_patches'):
-                    regFile.attrs[key] = value
-                else:
-        	       regFile.attrs[key] = str(value)
-        print 'file write in ram %ss' %(time.time() - st)
+            #print 'success'
+            regFile.attrs['shifts'] = shifts
+            regFile.attrs['mean_image'] = np.mean(regIms.astype('int16'),axis=0)
+            regFile.attrs['tot_shifts'] = tot_shifts
+            for key,value in raw_file.attrs.iteritems():
+                    if (key=='trigger_DM' or key=='ROI_centres' or key=='ROI_patches'):
+                        regFile.attrs[key] = value
+                    else:
+            	       regFile.attrs[key] = str(value)
+            print 'file write in ram %ss' %(time.time() - st)
+        except IOError:
+            print '!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!! \n %s could not be loaded. Skipping \n !!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!' %file_key
         HDF_File.close()
 
             #________________________________________________________________
