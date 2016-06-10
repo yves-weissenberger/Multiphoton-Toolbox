@@ -54,21 +54,24 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
 
 
             btn1 = QtGui.QPushButton("Next ROI", self)
-            btn1 = QtGui.QPushButton("Delete ROI", self)
             btn2 = QtGui.QPushButton("Previous ROI", self)
             btn3 = QtGui.QPushButton("Save Progress", self)
+            btn4 = QtGui.QPushButton("Clear ROI", self)
             btn1.clicked.connect(self.buttonClicked)            
             btn2.clicked.connect(self.buttonClicked)
             btn3.clicked.connect(self.save_ROIS)
+            btn4.clicked.connect(self.buttonClicked)
 
             layout.addWidget(grV1,0,0,7,8)
             layout.addWidget(btn1,9,1,1,1)
             layout.addWidget(btn2,9,0,1,1)
             layout.addWidget(btn3,9,4,1,1)
+            layout.addWidget(btn4,9,2,1,1)
             layout.addWidget(self.histLI,0,8,7,2)
             self.setCentralWidget(w)
             self.show()
             #self.connect(self, Qt.SIGNAL('triggered()'), self.closeEvent
+
         def save_ROIS(self):
             arr = cp.deepcopy(np.array((self.masks)))
             areaFile.attrs['ROI_masks'] = arr
@@ -88,6 +91,10 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
             elif sender.text()=='Previous ROI':
                 if self.idx>=1:
                     self.idx -= 1
+            elif sender.text()=='Clear ROI':
+            	self.masks[:,:,self.idx] = 0
+
+
             self.tx.setText('ROI Nr: ' + str(self.idx+1) + '/' + str(nROIs))
             mask = np.zeros([self.masks.shape[0],self.masks.shape[1],3])
             #print self.masks.shape
