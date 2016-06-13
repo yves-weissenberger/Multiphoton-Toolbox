@@ -11,3 +11,8 @@
 * tifffile
 * pyqt
 * pyqtgraph (optional)
+
+
+![GitHub Logo](./ROI_editor.png)
+Format: ![Alt Text](url)
+
