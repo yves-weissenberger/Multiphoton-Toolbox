@@ -11,7 +11,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
     import time
     import sys
     import copy as cp
-    from skimage.filters import gaussian
+    from skimage.filters import gaussian as gaussian_filter
+    from skimage.morphology import disk
+    from skimage.filters.rank import median as median_filter
     class Visualizator(QtGui.QMainWindow):
 
         def __init__(self, ROI_patches,ROI_masks,areaFile):
@@ -25,7 +27,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
             self.video = areaFile
             self.nFrames = self.video.shape[0]
             self.frame_idx = self.rolling_average
+            self.smoothing = 1
             self.maskalpha = 0.1
+            self.show_mean_image = True
             #self.masks = np.zeros(ROI_patches.shape)
             #initialise the main window
             w = QtGui.QWidget()
@@ -66,24 +70,56 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
             grV1.setCentralItem(self.vb)
             self.vb.scene().sigMouseMoved.connect(self.mouseMoved)
 
+            self.Gplt = pg.PlotWidget(background='w')
+            self.Gplt.setFixedHeight(200)
+            self.Gplt.setXRange(0,self.nFrames)
+
+
+            self.timeLine = pg.InfiniteLine(pos=self.frame_idx,angle=90,movable=True)
+            self.Gplt.addItem(self.timeLine)
+            self.timeLine.sigDragged.connect(self.update_timeline)
+
 
             btn1 = QtGui.QPushButton("Next ROI", self)
             btn2 = QtGui.QPushButton("Previous ROI", self)
             btn3 = QtGui.QPushButton("Save Progress", self)
             btn4 = QtGui.QPushButton("Clear ROI", self)
             btn5 = QtGui.QPushButton("Play Video", self)
+            btn6 = QtGui.QPushButton("Update ROI Trace",self)
+            btn7 = QtGui.QPushButton("Increase Rolling Average", self)
+            btn8 = QtGui.QPushButton("Decrease Rolling Average", self)
+            btn9 = QtGui.QPushButton("Increase Spatial Smoothing", self)
+            btn10 = QtGui.QPushButton("Decrease Spatial Smoothing", self)
+            btn11 = QtGui.QPushButton("Show Mean Image", self)
+            btn12 = QtGui.QPushButton("Hide Mask", self)
             btn1.clicked.connect(self.buttonClicked)            
             btn2.clicked.connect(self.buttonClicked)
             btn3.clicked.connect(self.save_ROIS)
             btn4.clicked.connect(self.buttonClicked)
             btn5.clicked.connect(self.buttonClicked)
+            btn6.clicked.connect(self.buttonClicked)
+            btn7.clicked.connect(self.buttonClicked)
+            btn8.clicked.connect(self.buttonClicked)
+            btn9.clicked.connect(self.buttonClicked)
+            btn10.clicked.connect(self.buttonClicked)
+            btn11.clicked.connect(self.buttonClicked)
+            btn12.clicked.connect(self.buttonClicked)
 
             layout.addWidget(grV1,0,0,7,8)
             layout.addWidget(btn1,9,1,1,1)
             layout.addWidget(btn2,9,0,1,1)
-            layout.addWidget(btn3,9,4,1,1)
-            layout.addWidget(btn4,9,5,1,1)
+            layout.addWidget(btn3,10,2,1,1)
+            layout.addWidget(btn4,10,3,1,1)
             layout.addWidget(btn5,9,2,1,1)
+            layout.addWidget(btn6,9,3,1,1)
+            layout.addWidget(btn7,9,5,1,1)
+            layout.addWidget(btn8,9,6,1,1)
+            layout.addWidget(btn9,10,5,1,1)
+            layout.addWidget(btn10,10,6,1,1)
+            layout.addWidget(btn11,10,1,1,1)
+            layout.addWidget(btn12,10,0,1,1)
+            layout.addWidget(self.Gplt,11,0,3,8)
+
             layout.addWidget(self.histLI,0,8,7,2)
             self.setCentralWidget(w)
             self.show()
@@ -104,20 +140,69 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
             if sender.text()=='Next ROI':
                 if self.idx<nROIs-1:
                     self.idx += 1
+                    self.frame_idx = self.rolling_average
+                    self.Gplt.clear()
+                    self.Gplt.addItem(self.timeLine)
             elif sender.text()=='Previous ROI':
                 if self.idx>=1:
                     self.idx -= 1
+                    self.frame_idx = self.rolling_average
+                    self.Gplt.clear()
+                    self.Gplt.addItem(self.timeLine)
             elif sender.text()=='Clear ROI':
                 self.masks[:,:,self.idx] = 0
-            elif sender.text()=='Play Video':
+            elif sender.text()=='Hide Mask':
+                if self.maskalpha==0:
+                    self.maskalpha=0.2
+                    self.img_ROI.setOpacity(self.maskalpha)
+
+                else:
+                    self.maskalpha=0
+                    self.img_ROI.setOpacity(self.maskalpha)
+
+            elif sender.text()=='Increase Rolling Average':
+                self.rolling_average += 1
+                print self.rolling_average
+            elif sender.text()=='Show Mean Image':
+                self.show_mean_image = not self.show_mean_image
+            elif sender.text()=='Decrease Rolling Average':
+                if self.rolling_average>=1:
+                    self.rolling_average -= 1
+                    print self.rolling_average
+            elif sender.text()=='Increase Spatial Smoothing':
+                self.smoothing += 0.1
+            elif sender.text()=='Decrease Spatial Smoothing':
+                if self.smoothing>0:
+                    self.smoothing -= .1
+            elif (sender.text()=='Play Video' or sender.text()=='Pause Video'):
                 self.play_video = not self.play_video
+                self.show_mean_image = False
+                if not self.play_video:
+                    sender.setText("Play Video")
+                else:
+                    sender.setText('Pause Video')
+                
+
+
+            elif sender.text()=="Update ROI Trace":
+                print 'button regged'
+                if ((self.masks.shape[1]<self.ROI_centres[self.idx][0]<512-self.masks.shape[1]) and
+                    (self.masks.shape[1]<self.ROI_centres[self.idx][1]<512-self.masks.shape[1])):
+                    print 'check completed %s' %self.ROI_centres[self.idx]
+                    trace = np.mean(self.masks[:,:,self.idx]*self.video[:,int(self.ROI_centres[self.idx][1]-self.masks.shape[1]/2):int(self.ROI_centres[self.idx][1]+self.masks.shape[1]/2),
+                                  int(self.ROI_centres[self.idx][0] - self.masks.shape[1]/2):int(self.ROI_centres[self.idx][0]+self.masks.shape[1]/2)],
+                                          axis=(1,2))
+                    print 'trace extracted'
+                    self.Gplt.plot(trace)
+                else:
+                    print 'unable to plot outside of range'
+
 
             self.tx.setText('ROI Nr: ' + str(self.idx+1) + '/' + str(nROIs))
             mask = np.zeros([self.masks.shape[0],self.masks.shape[1],3])
             #print self.masks.shape
             mask[np.where(self.masks[:,:,self.idx])] = (1,0,0)
             self.img_ROI.setImage(mask)
-            self.frame_idx = self.rolling_average
             self.img.setImage(self.ROI_patches[:,:,self.idx])
 
 
@@ -131,24 +216,48 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
                                           int(self.ROI_centres[self.idx][1]-self.masks.shape[1]/2):int(self.ROI_centres[self.idx][1]+self.masks.shape[1]/2),
                                           int(self.ROI_centres[self.idx][0] - self.masks.shape[1]/2):int(self.ROI_centres[self.idx][0]+self.masks.shape[1]/2)],
                                           axis=0)
-                video_image = gaussian(video_image,1.5)
+
+                #video_image = median_filter(self.video,disk(2))
+                video_image = gaussian_filter(video_image,self.smoothing)
                 self.img.setImage(video_image,
                                   autoLevels=False)
 
                 if self.frame_idx>=self.nFrames-1:
-                    self.frame_idx=s
+                    self.frame_idx=self.rolling_average
                 
                 self.frame_idx += 1
                 self.frameTxt.setText('Frame Nr: ' + str(self.frame_idx+1) + '/' + str(self.nFrames))
-            if not self.play_video:
+                self.timeLine.setPos(self.frame_idx)
+            if (self.show_mean_image and not self.play_video):
                 self.img.setImage(self.ROI_patches[:,:,self.idx])
+            if (not self.show_mean_image and not self.play_video):
+
+                video_image = np.mean(self.video[self.frame_idx-self.rolling_average:self.frame_idx+self.rolling_average+1,
+                                          int(self.ROI_centres[self.idx][1]-self.masks.shape[1]/2):int(self.ROI_centres[self.idx][1]+self.masks.shape[1]/2),
+                                          int(self.ROI_centres[self.idx][0] - self.masks.shape[1]/2):int(self.ROI_centres[self.idx][0]+self.masks.shape[1]/2)],
+                                          axis=0)
+
+                #video_image = median_filter(self.video,disk(2))
+                video_image = gaussian_filter(video_image,self.smoothing)
+                self.img.setImage(video_image,
+                                  autoLevels=False)
+
+
+
             #else:
             #    img.setImage(np.fliplr(np.mean(b[frame_idx-rolling_average:frame_idx+rolling_average+1,:,:],axis=0).T),
             #                 autoLevels=False)
             
                 
         
-  
+        def update_timeline(self):
+
+            while self.timeLine.isUnderMouse():
+                self.play_video = False
+                self.frame_idx = int(self.timeLine.getXPos())
+                self.timeLine.setPos(self.frame_idx)
+                #img.setImage(np.fliplr(np.mean(b[frame_idx-rolling_average:frame_idx+rolling_average+1,:,:],axis=0).T),autoLevels=False)
+            self.play_video = True
         
         
 
