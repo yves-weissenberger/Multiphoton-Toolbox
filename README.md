@@ -13,6 +13,4 @@
 * pyqtgraph (optional)
 
 
-![GitHub Logo](./ROI_editor.png =100x250)
-Format: ![Alt Text](url)
-
+<img src="/ROI_editor.png" alt="ROI editor example" height="450" width="450"/>
