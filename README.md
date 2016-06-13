@@ -13,6 +13,6 @@
 * pyqtgraph (optional)
 
 
-![GitHub Logo](./ROI_editor.png)
+![GitHub Logo](./ROI_editor.png=100x250)
 Format: ![Alt Text](url)
 
