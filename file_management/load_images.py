@@ -4,6 +4,7 @@ import scipy.io as spio
 import tifffile
 import numpy as np
 import h5py
+import re
 import time
 
 def load_GRABinfo(matobj):
@@ -28,6 +29,17 @@ def get_triggers(matFilePth):
                      'stimScriptName': matfile['outDat'][0][0][-1][0],
                      'timestamp': matfile['outDat'][0][0][0][0],
                      'stimOrder': matfile['outDat'][0][0][1].T[0]}
+    elif re.search(r'.*search_tones_outDat.*',matFilePth):
+        stim_dict = load_GRABinfo(spio.loadmat(matFilePth,struct_as_record=False, squeeze_me=True)['outDat'])
+        stimattrs = {'stim_list': np.fliplr(np.vstack([stim_dict['stimMat'][:,5],
+                                               stim_dict['stimMat'][:,0]]).T),
+                     'stimOrder': stim_dict['trialOrder'],
+                     'timestamp': stim_dict['timeStamp'],
+                     'stim_dur': stim_dict['stimMat'][1,1],
+                     'stim_levels': stim_dict['stimMat'][:,5],
+                     'stimScriptName': 'search_tones'
+                    }
+
 
 
         return stimattrs
@@ -91,7 +103,7 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID):
     i = 0
     HDF_PATH = HDF_File.filename
     for fDir in file_Dirs:
-        Dir = baseDir + fDir + '\\'
+        Dir = baseDir + fDir + '/'  #+ '\\'
         st = time.time()
         File, allSame, GRABinfo, stimattrs = load_tiff_series(Dir)
         print 'Load Data %s Time: %s' %(i, time.time() - st)
@@ -102,7 +114,8 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID):
         
         print 'Load HDF5 %s Time: %s' %(i,time.time() - st)
         st = time.time()
-        areaDSet = HDF_File[session_ID]['raw_data'].create_dataset(name=fDir[0],
+        print fDir
+        areaDSet = HDF_File[session_ID]['raw_data'].create_dataset(name=fDir,
                                                                    data=File.astype('uint16'),
                                                                    chunks=(10,512,512),
                                                                    dtype='uint16')

@@ -272,8 +272,11 @@ def add_ROIS_meanIm(Area):
     plt.grid('off')
     plt.show()
 
+   
     Area.attrs['ROI_patches'] = np.dstack(ROI_list)
     Area.attrs['ROI_centres'] = np.array(press_loc)
+    fName = Area.name
+    create_roi_location_log(Area)
 
     return None
 
@@ -281,7 +284,18 @@ def add_ROIS_meanIm(Area):
 #def add_auto_masks_session(session_file):
 
 
+def create_roi_location_log(areaFile):
+    import re
+    file_loc = re.findall(r'(.*/).*\.h5',areaFile.file.filename)[0]
+    fName = areaFile
 
+    logF = file_loc + fName + str('_ROI_centre.txt')
+    roi_pos_str = [str(i)+','+str(j) for i,j in arr]
+    with open(logF,'a') as logFile:
+        for i in roi_pos_str:
+            logFile.write(i)
+
+    return None
 #-------------------------------------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------------------

@@ -2,7 +2,9 @@ def create_base_hdf(animal_ID,file_loc):
 
 	import h5py
 	import os
-	file_path = file_loc + animal_ID + '.h5'
+	if not os.path.isdir(file_loc+'/'+animal_ID):
+		os.mkdir(file_loc+'/'+animal_ID)
+	file_path = file_loc + animal_ID + '/' + animal_ID + '.h5'
 	file_exists = os.path.isfile(file_path)
 	if file_exists:
 		print 'File already exists if you proceed you will overwrite \n are you sure you would like to proceed'
@@ -54,11 +56,6 @@ def add_session_groups(file_handle,session_ID):
 	dayGroup.create_group('raw_data')
 	dayGroup.create_group('registered_data')
 	dayGroup.create_group('triggers')
-	#In ROIS there should be datasets called:
-	#1. ROI_centres
-	#2. ROI_images
-	#3. ROI_masks
-	#4. Global Mask
 
 	return file_handle
 
