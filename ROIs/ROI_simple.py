@@ -14,6 +14,8 @@ from pyqtgraph.dockarea import *
 
 
 def add_ROIS_meanIm(Area):
+    from matplotlib.widgets import MultiCursor,RadioButtons,Cursor,Button,LassoSelector
+    from matplotlib.pyplot import Circle
     global ROI_mode
     ROI_mode = False
     global ROI_list
