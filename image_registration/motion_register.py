@@ -7,6 +7,10 @@ import h5py
 
 
 
+def copy_ROIs(HDF_File):
+
+    return None
+
 def register_dayData(HDF_File,session_ID):
 
     HDF_PATH = str(HDF_File.filename)
@@ -34,7 +38,8 @@ def register_dayData(HDF_File,session_ID):
 
         st = time.time()
         try:
-            raw_file = np.array(HDF_File[session_ID]['raw_data'][file_key])
+            #raw_file = np.array(HDF_File[session_ID]['raw_data'][file_key])
+            raw_file = HDF_File[session_ID]['raw_data'][file_key]
             #print 'file open %ss' %(time.time() - st)
             #________________________________________________________________
             st = time.time()
@@ -62,10 +67,10 @@ def register_dayData(HDF_File,session_ID):
                     else:
             	       regFile.attrs[key] = str(value)
             print 'file write in ram %ss' %(time.time() - st)
-            build_registration_log(regFile)
+            
         except IOError:
             print '!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!! \n %s could not be loaded. Skipping \n !!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!' %file_key
-
+        build_registration_log(regFile)
         HDF_File.close()
 
             #________________________________________________________________
@@ -79,7 +84,7 @@ def register_dayData(HDF_File,session_ID):
 def build_registration_log(areaFile):
     import re
     file_loc = re.findall(r'(.*/).*\.h5',areaFile.file.filename)[0]
-    fName = areaFile.name
+    fName = areaFile.name.replace('/','_')
 
     logF = str(file_loc) + str(fName) + str('_shifts.txt')
     roi_pos_str = [str(i)+','+str(j)+'\n' for i,j in areaFile.attrs['tot_shifts']]
