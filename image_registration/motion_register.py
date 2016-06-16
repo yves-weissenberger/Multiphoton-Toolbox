@@ -11,7 +11,7 @@ def copy_ROIs(HDF_File):
 
     return None
 
-def register_dayData(HDF_File,session_ID,inRAM=True):
+def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4):
 
     HDF_PATH = str(HDF_File.filename)
     global inRAM_flag
@@ -55,7 +55,7 @@ def register_dayData(HDF_File,session_ID,inRAM=True):
 
             else:
             #________________________________________________________________
-                regIms, shifts, tot_shifts = motion_register(raw_file,2,inRAM)
+                regIms, shifts, tot_shifts = motion_register(raw_file,2,inRAM,poolSize=16)
 
                 print 'Motion Register Duration %ss' %(time.time() - st)
                 #________________________________________________________________
@@ -109,10 +109,10 @@ def build_registration_log(areaFile):
 
     return None
 
-def motion_register(imArray,maxIter=5,Crop=True,inRAM=True):
+def motion_register(imArray,maxIter=5,Crop=True,inRAM=True,poolSize=4):
     
     if inRAM:
-        pool = Pool(5)
+        pool = Pool(poolSize)
 
     global crop
     crop = Crop
@@ -125,7 +125,11 @@ def motion_register(imArray,maxIter=5,Crop=True,inRAM=True):
 
     converged = False
     iteration = 0
-    imgList= [(i,imArray[i]) for i in range(imArray.shape[0])]
+    if inRAM:
+        imgList= [imArray[i] for i in range(imArray.shape[0])]
+    else:
+        imgList= [(i,imArray[i]) for i in range(imArray.shape[0])]
+
     tot_shift = np.zeros([imArray.shape[0],2])
     print tot_shift.shape
     while not converged:
@@ -159,6 +163,7 @@ def motion_register(imArray,maxIter=5,Crop=True,inRAM=True):
             refIm = np.mean(imgList[:50],axis=0)
         else:
             refIm = np.mean(regFile[:50],axis=0)
+
         if crop==True:
             refIm = refIm[128:-128,128:-128]
 
@@ -168,8 +173,13 @@ def motion_register(imArray,maxIter=5,Crop=True,inRAM=True):
         return np.array(imgList), shifts, tot_shift
 
 def register_image(inp):
-    image_idx = inp[0]
-    image = inp[1]
+    if not inRAM_flag:
+        image_idx = inp[0]
+        image = inp[1]
+    else:
+        image = inp
+
+
     if crop==True:
         shift, _, _ = register_translation(refIm,image[128:-128,128:-128],upsample_factor=10)
     else:
