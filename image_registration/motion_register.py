@@ -76,16 +76,16 @@ def register_dayData(HDF_File,session_ID):
 
     return HDF_File
 
-    def build_registration_log(areaFile):
-        import re
-        file_loc = re.findall(r'(.*/).*\.h5',areaFile.file.filename)[0]
-        fName = areaFile
+def build_registration_log(areaFile):
+    import re
+    file_loc = re.findall(r'(.*/).*\.h5',areaFile.file.filename)[0]
+    fName = areaFile.name
 
-        logF = str(file_loc) + str(fName) + str('_shifts.txt')
-        roi_pos_str = [str(i)+','+str(j) for i,j in areaFile.attrs['tot_shifts']]
-        with open(logF,'a') as logFile:
-            for i in roi_pos_str:
-                logFile.write(i)
+    logF = str(file_loc) + str(fName) + str('_shifts.txt')
+    roi_pos_str = [str(i)+','+str(j)+'\n' for i,j in areaFile.attrs['tot_shifts']]
+    with open(logF,'a') as logFile:
+        for i in roi_pos_str:
+            logFile.write(i)
 
     return None
 
