@@ -291,8 +291,8 @@ def create_roi_location_log(areaFile):
     file_loc = re.findall(r'(.*/).*\.h5',areaFile.file.filename)[0]
     fName = areaFile
 
-    logF = file_loc + fName + str('_ROI_centre.txt')
-    roi_pos_str = [str(i)+','+str(j) for i,j in arr]
+    logF = str(file_loc) + str(fName) + str('_ROI_centre.txt')
+    roi_pos_str = [str(i)+','+str(j) for i,j in areaFile.attrs['ROI_centres']]
     with open(logF,'a') as logFile:
         for i in roi_pos_str:
             logFile.write(i)

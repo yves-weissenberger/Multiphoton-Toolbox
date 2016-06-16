@@ -62,19 +62,32 @@ def register_dayData(HDF_File,session_ID):
                     else:
             	       regFile.attrs[key] = str(value)
             print 'file write in ram %ss' %(time.time() - st)
+            build_registration_log(regFile)
         except IOError:
             print '!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!! \n %s could not be loaded. Skipping \n !!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!' %file_key
+
         HDF_File.close()
 
             #________________________________________________________________
 
-        
 	st = time.time()
 	print 'Write to Disk time %ss:' %(time.time() - st)
     HDF_File = h5py.File(HDF_PATH,'a',libver='latest')
 
     return HDF_File
 
+    def build_registration_log(areaFile):
+        import re
+        file_loc = re.findall(r'(.*/).*\.h5',areaFile.file.filename)[0]
+        fName = areaFile
+
+        logF = str(file_loc) + str(fName) + str('_shifts.txt')
+        roi_pos_str = [str(i)+','+str(j) for i,j in areaFile.attrs['tot_shifts']]
+        with open(logF,'a') as logFile:
+            for i in roi_pos_str:
+                logFile.write(i)
+
+    return None
 
 def motion_register(imArray,maxIter=5,Crop=True):
     
