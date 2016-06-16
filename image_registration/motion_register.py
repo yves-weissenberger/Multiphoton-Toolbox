@@ -50,12 +50,12 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4):
                                                                                  shape=raw_file.shape,
                                                                                  chunks=(10,512,512),dtype='int16')
                 st = time.time()
-                shifts, tot_shifts = motion_register(raw_file,2,inRAM)
+                shifts, tot_shifts = motion_register(raw_file,2,Crop=True,inRAM=inRAM)
                 regFile.attrs['mean_image'] = np.mean(regFile,axis=0)
 
             else:
             #________________________________________________________________
-                regIms, shifts, tot_shifts = motion_register(raw_file,2,inRAM,poolSize=16)
+                regIms, shifts, tot_shifts = motion_register(raw_file,2,Crop=True,inRAM=inRAM,poolSize=16)
 
                 print 'Motion Register Duration %ss' %(time.time() - st)
                 #________________________________________________________________
@@ -131,7 +131,7 @@ def motion_register(imArray,maxIter=5,Crop=True,inRAM=True,poolSize=4):
         imgList= [(i,imArray[i]) for i in range(imArray.shape[0])]
 
     tot_shift = np.zeros([imArray.shape[0],2])
-    print tot_shift.shape
+    print inRAM
     while not converged:
         strt = time.time()
 
