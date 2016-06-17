@@ -60,4 +60,3 @@ def add_session_groups(file_handle,session_ID):
 	return file_handle
 
 	
-	

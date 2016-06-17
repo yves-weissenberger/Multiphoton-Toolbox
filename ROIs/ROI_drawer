@@ -10,6 +10,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
     import pyqtgraph as pg
     import time
     import sys
+    import os
     import copy as cp
     from skimage.filters import gaussian as gaussian_filter
     from skimage.morphology import disk
@@ -18,6 +19,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
 
         def __init__(self, ROI_patches,ROI_masks,areaFile):
             QtGui.QMainWindow.__init__(self)
+            self.Folder = os.path.dirname(areaFile.file.filename) + '/'
             self.idx = 0
             self.ROI_patches = ROI_patches
             self.masks = ROI_masks
@@ -127,6 +129,13 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
         def save_ROIS(self):
             arr = cp.deepcopy(np.array((self.masks)))
             areaFile.attrs['ROI_masks'] = arr
+            #-------- Save ROIs to hdf5
+            f_handle = h5py.File(self.Folder +'ROI_data.h5','w',libver='latest')
+            f_handle.create_dataset('ROI_masks',data=cp.deepcopy(np.array((self.masks))),dtype='int16')
+            f_handle.create_dataset('ROI_patches',data=areaFile.attrs['ROI_patches'],dtype='int16')
+            f_handle.create_dataset('ROI_locs',data=np.array(areaFile.attrs['ROI_centres']),dtype='int16')
+            f_handle.attrs['parent_file'] = areaFile.name
+            f_handle.close()
             print 'ROI MASKS SAVED'
 
 

@@ -55,7 +55,11 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4):
 
             else:
             #________________________________________________________________
-                regIms, shifts, tot_shifts = motion_register(raw_file,2,Crop=True,inRAM=inRAM,poolSize=16)
+                regIms, shifts, tot_shifts = motion_register(raw_file,
+                                                             maxIter=2,
+                                                             Crop=True,
+                                                             inRAM=inRAM,
+                                                             poolSize=16)
 
                 print 'Motion Register Duration %ss' %(time.time() - st)
                 #________________________________________________________________
@@ -139,7 +143,9 @@ def motion_register(imArray,maxIter=5,Crop=True,inRAM=True,poolSize=4):
             temp = []
             for entry in imgList:
                 temp.append(register_image(entry))
-                shifts = np.array(temp)
+                if np.remainder(entry[0],1000)==0:
+                    print '.',
+            shifts = np.array(temp)
             print shifts.shape
         else:
             temp = pool.map(register_image,imgList)
@@ -162,7 +168,7 @@ def motion_register(imArray,maxIter=5,Crop=True,inRAM=True,poolSize=4):
         if inRAM:
             refIm = np.mean(imgList[:50],axis=0)
         else:
-            refIm = np.mean(regFile[:50],axis=0)
+            refIm = np.mean(np.hstack([temp[i] for i in range(50)]),axis=0)
 
         if crop==True:
             refIm = refIm[128:-128,128:-128]
