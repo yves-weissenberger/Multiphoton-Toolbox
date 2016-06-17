@@ -1,19 +1,28 @@
 TO-DO List
 
+Visualisation
+1. Create Basic Visualisation for full-frame videos
+
+
 loggers for 
-1. registration
-2. ROI masks
+1. registration  x
+2. ROI masks     x
 
 
 Trace Extraction
 1. Output spike times
-
+2. 
 
 
 
 ROI localisation in imaging field
 1.
 
+
+
+
+Analysis
+1. GLMs ....
 
 
 Bugs:

@@ -135,7 +135,6 @@ def motion_register(imArray,maxIter=5,Crop=True,inRAM=True,poolSize=4):
         imgList= [(i,imArray[i]) for i in range(imArray.shape[0])]
 
     tot_shift = np.zeros([imArray.shape[0],2])
-    print inRAM
     while not converged:
         strt = time.time()
 
@@ -146,10 +145,8 @@ def motion_register(imArray,maxIter=5,Crop=True,inRAM=True,poolSize=4):
                 if np.remainder(entry[0],1000)==0:
                     print '.',
             shifts = np.array(temp)
-            print shifts.shape
         else:
             temp = pool.map(register_image,imgList)
-            print inRAM_flag
             imgList = np.array([i[1] for i in temp])
             shifts = np.array([i[0] for i in temp])
 
