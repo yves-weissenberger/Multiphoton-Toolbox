@@ -84,6 +84,5 @@ def extract_area_ROI_traces(areaFile,width=4):
 
 
 
-def extract_spike_probabilities(areaFile):
+#def extract_spike_probabilities(areaFile):
 
-	

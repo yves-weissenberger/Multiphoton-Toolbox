@@ -37,7 +37,8 @@ def get_triggers(matFilePth):
                      'timestamp': stim_dict['timeStamp'],
                      'stim_dur': stim_dict['stimMat'][1,1],
                      'stim_levels': stim_dict['stimMat'][:,5],
-                     'stimScriptName': 'search_tones'
+                     'stimScriptName': 'search_tones',
+                     'stim_spacing': stim_dict['sweepLengthFrames']
                     }
 
 
@@ -52,7 +53,7 @@ def get_DM(stim_dict,framePeriod,nFrames):
     for i in range(1,1+nStims):
         stim_i_frames = np.where(stim_dict['stimOrder']==i)[0]
         for stim_presen in stim_i_frames:
-            DM[i-1,stim_presen*60:stim_presen*60+nFramesStim] = 1
+            DM[i-1,stim_presen*stim_dict['stim_spacing']:stim_presen*stim_dict['stim_spacing']+nFramesStim] = 1
     return DM
      
 

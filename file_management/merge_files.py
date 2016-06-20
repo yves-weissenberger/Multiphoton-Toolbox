@@ -57,7 +57,7 @@ def merge_files(sessionFile,mergeName,mergeFiles=None):
     for key,value in fH.attrs.iteritems():
         if key=='trigger_DM':
             mergeFile.attrs[key] = mergeDM
-        if (key=='ROI_centres' or key=='ROI_patches'):
+        elif (key=='ROI_centres' or key=='ROI_patches'):
             mergeFile.attrs[key] = value
         else:
             mergeFile.attrs[key] = str(value)
