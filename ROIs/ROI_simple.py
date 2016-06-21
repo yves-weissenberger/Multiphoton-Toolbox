@@ -11,7 +11,12 @@ import h5py
 from pyqtgraph.dockarea import *
 
 
-
+def draw_roi_masks(session_file):
+    from subprocess import call
+    fName = session_file.filename
+    status = call("ROI_drawer " + fName, shell=True)
+    print fName
+    return status
 
 def add_ROIS_meanIm(Area):
     from matplotlib.widgets import MultiCursor,RadioButtons,Cursor,Button,LassoSelector

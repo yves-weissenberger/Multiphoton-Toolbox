@@ -131,8 +131,8 @@ def motion_register(imArray,maxIter=5,Crop=True,inRAM=True,poolSize=4):
     iteration = 0
     if inRAM:
         imgList= [imArray[i] for i in range(imArray.shape[0])]
-    elif not inRAM:
-        imgList= [(i,imArray[i]) for i in range(imArray.shape[0])]
+    #elif not inRAM:
+    #    imgList= [(i,imArray[i]) for i in range(imArray.shape[0])]
 
     tot_shift = np.zeros([imArray.shape[0],2])
     while not converged:
@@ -141,20 +141,23 @@ def motion_register(imArray,maxIter=5,Crop=True,inRAM=True,poolSize=4):
         if not inRAM:
             temp = []
             if iteration==0:
-                for entry in imgList:
-                    temp.append(register_image(entry))
-                    if np.remainder(entry[0],1000)==0:
+                for i,img in enumerate(imArray):
+                    temp.append(register_image((i,img)))
+                    if np.remainder(i,1000)==0:
                         print '.',
                 shifts = np.array(temp)
             elif iteration>0:
-                del imgList
-                imgList= [(i,regFile[i]) for i in range(imArray.shape[0])]
+                #del imgList
+                #imgList= [(i,regFile[i]) for i in range(imArray.shape[0])]
 
-                for entry in imgList:
-                    temp.append(register_image(entry))
-                    if np.remainder(entry[0],1000)==0:
+                for i,img in enumerate(regFile):
+                    temp.append(register_image((i,img)))
+                    if np.remainder(i,1000)==0:
                         print '.',
                 shifts = np.array(temp)
+
+
+
         else:
             temp = pool.map(register_image,imgList)
             imgList = np.array([i[1] for i in temp])
@@ -176,13 +179,12 @@ def motion_register(imArray,maxIter=5,Crop=True,inRAM=True,poolSize=4):
             refIm = np.mean(imgList[:50],axis=0)
         else:
             refIm = np.mean(regFile[:50],axis=0)
-            print regFile.shape
+
 
         if crop==True:
             refIm = refIm[128:-128,128:-128]
 
     if not inRAM:
-        print shifts, tot_shift
         return shifts, tot_shift
     else:
         return np.array(imgList), shifts, tot_shift
