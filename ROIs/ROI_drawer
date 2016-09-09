@@ -18,11 +18,14 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
     class Visualizator(QtGui.QMainWindow):
 
         def __init__(self, ROI_patches,ROI_masks,areaFile):
+            
             QtGui.QMainWindow.__init__(self)
             self.Folder = os.path.dirname(areaFile.file.filename) + '/'
             self.idx = 0
             self.ROI_patches = ROI_patches
-            self.masks = ROI_masks
+            self.masks = np.zeros(ROI_patches.shape)
+            #print self.masks.shape, ROI_masks.shape
+            self.masks[:,:,:ROI_masks.shape[2]] = ROI_masks
             self.play_video = False
             self.rolling_average = 10
             self.ROI_centres = areaFile.attrs['ROI_centres']

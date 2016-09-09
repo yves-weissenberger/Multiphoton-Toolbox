@@ -1,8 +1,10 @@
+from __future__ import division
 import numpy as np
 from skimage.feature import register_translation
 from scipy.ndimage import fourier_shift
 from multiprocessing.dummy import Pool
 import time
+import sys
 import h5py
 
 
@@ -45,17 +47,23 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4):
             st = time.time()
 
             if not inRAM:
-                global regFile
                 regFile = HDF_File[session_ID]['registered_data'].create_dataset(name=file_key,
                                                                                  shape=raw_file.shape,
-                                                                                 chunks=(10,512,512),dtype='int16')
+                                                                                 chunks=(10,512,512),
+                                                                                 dtype='uint16')
                 st = time.time()
-                shifts, tot_shifts = motion_register(raw_file,2,Crop=True,inRAM=inRAM)
+                shifts, tot_shifts = motion_register(raw_file,
+                                                     regFile,
+                                                     2,
+                                                     Crop=True,
+                                                     inRAM=inRAM)
                 regFile.attrs['mean_image'] = np.mean(regFile,axis=0)
 
             else:
             #________________________________________________________________
+                regFile = None
                 regIms, shifts, tot_shifts = motion_register(raw_file,
+                                                             regFile,
                                                              maxIter=2,
                                                              Crop=True,
                                                              inRAM=inRAM,
@@ -65,9 +73,10 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4):
                 #________________________________________________________________
                 st = time.time()
                 regFile = HDF_File[session_ID]['registered_data'].create_dataset(name=file_key,
-                              	                                                 data=regIms.astype('int16'),
-                     	                                                         chunks=(10,512,512),dtype='int16')
-                regFile.attrs['mean_image'] = np.mean(regIms.astype('int16'),axis=0)
+                              	                                                 data=regIms.astype('uint16'),
+                     	                                                         chunks=(10,512,512),dtype='uint16')
+
+                regFile.attrs['mean_image'] = np.mean(regIms.astype('uint16'),axis=0)
 
 
             
@@ -113,14 +122,15 @@ def build_registration_log(areaFile):
 
     return None
 
-def motion_register(imArray,maxIter=5,Crop=True,inRAM=True,poolSize=4):
-    
+
+def motion_register(imArray,regFile,maxIter=5,Crop=True,inRAM=True,poolSize=4):
+    print 'new'
+    global inRAM_flag; inRAM_flag = inRAM
     if inRAM:
         pool = Pool(poolSize)
 
-    global crop
-    crop = Crop
-    imArray = imArray
+    global crop; crop = Crop
+
     global refIm
     if crop==True:
     	refIm = np.mean(imArray[:50],axis=0)[128:-128,128:-128]
@@ -141,10 +151,16 @@ def motion_register(imArray,maxIter=5,Crop=True,inRAM=True,poolSize=4):
         if not inRAM:
             temp = []
             if iteration==0:
+                nFrames = imArray.shape[0]; pFac = nFrames/100  #variables for progress bar
                 for i,img in enumerate(imArray):
-                    temp.append(register_image((i,img)))
-                    if np.remainder(i,1000)==0:
-                        print '.',
+                    temp.append(register_image((i,img,regFile)))
+
+                    ###### This is just a dumb little progress bar
+                    sys.stdout.write('\r')
+                    pStr = r"[%-100s] %d%%" 
+                    sys.stdout.write(pStr % ('.'*int(np.round(i/pFac)), (102/nFrames)*i))
+                    sys.stdout.flush()
+                    ###### This is just a dumb little progress bar
                 shifts = np.array(temp)
             elif iteration>0:
                 #del imgList
@@ -193,6 +209,7 @@ def register_image(inp):
     if not inRAM_flag:
         image_idx = inp[0]
         image = inp[1]
+        regFile = inp[2]
     else:
         image = inp
 
@@ -203,9 +220,9 @@ def register_image(inp):
         shift, _, _ = register_translation(refIm, image, upsample_factor=10)
 
     if np.sum(np.abs(shift))!=0:
-        regIm =  np.fft.ifftn(fourier_shift(np.fft.fftn(image), shift)).real.astype('int16')
+        regIm =  np.fft.ifftn(fourier_shift(np.fft.fftn(image), shift)).real
     else:
-        regIm = image.astype('int16')
+        regIm = image
 
     #added for reduce memory test
     if not inRAM_flag:    

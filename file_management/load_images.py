@@ -3,6 +3,7 @@ import os
 import scipy.io as spio
 import tifffile
 import numpy as np
+import pickle
 import h5py
 import re
 import time
@@ -113,9 +114,7 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID):
         if i >0:
             HDF_File = h5py.File(HDF_PATH,'a',libver='latest')
         
-        print 'Load HDF5 %s Time: %s' %(i,time.time() - st)
         st = time.time()
-        print fDir
         areaDSet = HDF_File[session_ID]['raw_data'].create_dataset(name=fDir,
                                                                    data=File.astype('uint16'),
                                                                    chunks=(10,512,512),
@@ -123,23 +122,34 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID):
         print 'Write %s Time: %s' %(i, time.time() - st)
         
         if GRABinfo!=None:
-            for key,value in GRABinfo.iteritems():
-                areaDSet.attrs[key] = str(value)
-                areaDSet.attrs['dropped_frames'] = not allSame
+            HDF_dir = re.findall(r'(.*\/).*\.h5',HDF_File.filename)
 
 
-            framePeriod = float(areaDSet.attrs['scanFramePeriod'])*1000
-            nFrames = float(areaDSet.attrs['acqNumFrames'])
-            DM = get_DM(stimattrs,framePeriod,nFrames)  #get the designMatrix
-            areaDSet.attrs['trigger_DM'] = DM
-            areaDSet.attrs['stim_list'] = stimattrs['stim_list']
-            areaDSet.attrs['stimScriptName'] = str(stimattrs['stimScriptName'])
-            areaDSet.attrs['stim_levels'] = stimattrs['stim_levels']
+            gInfoLoc = str(HDF_dir[0])+str(fDir)+'_GRABinfo.p'
+
+            with open(gInfoLoc,'wb') as grabI_f:
+                pickle.dump(GRABinfo,grabI_f)
+
+            areaDSet.attrs['GRABinfo'] = gInfoLoc
+            #for key,value in GRABinfo.iteritems():
+            #    areaDSet.attrs[key] = str(value)
+            #    areaDSet.attrs['dropped_frames'] = not allSame
+
+
+            framePeriod = float(GRABinfo['scanFramePeriod'])*1000
+            nFrames = float(GRABinfo['acqNumFrames'])
+
+            if stimattrs!=None:
+                DM = get_DM(stimattrs,framePeriod,nFrames)  #get the designMatrix
+                areaDSet.attrs['trigger_DM'] = DM
+                areaDSet.attrs['trigger_DM'] = DM
+                areaDSet.attrs['stim_list'] = stimattrs['stim_list']
+                areaDSet.attrs['stimScriptName'] = str(stimattrs['stimScriptName'])
+                areaDSet.attrs['stim_levels'] = stimattrs['stim_levels']
         else:
             print '!!!WARINING!!! NO GRABINFO WAS FOUND, FILE INCOMPLETE'
         st = time.time()
         HDF_File.close()
-        print 'Write to Disk %s Time: %s' %(i, time.time() - st)
 
         i += 1
         HDF_File = h5py.File(HDF_PATH,'a',libver='latest')

@@ -26,4 +26,4 @@ Analysis
 
 
 Bugs:
-1. Can't extract shifts?!
+1. with not inRAM on motion registration, can't access hdf5 attributes.
