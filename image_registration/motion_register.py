@@ -73,8 +73,9 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4):
                 #________________________________________________________________
                 st = time.time()
                 regFile = HDF_File[session_ID]['registered_data'].create_dataset(name=file_key,
-                              	                                                 data=regIms.astype('uint16'),
-                     	                                                         chunks=(10,512,512),dtype='uint16')
+                              	                                                 data=np.round(regIms).astype('uint16'),
+                     	                                                         chunks=(10,512,512),
+                                                                                 dtype='uint16')
 
                 regFile.attrs['mean_image'] = np.mean(regIms.astype('uint16'),axis=0)
 
@@ -133,7 +134,7 @@ def motion_register(imArray,regFile,maxIter=5,Crop=True,inRAM=True,poolSize=4):
 
     global refIm
     if crop==True:
-    	refIm = np.mean(imArray[:50],axis=0)[128:-128,128:-128]
+    	refIm = np.mean(imArray[:50],axis=0)[:,128:-128]
     else:
         refIm = np.mean(imArray[:50],axis=0)
 
@@ -198,7 +199,7 @@ def motion_register(imArray,regFile,maxIter=5,Crop=True,inRAM=True,poolSize=4):
 
 
         if crop==True:
-            refIm = refIm[128:-128,128:-128]
+            refIm = refIm[:,128:-128]
 
     if not inRAM:
         return shifts, tot_shift
@@ -215,7 +216,7 @@ def register_image(inp):
 
 
     if crop==True:
-        shift, _, _ = register_translation(refIm,image[128:-128,128:-128],upsample_factor=10)
+        shift, _, _ = register_translation(refIm,image[:,128:-128],upsample_factor=10)
     else:
         shift, _, _ = register_translation(refIm, image, upsample_factor=10)
 

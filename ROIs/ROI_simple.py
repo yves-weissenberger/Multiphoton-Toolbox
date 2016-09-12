@@ -277,7 +277,7 @@ def add_ROIS_meanIm(Area):
 
 
     plt.grid('off')
-    plt.show()
+    plt.show(block=True)
 
    
     Area.attrs['ROI_patches'] = np.dstack(ROI_list)
