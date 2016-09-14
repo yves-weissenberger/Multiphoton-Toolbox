@@ -9,8 +9,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
     from pyqtgraph import Qt
     import pyqtgraph as pg
     import time
-    import sys
-    import os
+    import sys, os, pickle
     import copy as cp
     from skimage.filters import gaussian as gaussian_filter
     from skimage.morphology import disk
@@ -25,12 +24,15 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
         def __init__(self, ROI_patches,ROI_masks,areaFile):
             QtGui.QMainWindow.__init__(self)
             self.Folder = os.path.dirname(areaFile.file.filename) + '/'
+            print self.Folder
             self.idx = 0
             self.ROI_patches = []#ROI_patches
             self.masks = []#np.zeros(ROI_patches.shape)
             #print self.masks.shape, ROI_masks.shape
             #self.masks[:,:,:ROI_masks.shape[2]] = ROI_masks
+            print areaFile.name
             self.mean_image = np.mean(areaFile[:3000],axis=0).T
+
             self.ROI_attrs = {'centres':[],
                               'patches':[],
                               'masks':[],
@@ -64,7 +66,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
             self.vidTimer.timeout.connect(self.update_video)
             self.vidTimer.start(self.IFI)
 
-            self.img = pg.ImageItem()
+            self.img = pg.ImageItem(setAutoDownsample=True)
             self.mask_img = pg.ImageItem()
             print areaFile.shape
             self.img.setImage(areaFile[self.frame_idx,:,:].T)
@@ -88,7 +90,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
             #self.vb.addItem(self.img_ROI)      
             #self.vb.addItem(self.tx)
             self.vb.addItem(self.frameTxt)
-            grV1 = pg.GraphicsView(useOpenGL=True)
+            grV1 = pg.GraphicsView(useOpenGL=False)
             grV1.setCentralItem(self.vb)
             self.vb.scene().sigMouseMoved.connect(self.mouseMoved)
             #self.img.sigClicked.connect(self.test1)
@@ -126,7 +128,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
             btn12 = QtGui.QPushButton("Hide Mask", self)
             btn1.clicked.connect(self.buttonClicked)            
             btn2.clicked.connect(self.buttonClicked)
-            #btn3.clicked.connect(self.save_ROIS)
+            btn3.clicked.connect(self.save_ROIS)
             btn4.clicked.connect(self.buttonClicked)
             btn5.clicked.connect(self.buttonClicked)
             btn6.clicked.connect(self.buttonClicked)
@@ -156,23 +158,15 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
             self.setCentralWidget(w)
             self.show()
             #self.connect(self, Qt.SIGNAL('triggered()'), self.closeEvent
-        #def save_ROIS(self):
-        #    arr = cp.deepcopy(np.array((self.masks)))
-        #    areaFile.attrs['ROI_masks'] = arr
-        #    #-------- Save ROIs to hdf5
-        #    f_handle = h5py.File(self.Folder +'ROI_data.h5','w',libver='latest')
-        #    f_handle.create_dataset('ROI_masks',data=cp.deepcopy(np.array((self.masks))),dtype='int16')
-        #    f_handle.create_dataset('ROI_patches',data=areaFile.attrs['ROI_patches'],dtype='int16')
-        #    f_handle.create_dataset('ROI_locs',data=np.array(areaFile.attrs['ROI_centres']),dtype='int16')
-        #    f_handle.attrs['parent_file'] = areaFile.name
-        #    f_handle.close()
-        #    print 'ROI MASKS SAVED'
+        def save_ROIS(self):
+            fName = self.Folder+areaFile.name[1:].replace('/','-') + '_ROIs'
+            with open(self.Folder+areaFile.name[1:].replace('/','-') + '_ROIs','wb') as f:
+                pickle.dump(self.ROI_attrs,f)
+
+            areaFile.attrs['ROI_dataLoc'] = fName
+            print 'ROI MASKS SAVED'
 
 
-        #def closeEvent(self, event):
-        #    print 'leaving now \n you have drawn %s ROIs' %self.masks.shape[2]
-        #    event.accept() # let the window close
-        #    #areaFile
 
         def onClick(self,ev):
             print self.vb.mapSceneToView(ev.pos())
@@ -182,8 +176,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
             elif ev.button()==2 and ev.double():
                 self.proc_roi_region(add_region=False)
                 self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
-
-                pass
 
 
         def proc_roi_region(self,add_region=True):
@@ -215,29 +207,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
                 self.Gplt.clear()
                 self.Gplt.addItem(self.timeLine)
                 self.Gplt.plot(self.ROI_attrs['traces'][-1])
-                """from matplotlib.pyplot import imshow,show,plot, figure
-
-                figure()
-                imshow(self.ROI_attrs['patches'][-1],cmap='binary_r')
-                show()
-
-                figure()
-                imshow(self.ROI_attrs['masks'][0])
-                show()
-
-                figure()
-                imshow(self.temp_mask,cmap='binary_r')
-                show()
-
-                figure()
-                imshow(self.mean_image.T,cmap='binary_r')
-                show()
-
-
-
-                figure()
-                plot(self.ROI_attrs['traces'][0])
-                show()"""
 
 
                 self.mask[:,:,0] += self.temp_mask.T
@@ -247,7 +216,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
                 self.mask[mpossx,mpossy,3] = 0
                 print 'here'
             self.temp_mask = np.zeros(self.temp_mask.shape) 
-            #return self.mask
 
 
 
@@ -269,12 +237,13 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
                 self.masks[:,:,self.idx] = 0
             elif sender.text()=='Hide Mask':
                 if self.maskalpha==0:
-                    self.maskalpha=0.2
-                    self.img_ROI.setOpacity(self.maskalpha)
+                    self.maskalpha=0.6
+                    self.mask_img.setOpacity(self.maskalpha)
+                    #self.img_ROI.setOpacity(self.maskalpha)
 
                 else:
                     self.maskalpha=0
-                    self.img_ROI.setOpacity(self.maskalpha)
+                    self.mask_img.setOpacity(self.maskalpha)
 
             elif sender.text()=='Increase Rolling Average':
                 self.rolling_average += 1
@@ -287,9 +256,14 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
                     print self.rolling_average
             elif sender.text()=='Increase Spatial Smoothing':
                 self.smoothing += 0.1
+                print "gaussian smoothing sigma: %s" %self.smoothing
+
             elif sender.text()=='Decrease Spatial Smoothing':
+
                 if self.smoothing>0:
                     self.smoothing -= .1
+
+                print "gaussian smoothing sigma: %s" %self.smoothing
             elif (sender.text()=='Play Video' or sender.text()=='Pause Video'):
                 self.play_video = not self.play_video
                 self.show_mean_image = False
@@ -314,17 +288,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
                     print 'unable to plot outside of range'
 
 
-            #self.tx.setText('ROI Nr: ' + str(self.idx+1) + '/' + str(nROIs))
-            mask = np.zeros([self.masks.shape[0],self.masks.shape[1],3])
-            #print self.masks.shape
-            mask[np.where(self.masks[:,:,self.idx])] = (1,0,0)
-            
-            self.img_ROI.setImage(mask)
-            self.img.setImage(self.ROI_patches[:,:,self.idx])
-
-
-
-
         #Play Video Play Function    
         def update_video(self):
             
@@ -332,7 +295,8 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
                 video_image = np.mean(self.video[self.frame_idx-self.rolling_average:self.frame_idx+self.rolling_average+1],axis=0).T
 
                 #video_image = median_filter(self.video,disk(2))
-                video_image = gaussian_filter(video_image,self.smoothing)
+                if self.smoothing>0:
+                    video_image = gaussian_filter(video_image,self.smoothing)
                 self.img.setImage(video_image,
                                   autoLevels=False)
 

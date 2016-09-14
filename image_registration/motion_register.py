@@ -188,7 +188,7 @@ def motion_register(imArray,regFile,maxIter=5,Crop=True,inRAM=True,poolSize=4):
         if mean_shift<1:
             converged=True
         
-        if iteration>maxIter:
+        if iteration>=maxIter:
             print 'Convergence not-optimal'
             converged = True
 
