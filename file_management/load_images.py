@@ -1,5 +1,5 @@
 from __future__ import division
-import os
+import os, sys
 import scipy.io as spio
 import tifffile
 import numpy as np
@@ -59,34 +59,46 @@ def get_DM(stim_dict,framePeriod,nFrames):
      
 
 def load_tiff_series(directory):
-    file_sizes = [os.stat(directory + f).st_size for f in os.listdir(directory) if  '.tif' in f]
+    print directory
+    file_sizes = [os.stat(os.path.join(directory,f)).st_size for f in os.listdir(directory) if  '.tif' in f]
     allSame = file_sizes.count(file_sizes[0]) == len(file_sizes)
     if not allSame:
         print 'WARNING! FILES DIFFER IN SIZE'
         
-        
-    fnames = os.listdir(directory)
+    
+    fnames = os.listdir(directory); 
+    nFiles = len(fnames)#variables for progress bar
     GRABinfo = None
     stimattrs = None
+    sys.stdout.write('\r')
+
     for idx, fname in enumerate(fnames):
-        #print fname
+
+
+
+        ###### This is just a dumb little progress bar
+        sys.stdout.write('\r')
+        pStr = r"[%-" + str(nFiles) + r"s]%d%%" 
+        sys.stdout.write('\r' + pStr % ('.'*int(idx), np.divide(idx+1.,float(nFiles))))
+        sys.stdout.flush()
+        #print "loading %s \n" %fname
         if '.tif' in fname:
             if idx==0:
-                pth = directory + fname
+                pth = os.path.join(directory,fname)
                 b = tifffile.TiffFile(pth)
                 imageArr = b.series[0].asarray()
             else:
-                pth = directory + fname
+                pth = os.path.join(directory,fname)
                 b = tifffile.TiffFile(pth)
                 imageArr = np.concatenate([imageArr,b.series[0].asarray()])
         elif 'GRABinfo' in fname:
-            matFilePth = directory + fname
+            matFilePth = os.path.join(directory,fname)
             matfile = spio.loadmat(matFilePth,struct_as_record=False, squeeze_me=True)['GRABinfo']
             GRABinfo = load_GRABinfo(matfile)
 
         elif 'outDat' in fname:
             if '._' not in fname:
-                matFilePth = directory + fname
+                matFilePth = os.path.join(directory,fname)
                 print matFilePth
                 stimattrs = get_triggers(matFilePth) 
 
@@ -105,8 +117,9 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID):
     i = 0
     HDF_PATH = HDF_File.filename
     for fDir in file_Dirs:
-        Dir = baseDir + fDir + '/'  #+ '\\'
+        Dir = os.path.join(baseDir,fDir)
         st = time.time()
+        print r'\n loading %s \n' %fDir
         File, allSame, GRABinfo, stimattrs = load_tiff_series(Dir)
         print 'Load Data %s Time: %s' %(i, time.time() - st)
         

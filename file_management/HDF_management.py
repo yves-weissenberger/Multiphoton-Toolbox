@@ -2,23 +2,25 @@ def create_base_hdf(animal_ID,file_loc):
 
 	import h5py
 	import os
-	if not os.path.isdir(file_loc+'/'+animal_ID):
-		os.mkdir(file_loc+'/'+animal_ID)
-	file_path = file_loc + animal_ID + '/' + animal_ID + '.h5'
+	if not os.path.isdir(os.path.join(file_loc,animal_ID)):
+		os.mkdir(os.path.join(file_loc,animal_ID))
+
+	file_path = os.path.join(file_loc,animal_ID,animal_ID + '.h5')
 	file_exists = os.path.isfile(file_path)
 	if file_exists:
 		print 'File already exists if you proceed you will overwrite \n are you sure you would like to proceed'
-		answer = raw_input('type yes if you would like to proceed otherwise press enter')
+		answer = raw_input('type yes if you would like to proceed otherwise press enter:  ')
 
 		if answer=='yes':
-				answer = raw_input('are you SURE (this will delete all work done on this file....)') 
+				answer = raw_input('are you SURE (this will delete all work done on this file....):  ') 
  
 	if (not file_exists or answer=='yes'):
-		try:
-			HDF_File = h5py.File(file_path,'w',libver='latest')
-			HDF_File.attrs['path'] = file_path
-		except IOError:
-			raise IOError('you idiot, the file is already open in your namespace =p')
+		HDF_File = h5py.File(file_path,'w',libver='latest')
+		#try:
+		#	HDF_File = h5py.File(file_path,'w',libver='latest')
+			#HDF_File.attrs['path'] = file_path
+		#except IOError:
+			#raise IOError('you idiot, the file is already open in your namespace =p')
 	else:
 		print 'File not overwritten, returning handle to existing file'
 		HDF_File = h5py.File(file_path,'a',libver='latest')
@@ -55,7 +57,6 @@ def add_session_groups(file_handle,session_ID):
 	dayGroup = file_handle.create_group(session_ID)
 	dayGroup.create_group('raw_data')
 	dayGroup.create_group('registered_data')
-	dayGroup.create_group('triggers')
 
 	return file_handle
 
