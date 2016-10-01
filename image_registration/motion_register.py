@@ -4,7 +4,7 @@ from skimage.feature import register_translation
 from scipy.ndimage import fourier_shift
 from multiprocessing.dummy import Pool
 import time
-import sys
+import sys, os
 import h5py
 
 
@@ -13,8 +13,8 @@ def copy_ROIs(HDF_File):
 
     return None
 
-def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4):
-
+def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
+    print abs_loc
     HDF_PATH = str(HDF_File.filename)
     global inRAM_flag
     inRAM_flag=inRAM
@@ -45,7 +45,7 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4):
             raw_file = HDF_File[session_ID]['raw_data'][file_key]
             #print 'file open %ss' %(time.time() - st)
             st = time.time()
-
+            print '\n registering %s \n' %file_key
             if not inRAM:
                 regFile = HDF_File[session_ID]['registered_data'].create_dataset(name=file_key,
                                                                                  shape=raw_file.shape,
@@ -54,9 +54,10 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4):
                 st = time.time()
                 shifts, tot_shifts = motion_register(raw_file,
                                                      regFile,
-                                                     2,
+                                                     maxIter=1,
                                                      Crop=True,
                                                      inRAM=inRAM)
+                print 'reached here'
                 regFile.attrs['mean_image'] = np.mean(regFile,axis=0)
 
             else:
@@ -90,7 +91,7 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4):
                     else:
             	       regFile.attrs[key] = str(value)
 
-            build_registration_log(regFile)
+            build_registration_log(regFile,abs_loc=abs_loc)
 
             HDF_File.close()
 
@@ -110,12 +111,12 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4):
 
     return HDF_File
 
-def build_registration_log(areaFile):
+def build_registration_log(areaFile,abs_loc):
     import re
-    file_loc = re.findall(r'(.*/).*\.h5',areaFile.file.filename)[0]
+    #file_loc = re.findall(r'(.*/).*\.h5',areaFile.file.filename)[0]
+    
     fName = areaFile.name.replace('/','_')
-
-    logF = str(file_loc) + str(fName) + str('_shifts.txt')
+    logF = os.path.join(abs_loc, str(fName) + str('_shifts.txt'))
     roi_pos_str = [str(i)+','+str(j)+'\n' for i,j in areaFile.attrs['tot_shifts']]
     with open(logF,'a') as logFile:
         for i in roi_pos_str:
@@ -124,7 +125,7 @@ def build_registration_log(areaFile):
     return None
 
 
-def motion_register(imArray,regFile,maxIter=5,Crop=True,inRAM=True,poolSize=4):
+def motion_register(imArray,regFile,maxIter=1,Crop=True,inRAM=True,poolSize=4):
     print 'new'
     global inRAM_flag; inRAM_flag = inRAM
     if inRAM:
@@ -144,6 +145,7 @@ def motion_register(imArray,regFile,maxIter=5,Crop=True,inRAM=True,poolSize=4):
         imgList= [imArray[i] for i in range(imArray.shape[0])]
     #elif not inRAM:
     #    imgList= [(i,imArray[i]) for i in range(imArray.shape[0])]
+    sys.stdout.write('\r')
 
     tot_shift = np.zeros([imArray.shape[0],2])
     while not converged:
@@ -152,16 +154,19 @@ def motion_register(imArray,regFile,maxIter=5,Crop=True,inRAM=True,poolSize=4):
         if not inRAM:
             temp = []
             if iteration==0:
-                nFrames = imArray.shape[0]; pFac = nFrames/100  #variables for progress bar
+                nFrames = imArray.shape[0]; pFac = nFrames/50  #variables for progress bar
                 for i,img in enumerate(imArray):
+
                     temp.append(register_image((i,img,regFile)))
 
-                    ###### This is just a dumb little progress bar
-                    sys.stdout.write('\r')
-                    pStr = r"[%-100s] %d%%" 
-                    sys.stdout.write(pStr % ('.'*int(np.round(i/pFac)), (102/nFrames)*i))
+                    ###### This is just a little progress bar
+                    #sys.stdout.write('\r')
+                    pStr = r"[%-50s]  %d%%" 
+                    sys.stdout.write('\r' + pStr % ('.'*int(np.round(np.divide(i,pFac))), int(100*i/nFrames)))
                     sys.stdout.flush()
-                    ###### This is just a dumb little progress bar
+
+                    ###### This is just a little progress bar
+
                 shifts = np.array(temp)
             elif iteration>0:
                 #del imgList

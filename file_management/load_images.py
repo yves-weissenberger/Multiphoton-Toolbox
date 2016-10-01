@@ -59,7 +59,6 @@ def get_DM(stim_dict,framePeriod,nFrames):
      
 
 def load_tiff_series(directory):
-    print directory
     file_sizes = [os.stat(os.path.join(directory,f)).st_size for f in os.listdir(directory) if  '.tif' in f]
     allSame = file_sizes.count(file_sizes[0]) == len(file_sizes)
     if not allSame:
@@ -78,8 +77,8 @@ def load_tiff_series(directory):
 
         ###### This is just a dumb little progress bar
         sys.stdout.write('\r')
-        pStr = r"[%-" + str(nFiles) + r"s]%d%%" 
-        sys.stdout.write('\r' + pStr % ('.'*int(idx), np.divide(idx+1.,float(nFiles))))
+        pStr = r"[%-" + str(nFiles) + r"s]  %d%%" 
+        sys.stdout.write('\r' + pStr % ('.'*int(idx), np.round(100*np.divide(idx+1.,float(nFiles)))))
         sys.stdout.flush()
         #print "loading %s \n" %fname
         if '.tif' in fname:
@@ -119,9 +118,9 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID):
     for fDir in file_Dirs:
         Dir = os.path.join(baseDir,fDir)
         st = time.time()
-        print r'\n loading %s \n' %fDir
+        print '\n loading %s \n' %os.path.split(fDir)[-1]
         File, allSame, GRABinfo, stimattrs = load_tiff_series(Dir)
-        print 'Load Data %s Time: %s' %(i, time.time() - st)
+        print 'Load Data time: %s' %(time.time() - st)
         
         st = time.time()
         if i >0:

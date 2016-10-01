@@ -1,58 +1,40 @@
 #!/home/yves/anaconda2/bin/python
 
-
 import os, sys, argparse, re, time
 import numpy as np
+import h5py
 import matplotlib.pyplot as plt
 sys.path.append('/home/yves/Documents/')
 import twoptb as MP
 
-if sys.argv[1]=='-help':
-	print 'first argument specifies what folders to exclude'
-elif sys.argv[1]==None:
-	pass
-exclude_list = ['cent','Cent','proc_log.txt']
 
+fpath = sys.argv[1]
+absPath = os.path.split(os.path.abspath(fpath))[0]
+#print os.path.split(absPath)[0]
+############## Load the HDF File
 
-base_path = os.path.abspath('.')
-animal_ID = os.path.split(base_path)[-1]
+HDF_File = h5py.File(fpath,'a',libver='latest')
+session_ID = HDF_File.keys()[0]
 
+print 'Session ID: %s \n' %session_ID
 
-folders = os.listdir(base_path)
-#print fs
-logLoc = os.path.join(base_path,'proc_log.txt')
+areas = HDF_File[session_ID]['raw_data'].keys()
 
-if 'proc_log.txt' not in folders:
-    logF = open(logLoc,'wb')
-    logF.write(animal_ID+'\n')
+Areas = HDF_File[session_ID]['raw_data'].keys()
 
-    logF.close()
-    print '...starting log'
-#HDF_File,file_path = MP.file_management.create_base_hdf(animal_ID=animal_name,file_loc='/media/yves/Storage 2/')
+print 'Registering areas:'
+for a in Areas:
+	print a
+st = time.time()
 
-with open(logLoc) as logF:
-	
-    for fold_dir in folders:
-        fold_dir = os.path.join(base_path,fold_dir)
+#use inRAM if you have a lot of RAM. registering 40500 512x512 frames in
+#parallel will eat around 120GB of RAM while without it will eat ~500MB
+#
+HDF_File = MP.image_registration.register_dayData(HDF_File=HDF_File,
+                                                  session_ID=session_ID,
+                                                  inRAM=False,
+                                                  poolSize=16,
+                                                  abs_loc=absPath)
+print time.time() - st
 
-        if all([crit not in fold_dir for crit in exclude_list]):
-            print fold_dir
-
-            if 'tonemapping' in fold_dir:
-                fs = os.listdir(fold_dir)
-                print fold_dir
-                #print fs
-                HDF_File,file_path = MP.file_management.create_base_hdf(animal_ID=animal_ID+'_tonemapping',file_loc=fold_dir)
-                session_ID = 'tonemapping'
-
-                HDF_File = MP.file_management.add_session_groups(file_handle = HDF_File,
-                                                 session_ID=session_ID)
-
-                print 'converting data to HDF5...'
-                st = time.time()
-                MP.file_management.add_raw_series(baseDir=fold_dir,
-                                                  file_Dirs=fs,
-                                                  HDF_File=HDF_File,
-                                                  session_ID=session_ID)
-
-                print time.time() - st
+print 'Data Registered successfully: %s' %(all([i in (HDF_File[session_ID]['raw_data'].keys()) for i in HDF_File[session_ID]['registered_data'].keys()]))

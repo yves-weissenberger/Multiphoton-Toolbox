@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/home/yves/anaconda2/bin/python
 import h5py
 import sys
 
@@ -22,15 +22,19 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
     class Visualizator(QtGui.QMainWindow):
 
         def __init__(self, ROI_patches,ROI_masks,areaFile):
+
+
+
             QtGui.QMainWindow.__init__(self)
-            self.Folder = os.path.dirname(areaFile.file.filename) + '/'
-            print self.Folder
+            self.Folder = os.path.split(os.path.abspath(areaFile.file.filename))[0]
+            #print "\n %s \n" %os.path.split(self.Folder)[0]
             self.idx = 0
+            self.roi_idx = 0 
+            self.nROIs = 0
             self.ROI_patches = []#ROI_patches
             self.masks = []#np.zeros(ROI_patches.shape)
             #print self.masks.shape, ROI_masks.shape
             #self.masks[:,:,:ROI_masks.shape[2]] = ROI_masks
-            print areaFile.name
             self.mean_image = np.mean(areaFile[:3000],axis=0).T
 
             self.ROI_attrs = {'centres':[],
@@ -159,8 +163,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
             self.show()
             #self.connect(self, Qt.SIGNAL('triggered()'), self.closeEvent
         def save_ROIS(self):
-            fName = self.Folder+areaFile.name[1:].replace('/','-') + '_ROIs'
-            with open(self.Folder+areaFile.name[1:].replace('/','-') + '_ROIs','wb') as f:
+            fName = areaFile.name[1:].replace('/','-') + '_ROIs.p'
+            print os.path.join(self.Folder,fName)
+            with open(os.path.join(self.Folder,fName),'wb') as f:
                 pickle.dump(self.ROI_attrs,f)
 
             areaFile.attrs['ROI_dataLoc'] = fName
@@ -173,9 +178,56 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
             if ev.button()==1 and ev.double():
                 self.proc_roi_region(add_region=True)
                 self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
-            elif ev.button()==2 and ev.double():
-                self.proc_roi_region(add_region=False)
-                self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
+            elif ev.button()==2:
+                # In this case, just select the roi
+
+                click_loc = np.array([self.vb.mapSceneToView(ev.pos()).x(),self.vb.mapSceneToView(ev.pos()).y()])
+                clickedROI = False
+                roi_nr = None
+                print np.array(self.ROI_attrs['centres']).T
+                val  = np.array(self.ROI_attrs['centres']).T - click_loc[:,None]
+                print val
+                print np.sum(np.abs(val),axis=0)
+                print "mindist %s" %np.min(np.sum(np.abs(val),axis=0))
+                roi_nr = np.argmin(np.sum(np.abs(val),axis=0))
+
+                print roi_nr
+                if np.min(np.sum(np.abs(val),axis=0))<10:
+                    clickedROI=True
+                print "prev_centre %s, click loc: %s" %(self.ROI_attrs['centres'][-2],click_loc)
+                #for idx,roi_loc in enumerate(self.ROI_attrs['idxs']):
+                #    cond = False
+                #    p1 = (np.round(roi_loc[0]) - np.round(click_loc[0]))<=.1
+                #    p2 = (np.round(roi_loc[1]) - np.round(click_loc[1]))<=.1
+                #    arr = p1*p2
+                #    cond = np.any(arr)
+                #    if cond:
+                #
+                #        roi_nr = idx
+                #        clickedROI = True
+
+                if clickedROI:
+                    print 'clicked_ROI'
+                    self.mask[:,:,1] = 0
+
+                    self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],0] = 1
+
+
+                    self.roi_idx = roi_nr
+                    print self.roi_idx
+                    #self.frame_idx = self.rolling_average
+                    self.Gplt.clear()
+                    self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx])
+                    self.Gplt.addItem(self.timeLine)
+
+
+                    self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],0] = 0
+                    self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],1] = 1
+                    self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
+                    #self.proc_roi_region(add_region=False)
+                    #self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
+                else:
+                    pass
 
 
         def proc_roi_region(self,add_region=True):
@@ -202,19 +254,25 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
                                                         areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *
                                                         self.temp_mask[yLims[0]:yLims[1],xLims[0]:xLims[1]],
                                                         axis=(1,2)))
-                self.ROI_attrs['idxs'].append(1)
+                self.ROI_attrs['idxs'].append([mpossx,mpossy])
                 self.ROI_attrs['masks'].append(self.temp_mask[yLims[0]:yLims[1],xLims[0]:xLims[1]])
+                #self.ROI_attrs['mask_arr'].append(temp_mask)
                 self.Gplt.clear()
                 self.Gplt.addItem(self.timeLine)
                 self.Gplt.plot(self.ROI_attrs['traces'][-1])
 
 
-                self.mask[:,:,0] += self.temp_mask.T
+                self.mask[:,:,0] += self.mask[:,:,1]
+                self.mask[:,:,1] = 0
+                self.mask[:,:,1] = self.temp_mask.T
+                #self.mask[:,:,0] += self.temp_mask.T
                 self.mask[:,:,3] += self.temp_mask.T
+                self.nROIs += 1
+                self.roi_idx = self.nROIs - 1
+
             else:
                 self.mask[mpossx,mpossy,0] = 0
                 self.mask[mpossx,mpossy,3] = 0
-                print 'here'
             self.temp_mask = np.zeros(self.temp_mask.shape) 
 
 
@@ -222,17 +280,39 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
         def buttonClicked(self):
             sender = self.sender()
             if sender.text()=='Next ROI':
-                if self.idx<nROIs-1:
-                    self.idx += 1
-                    self.frame_idx = self.rolling_average
+                if self.roi_idx<self.nROIs-1:
+                    self.roi_idx += 1
+                    #self.frame_idx = self.rolling_average
                     self.Gplt.clear()
+                    self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx])
                     self.Gplt.addItem(self.timeLine)
+
+                    self.mask[:,:,1] = 0
+                    self.mask[self.ROI_attrs['idxs'][self.roi_idx-1][0],self.ROI_attrs['idxs'][self.roi_idx-1][1],0] = 1
+                    self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],0] = 0
+
+                    self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],1] = 1
+                    self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
+                    #self.mask[:,:,1] = self.temp_mask.T
+
             elif sender.text()=='Previous ROI':
-                if self.idx>=1:
-                    self.idx -= 1
-                    self.frame_idx = self.rolling_average
+                if self.roi_idx>=1:
+                    print self.roi_idx
+                    self.roi_idx -= 1
+                    #self.frame_idx = self.rolling_average
                     self.Gplt.clear()
+                    self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx])
+
                     self.Gplt.addItem(self.timeLine)
+
+                    self.mask[:,:,1] = 0
+                    self.mask[self.ROI_attrs['idxs'][self.roi_idx+1][0],self.ROI_attrs['idxs'][self.roi_idx+1][1],0] = 1
+                    self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],0] = 0
+
+                    self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],1] = 1
+                    self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
+
+
             elif sender.text()=='Clear ROI':
                 self.masks[:,:,self.idx] = 0
             elif sender.text()=='Hide Mask':
