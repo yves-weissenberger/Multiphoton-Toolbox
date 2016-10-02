@@ -57,7 +57,6 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
                                                      maxIter=1,
                                                      Crop=True,
                                                      inRAM=inRAM)
-                print 'reached here'
                 regFile.attrs['mean_image'] = np.mean(regFile,axis=0)
 
             else:
