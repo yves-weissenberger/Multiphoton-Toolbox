@@ -179,15 +179,20 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
         def save_ROIS(self):
             fName = areaFile.name[1:].replace('/','-') + '_ROIs.p'
-            print os.path.join(self.Folder,fName)
-            with open(os.path.join(self.Folder,fName),'wb') as f:
+            #print os.path.join(self.Folder,fName)
+            FLOC = os.path.join(self.Folder,fName)
+            with open(FLOC,'wb') as f:
                 pickle.dump(self.ROI_attrs,f)
 
-            areaFile.attrs['ROI_dataLoc'] = fName
+            areaFile.attrs['ROI_dataLoc'] = FLOC
             print 'ROI MASKS SAVED'
 
         def _restore_prev_session(self):
-            with open(areaFile.attrs['ROI_dataLoc']) as f:
+
+            """ restore  rois from the previous session"""
+            areaFileLoc = os.path.split(os.path.abspath(areaFile.file.filename))[0]
+            ROILoc = os.path.join(areaFileLoc,areaFile.attrs['ROI_dataLoc'])
+            with open(ROILoc) as f:
                 dat = pickle.load(f)
             self.ROI_attrs = dat
             self.nROIs = len(dat['idxs'])
@@ -292,7 +297,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     self.ROI_attrs['traces'].append([0])
 
                 self.vidTimer.start(self.IFI)
-                print 'slow9'
 
                 self.mask[:,:,0] += self.mask[:,:,1]
                 self.mask[:,:,1] = 0
@@ -314,6 +318,8 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             if sender.text()=='Next ROI':
                 if self.roi_idx<self.nROIs-1:
                     self.roi_idx += 1
+                    print 'viewing roi: %s' %self.roi_idx
+
                     self.Gplt.clear()
                     self.Gplt.addItem(self.timeLine)
 
@@ -332,8 +338,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
             elif sender.text()=='Previous ROI':
                 if self.roi_idx>=1:
-                    print self.roi_idx
                     self.roi_idx -= 1
+                    print 'viewing roi: %s' %self.roi_idx
+
                     #self.frame_idx = self.rolling_average
                     self.Gplt.clear()
                     self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx])
@@ -534,20 +541,10 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                                                 self.img_ROI.setImage(mask)
                         
                                         self.prevT = time.time()"""
-                
-    #nROIs = areaFile.attrs['ROI_patches'].shape[2]
-    #if restart==True:
-        #areaFile.attrs['ROI_masks'] = np.zeros(areaFile.attrs['ROI_patches'].shape)
 
-    #if 'ROI_masks' not in (areaFile.attrs.iterkeys()):
-    #    print 'no masks exist, creating empty ones'
-    #    areaFile.attrs['ROI_masks'] = np.zeros(areaFile.attrs['ROI_patches'].shape)
 
-    #roi_masks = cp.deepcopy(np.array(areaFile.attrs['ROI_masks'].astype('int')))
     app = QtGui.QApplication([])
     win = Visualizator(areaFile,online_trace_extract,restart)
-    #app.aboutToQuit.connect(app.deleteLater)
-    #app.exec_()
     print sys.exit(app.exec_())
 
     return app
@@ -563,9 +560,18 @@ if __name__=="__main__":
         raise ValueError('first argument needs to be absolute or relative path to HDF file')  #wrong error type but cba
     else:
         hdfPath = sys.argv[1]
+
     if len(sys.argv)>2:
-        restart = sys.argv[2]
         print sys.argv[2]
+        online_trace_extract = bool(int(sys.argv[2]))
+        
+        print "%s extracting traces online" %('not' if online_trace_extract==False else '')
+    else:
+        online_trace_extract = 1
+        print 'extracting traces online; may lead to performance issues. Set second argument to 0 to prevent'
+    if len(sys.argv)>3:
+        restart = sys.argv[3]
+        print sys.argv[3]
         if restart:
             restart = int(raw_input('Are you sure you want to restart? All work on this area will be deleted (0/1): '))
     else:
@@ -600,7 +606,7 @@ if __name__=="__main__":
 
 
 			areaID = int(raw_input('Select Area Nr: '))
-			areaFile = HDF_File[sessions[session]][dataType][areas[areaID]]; online_trace_extract = int(raw_input('Extract Traces Online? (this can lead to performance issues) (0/1): '))
+			areaFile = HDF_File[sessions[session]][dataType][areas[areaID]]; 
             #print '...into function'
 			#areaFile.attrs['ROI_patches']
 

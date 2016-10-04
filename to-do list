@@ -22,8 +22,13 @@ ROI localisation in imaging field
 
 
 Analysis
-1. GLMs ....
+1. GLMs ....  x
+	1.1 Integrate GLM fitting
+2. p-GPFA  x
+	2.1 Integrate p-GPFA fitting
 
 
 Bugs:
 1. with not inRAM on motion registration, can't access hdf5 attributes.
+2. Multiple runs of motion registration not working
+3. Doesn't automatically associate the outDat Files

@@ -22,6 +22,7 @@ def load_GRABinfo(matobj):
     return dict
 
 def get_triggers(matFilePth):
+
     if 'Tones2to64thirdOct' in matFilePth:
         matfile = spio.loadmat(matFilePth)
         stimattrs = {'stim_list': matfile['outDat'][0][0][2][:,0],
@@ -29,7 +30,9 @@ def get_triggers(matFilePth):
                      'stim_levels': matfile['outDat'][0][0][2][:,5],
                      'stimScriptName': matfile['outDat'][0][0][-1][0],
                      'timestamp': matfile['outDat'][0][0][0][0],
-                     'stimOrder': matfile['outDat'][0][0][1].T[0]}
+                     'stimOrder': matfile['outDat'][0][0][1].T[0],
+                     'stim_spacing': int(matfile['outDat']['sweepLengthFrames'])}
+
     elif re.search(r'.*search_tones_outDat.*',matFilePth):
         stim_dict = load_GRABinfo(spio.loadmat(matFilePth,struct_as_record=False, squeeze_me=True)['outDat'])
         stimattrs = {'stim_list': np.fliplr(np.vstack([stim_dict['stimMat'][:,5],
@@ -41,7 +44,6 @@ def get_triggers(matFilePth):
                      'stimScriptName': 'search_tones',
                      'stim_spacing': stim_dict['sweepLengthFrames']
                     }
-
 
 
         return stimattrs
@@ -143,9 +145,6 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID):
                 pickle.dump(GRABinfo,grabI_f)
 
             areaDSet.attrs['GRABinfo'] = gInfoLoc
-            #for key,value in GRABinfo.iteritems():
-            #    areaDSet.attrs[key] = str(value)
-            #    areaDSet.attrs['dropped_frames'] = not allSame
 
 
             framePeriod = float(GRABinfo['scanFramePeriod'])*1000

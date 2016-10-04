@@ -34,7 +34,7 @@ def load_hdf5(file_path):
 	""" Literally just return the HDF5 file handle, really just in case
 		one you forget h5py syntax """
 	import h5py
-	return h5py.File(file_path,'a',libver='latest')
+	return h5py.File(file_path,'r',libver='latest')
 
 #_____________________________________________________________________________________________
 
