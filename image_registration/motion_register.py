@@ -13,6 +13,7 @@ from twoptb.util import progress_bar
 def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
     print abs_loc
     hdfPath = HDF_File.filename
+    hdfDir = os.path.split(hdfPath)[0]
     global inRAM_flag
     inRAM_flag=inRAM
 
@@ -22,9 +23,9 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
         HDF_File = h5py.File(hdfPath,'a',libver='latest')
         print 'Creating Registered Data Group'
 
-    regData_dir = HDF_File.filename
+    regData_dir = os.path.join(hdfDir,'regInfo')
     if not os.path.exists(regData_dir):
-        'hoo'
+        os.mkdir(regData_dir)
 
     for f_idx, file_key in enumerate(HDF_File[session_ID]['raw_data'].keys()):
 
@@ -82,15 +83,11 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
 
             
 
-            regFile.attrs['shifts'] = shifts
-            regFile.attrs['tot_shifts'] = tot_shifts
-            for key,value in raw_file.attrs.iteritems():
-                    if (key=='trigger_DM' or key=='ROI_centres' or key=='ROI_patches'):
-                        regFile.attrs[key] = value
-                    else:
-            	       regFile.attrs[key] = str(value)
+            regFile.attrs['regInfo'] = regData_dir
 
-            build_registration_log(regFile,abs_loc=abs_loc)
+
+
+            build_registration_log(regFile,abs_loc=regData_dir,tot_shifts=tot_shifts)
 
             HDF_File.close()
 
@@ -110,12 +107,12 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
 
     return HDF_File
 
-def build_registration_log(areaFile,abs_loc):
+def build_registration_log(areaFile,abs_loc,tot_shifts):
     #file_loc = re.findall(r'(.*/).*\.h5',areaFile.file.filename)[0]
     
     fName = areaFile.name.replace('/','_')
     logF = os.path.join(abs_loc, str(fName) + str('_shifts.txt'))
-    roi_pos_str = [str(i)+','+str(j)+'\n' for i,j in areaFile.attrs['tot_shifts']]
+    roi_pos_str = [str(i)+','+str(j)+'\n' for i,j in tot_shifts]
     with open(logF,'a') as logFile:
         for i in roi_pos_str:
             logFile.write(i)

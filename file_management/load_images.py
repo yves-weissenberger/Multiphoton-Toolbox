@@ -69,7 +69,7 @@ def load_tiff_series(directory):
 
 
 
-def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID):
+def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID,get_DM=False):
     i = 0
     hdfPath = HDF_File.filename
     hdfDir = os.path.split(hdfPath)[0]
@@ -119,12 +119,13 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID):
 
             if stimattrs!=None:
                 stimattrsLoc = os.path.join(stimattrsDir,str(fDir)+ '_GRABinfo.p' )
-                DM = get_DM(stimattrs,framePeriod,nFrames)  #get the designMatrix
-                stimattrs['DM'] = DM
+                if get_DM:
+                    DM = get_DM(stimattrs,framePeriod,nFrames)  #get the designMatrix
+                    stimattrs['DM'] = DM
                 with open(stimattrsLoc,'wb') as saL:
                     pickle.dump(stimattrs,saL)
 
-                areaDSet['stimattrs'] = stimattrsLoc
+                areaDSet.attrs['stimattrs'] = stimattrsLoc
                 #areaDSet.attrs['trigger_DM'] = DM
                 #areaDSet.attrs['stim_list'] = stimattrs['stim_list']
                 #areaDSet.attrs['stimScriptName'] = str(stimattrs['stimScriptName'])
