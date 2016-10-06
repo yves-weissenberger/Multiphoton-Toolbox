@@ -31,4 +31,5 @@ Analysis
 Bugs:
 1. with not inRAM on motion registration, can't access hdf5 attributes.
 2. Multiple runs of motion registration not working
-3. Doesn't automatically associate the outDat Files
+3. Doesn't automatically associate the outDat Files x
+4. Delete problems with ROI drawer

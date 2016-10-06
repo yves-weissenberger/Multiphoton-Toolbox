@@ -1,63 +1,16 @@
 from __future__ import division
-import os, sys
+import os, sys, re, time, pickle
 import scipy.io as spio
 import tifffile
 import numpy as np
-import pickle
 import h5py
-import re
-import time
-
-def load_GRABinfo(matobj):
-    '''
-    A recursive function which constructs from matobjects nested dictionaries
-    '''
-    dict = {}
-    for strg in matobj._fieldnames:
-        elem = matobj.__dict__[strg]
-        if isinstance(elem, spio.matlab.mio5_params.mat_struct):
-            dict[strg] = _todict(elem)
-        else:
-            dict[strg] = elem
-    return dict
-
-def get_triggers(matFilePth):
-
-    if 'Tones2to64thirdOct' in matFilePth:
-        matfile = spio.loadmat(matFilePth)
-        stimattrs = {'stim_list': matfile['outDat'][0][0][2][:,0],
-                     'stim_dur': matfile['outDat'][0][0][2][:,1][0],
-                     'stim_levels': matfile['outDat'][0][0][2][:,5],
-                     'stimScriptName': matfile['outDat'][0][0][-1][0],
-                     'timestamp': matfile['outDat'][0][0][0][0],
-                     'stimOrder': matfile['outDat'][0][0][1].T[0],
-                     'stim_spacing': int(matfile['outDat']['sweepLengthFrames'])}
-
-    elif re.search(r'.*search_tones_outDat.*',matFilePth):
-        stim_dict = load_GRABinfo(spio.loadmat(matFilePth,struct_as_record=False, squeeze_me=True)['outDat'])
-        stimattrs = {'stim_list': np.fliplr(np.vstack([stim_dict['stimMat'][:,5],
-                                               stim_dict['stimMat'][:,0]]).T),
-                     'stimOrder': stim_dict['trialOrder'],
-                     'timestamp': stim_dict['timeStamp'],
-                     'stim_dur': stim_dict['stimMat'][1,1],
-                     'stim_levels': stim_dict['stimMat'][:,5],
-                     'stimScriptName': 'search_tones',
-                     'stim_spacing': stim_dict['sweepLengthFrames']
-                    }
+from twoptb.util import load_GRABinfo, progress_bar
+from twoptb.file_management.load_events import get_triggers, import_imaging_behaviour, get_DM
 
 
-        return stimattrs
 
 
-def get_DM(stim_dict,framePeriod,nFrames):
-    nFramesStim = int(np.floor(float(stim_dict['stim_dur'])/framePeriod))
-    nStims = int(len(stim_dict['stim_list']))
-    DM = np.zeros([nStims,nFrames])
-    for i in range(1,1+nStims):
-        stim_i_frames = np.where(stim_dict['stimOrder']==i)[0]
-        for stim_presen in stim_i_frames:
-            DM[i-1,stim_presen*stim_dict['stim_spacing']:stim_presen*stim_dict['stim_spacing']+nFramesStim] = 1
-    return DM
+
      
 
 def load_tiff_series(directory):
@@ -77,11 +30,11 @@ def load_tiff_series(directory):
 
 
 
-        ###### This is just a dumb little progress bar
-        sys.stdout.write('\r')
-        pStr = r"[%-" + str(nFiles) + r"s]  %d%%" 
-        sys.stdout.write('\r' + pStr % ('.'*int(idx), np.round(100*np.divide(idx+1.,float(nFiles)))))
-        sys.stdout.flush()
+        progress_bar(idx,nFiles)
+        #sys.stdout.write('\r')
+        #pStr = r"[%-" + str(nFiles) + r"s]  %d%%" 
+        #sys.stdout.write('\r' + pStr % ('.'*int(idx), np.round(100*np.divide(idx+1.,float(nFiles)))))
+        #sys.stdout.flush()
         #print "loading %s \n" %fname
         if '.tif' in fname:
             if idx==0:
@@ -103,7 +56,9 @@ def load_tiff_series(directory):
                 print matFilePth
                 stimattrs = get_triggers(matFilePth) 
 
-
+        elif '2AFC' in fname:
+            matFilePth = os.path.join(directory,fname)
+            stimattrs = get_triggers(matFilePth)
         else:
             pass
         
@@ -116,7 +71,18 @@ def load_tiff_series(directory):
 
 def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID):
     i = 0
-    HDF_PATH = HDF_File.filename
+    hdfPath = HDF_File.filename
+    hdfDir = os.path.split(hdfPath)[0]
+
+    gInfoDir = os.path.join(hdfDir,'GRABinfos')
+    stimattrsDir = os.path.join(hdfDir,'stims')
+    if not os.path.exists(gInfoDir):
+        os.mkdir(gInfoDir)
+
+    if not os.path.exists(stimattrsDir):
+        os.mkdir(stimattrsDir)
+
+
     for fDir in file_Dirs:
         Dir = os.path.join(baseDir,fDir)
         st = time.time()
@@ -126,7 +92,7 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID):
         
         st = time.time()
         if i >0:
-            HDF_File = h5py.File(HDF_PATH,'a',libver='latest')
+            HDF_File = h5py.File(hdfPath,'a',libver='latest')
         
         st = time.time()
         areaDSet = HDF_File[session_ID]['raw_data'].create_dataset(name=fDir,
@@ -136,10 +102,11 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID):
         print 'Write %s Time: %s' %(i, time.time() - st)
         
         if GRABinfo!=None:
-            HDF_dir = re.findall(r'(.*\/).*\.h5',HDF_File.filename)
+            #HDF_dir = re.findall(r'(.*\/).*\.h5',HDF_File.filename)
 
 
-            gInfoLoc = str(HDF_dir[0])+str(fDir)+'_GRABinfo.p'
+            gInfoLoc = os.path.join(gInfoDir,str(fDir)+ '_GRABinfo.p' )
+            #gInfoLoc = os.path.join(str(HDF_dir[0])+str(fDir)+'_GRABinfo.p'
 
             with open(gInfoLoc,'wb') as grabI_f:
                 pickle.dump(GRABinfo,grabI_f)
@@ -151,16 +118,21 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID):
             nFrames = float(GRABinfo['acqNumFrames'])
 
             if stimattrs!=None:
+                stimattrsLoc = os.path.join(stimattrsDir,str(fDir)+ '_GRABinfo.p' )
                 DM = get_DM(stimattrs,framePeriod,nFrames)  #get the designMatrix
-                areaDSet.attrs['trigger_DM'] = DM
-                areaDSet.attrs['trigger_DM'] = DM
-                areaDSet.attrs['stim_list'] = stimattrs['stim_list']
-                areaDSet.attrs['stimScriptName'] = str(stimattrs['stimScriptName'])
-                areaDSet.attrs['stim_levels'] = stimattrs['stim_levels']
+                stimattrs['DM'] = DM
+                with open(stimattrsLoc,'wb') as saL:
+                    pickle.dump(stimattrs,saL)
+
+                areaDSet['stimattrs'] = stimattrsLoc
+                #areaDSet.attrs['trigger_DM'] = DM
+                #areaDSet.attrs['stim_list'] = stimattrs['stim_list']
+                #areaDSet.attrs['stimScriptName'] = str(stimattrs['stimScriptName'])
+                #areaDSet.attrs['stim_levels'] = stimattrs['stim_levels']
         else:
             print '!!!WARINING!!! NO GRABINFO WAS FOUND, FILE INCOMPLETE'
         st = time.time()
         HDF_File.close()
 
         i += 1
-        HDF_File = h5py.File(HDF_PATH,'a',libver='latest')
+        HDF_File = h5py.File(hdfPath,'a',libver='latest')

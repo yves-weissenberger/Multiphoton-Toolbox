@@ -3,33 +3,33 @@ import numpy as np
 from skimage.feature import register_translation
 from scipy.ndimage import fourier_shift
 from multiprocessing.dummy import Pool
-import time
-import sys, os
+import sys, os, time, re
 import h5py
+from twoptb.util import progress_bar
 
 
 
-def copy_ROIs(HDF_File):
-
-    return None
 
 def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
     print abs_loc
-    HDF_PATH = str(HDF_File.filename)
+    hdfPath = HDF_File.filename
     global inRAM_flag
     inRAM_flag=inRAM
 
     if 'registered_data' not in HDF_File[session_ID].keys():
         HDF_File[session_ID].create_group('registered_data')
         HDF_File.close()
-        HDF_File = h5py.File(HDF_PATH,'a',libver='latest')
+        HDF_File = h5py.File(hdfPath,'a',libver='latest')
         print 'Creating Registered Data Group'
 
+    regData_dir = HDF_File.filename
+    if not os.path.exists(regData_dir):
+        'hoo'
 
     for f_idx, file_key in enumerate(HDF_File[session_ID]['raw_data'].keys()):
 
         if f_idx >0:
-            HDF_File = h5py.File(HDF_PATH,'a',libver='latest')
+            HDF_File = h5py.File(hdfPath,'a',libver='latest')
 
 
 
@@ -95,7 +95,7 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
             HDF_File.close()
 
             print 'file write in ram %ss' %(time.time() - st)
-            HDF_File = h5py.File(HDF_PATH,'a',libver='latest')
+            HDF_File = h5py.File(hdfPath,'a',libver='latest')
 
 
         except IOError:
@@ -106,12 +106,11 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
 
 	st = time.time()
 	print 'Write to Disk time %ss:' %(time.time() - st)
-    HDF_File = h5py.File(HDF_PATH,'a',libver='latest')
+    HDF_File = h5py.File(hdfPath,'a',libver='latest')
 
     return HDF_File
 
 def build_registration_log(areaFile,abs_loc):
-    import re
     #file_loc = re.findall(r'(.*/).*\.h5',areaFile.file.filename)[0]
     
     fName = areaFile.name.replace('/','_')
@@ -125,7 +124,6 @@ def build_registration_log(areaFile,abs_loc):
 
 
 def motion_register(imArray,regFile,maxIter=1,Crop=True,inRAM=True,poolSize=4):
-    print 'new'
     global inRAM_flag; inRAM_flag = inRAM
     if inRAM:
         pool = Pool(poolSize)
@@ -144,7 +142,6 @@ def motion_register(imArray,regFile,maxIter=1,Crop=True,inRAM=True,poolSize=4):
         imgList= [imArray[i] for i in range(imArray.shape[0])]
     #elif not inRAM:
     #    imgList= [(i,imArray[i]) for i in range(imArray.shape[0])]
-    sys.stdout.write('\r')
 
     tot_shift = np.zeros([imArray.shape[0],2])
     while not converged:
@@ -209,6 +206,7 @@ def motion_register(imArray,regFile,maxIter=1,Crop=True,inRAM=True,poolSize=4):
         return shifts, tot_shift
     else:
         return np.array(imgList), shifts, tot_shift
+
 
 def register_image(inp):
     if not inRAM_flag:
