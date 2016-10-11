@@ -10,6 +10,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False):
     import time
     import sys
     import copy as cp
+    
     class Visualizator(QtGui.QMainWindow):
 
         def __init__(self, ROI_patches,ROI_masks):

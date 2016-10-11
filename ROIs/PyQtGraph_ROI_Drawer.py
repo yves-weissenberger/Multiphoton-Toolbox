@@ -11,7 +11,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
     import sys, os, pickle, time
     import copy as cp
     from skimage.filters import gaussian as gaussian_filter
-    from skimage.morphology import disk
+    from skimage.morphology import disk, dilation, erosion
     from skimage.filters.rank import median as median_filter
     from scipy.ndimage.morphology import binary_fill_holes
 
@@ -192,25 +192,29 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             """ restore  rois from the previous session"""
             areaFileLoc = os.path.split(os.path.abspath(areaFile.file.filename))[0]
             ROILoc = os.path.join(areaFileLoc,areaFile.attrs['ROI_dataLoc'])
-            with open(ROILoc) as f:
-                dat = pickle.load(f)
-            self.ROI_attrs = dat
-            self.nROIs = len(dat['idxs'])
-            for roiIdx in range(self.nROIs):
-                self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],0] = 1
-                self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],0] = 1
-                self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],3] = 1
+            try:
+                with open(ROILoc) as f:
+                    dat = pickle.load(f)
+
+                self.ROI_attrs = dat
+                self.nROIs = len(dat['idxs'])
+                for roiIdx in range(self.nROIs):
+                    self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],0] = 1
+                    self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],0] = 1
+                    self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],3] = 1
 
 
-            self.roi_idx = self.nROIs-1
-            self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],0] = 0
-            self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],1] = 1
+                self.roi_idx = self.nROIs-1
+                self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],0] = 0
+                self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],1] = 1
 
-            self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
+                self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
 
-            self.Gplt.clear()
-            self.Gplt.addItem(self.timeLine)
-            self.Gplt.plot(self.ROI_attrs['traces'][-1])
+                self.Gplt.clear()
+                self.Gplt.addItem(self.timeLine)
+                self.Gplt.plot(self.ROI_attrs['traces'][-1])
+            except EOFError:
+                print 'Warning old ROI file corrupted!'
 
 
 
@@ -267,9 +271,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
         def proc_roi_region(self,add_region=True):
             mpossx = self.roi_item.getArrayRegion(self.possx,self.img).astype(int)
-            mpossx = mpossx[np.nonzero(mpossx)]#get the x pos from ROI
+            mpossx = mpossx[np.nonzero(binary_fill_holes(mpossx))]#get the x pos from ROI
             mpossy = self.roi_item.getArrayRegion(self.possy,self.img).astype(int)
-            mpossy = mpossy[np.nonzero(mpossy)]# get the y pos from ROI
+            mpossy = mpossy[np.nonzero(binary_fill_holes(mpossy))]# get the y pos from ROI
             xLims = [np.min(mpossx)-10,np.max(mpossx)+10]
             yLims = [np.min(mpossy)-10,np.max(mpossy)+10]
             #xLims = [np.mean(mpossx)-20,np.mean(mpossx)+20]; yLims = [np.mean(mpossy)-20,np.mean(mpossy)+20]
@@ -285,10 +289,10 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 self.ROI_attrs['idxs'].append([mpossx,mpossy])
                 self.ROI_attrs['masks'].append(self.temp_mask[yLims[0]:yLims[1],xLims[0]:xLims[1]])
                 if online_trace_extract:
-                    self.ROI_attrs['traces'].append(np.mean(
-                                                            areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *
-                                                            self.temp_mask[yLims[0]:yLims[1],xLims[0]:xLims[1]],
-                                                            axis=(1,2)))
+                    temp = areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *self.ROI_attrs['masks'][-1]
+                    temp = temp.astype('float64')
+                    temp[temp==0] = np.nan
+                    self.ROI_attrs['traces'].append(np.nanmean(temp,axis=(1,2)))
                     #self.ROI_attrs['mask_arr'].append(temp_mask)
                     self.Gplt.clear()
                     self.Gplt.addItem(self.timeLine)
@@ -420,10 +424,13 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
             elif sender.text()=="Extract ROI Traces":
                 print 'Starting Trace Extraction: \n'
+                del self.ROI_attrs['traces']
+                self.ROI_attrs['traces'] = np.zeros([self.nROIs,self.nFrames])
+
                 for i in range(self.nROIs):
                     print 'extracting trace %s' %i
                     self._extract_trace(i)
-                    #self.ROI_attrs['traces'].append(self._extract_trace(i))
+                self.ROI_attrs['traces'] = self.ROI_attrs['traces'].tolist()
 
                 self.vidTimer.start(self.IFI)
 
@@ -435,10 +442,16 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             mpossy = self.ROI_attrs['idxs'][idx][1]
             xLims = [np.min(mpossx)-10,np.max(mpossx)+10]
             yLims = [np.min(mpossy)-10,np.max(mpossy)+10]
-            self.ROI_attrs['traces'][idx] = (np.mean(
-                                            areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *
-                                            self.ROI_attrs['masks'][idx],
-                                            axis=(1,2)))
+
+            temp = areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *self.ROI_attrs['masks'][idx]
+            temp = temp.astype('float64')
+            temp[temp==0] = np.nan
+                                                                
+            self.ROI_attrs['traces'][idx] = np.nanmean(temp,  axis=(1,2))
+            #self.ROI_attrs['traces'][idx] = (np.mean(
+            #                                areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *
+            #                                self.ROI_attrs['masks'][idx],
+            #                                axis=(1,2)))
 
             self.Gplt.clear()
             self.Gplt.addItem(self.timeLine)
@@ -555,7 +568,8 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
 
 if __name__=="__main__":
-    print len(sys.argv)
+
+
     if len(sys.argv)==1:
         raise ValueError('first argument needs to be absolute or relative path to HDF file')  #wrong error type but cba
     else:

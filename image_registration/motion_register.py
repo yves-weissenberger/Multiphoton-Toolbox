@@ -84,6 +84,7 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
             
 
             regFile.attrs['regInfo'] = regData_dir
+            regFile.attrs['GRABinfo'] = rawFile.attrs['GRABinfo']
 
 
 

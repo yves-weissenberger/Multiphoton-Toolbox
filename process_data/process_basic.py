@@ -1,12 +1,44 @@
 from newkalman import runkalman
+from twoptb.util import progress_bar
+import numpy as np
 
 
 
 
 
 
-#def dF_F_session(session_file):
+#def extract_spikes(areaF,roi_attrs,idx)
 
+def _extract_trace(areaF,roi_attrs,idx)
+
+	mpossx= roi_attrs['idxs'][idx][0]
+    mpossy = roi_attrs['idxs'][idx][1]
+    xLims = [np.min(mpossx)-10,np.max(mpossx)+10]
+    yLims = [np.min(mpossy)-10,np.max(mpossy)+10]
+	temp = areaF[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *roi_attrs['masks'][idx]
+    temp = temp.astype('float64')
+    temp[temp==0] = np.nan
+    trace = np.nanmean(temp,axis=(1,2))
+    return trace
+def neuropil_correct(areaF,roi_attrs,idx):
+    
+    mpossx= roi_attrs['idxs'][idx][0]
+    mpossy = roi_attrs['idxs'][idx][1]
+    xLims = [np.min(mpossx)-10,np.max(mpossx)+10]
+    yLims = [np.min(mpossy)-10,np.max(mpossy)+10]
+    temp = areaF[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *np.abs(roi_attrs['masks'][idx]-1)
+    temp = temp.astype('float64')
+    temp[temp==0] = np.nan
+    neuropil_trace = np.nanmean(temp,axis=(1,2))
+    
+    
+    
+    temp = areaF[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *roi_attrs['masks'][idx]
+    temp = temp.astype('float64')
+    temp[temp==0] = np.nan
+    trace = np.nanmean(temp,axis=(1,2))
+    corrected_trace = trace - .7*neuropil_trace
+    return trace, corrected_trace, neuropil_trace
 
 
 
