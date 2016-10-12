@@ -10,7 +10,7 @@ from twoptb.util import progress_bar
 
 
 
-def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
+def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',common_ref=False):
     print abs_loc
     hdfPath = HDF_File.filename
     hdfDir = os.path.split(hdfPath)[0]
@@ -44,6 +44,13 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
         try:
             #raw_file = np.array(HDF_File[session_ID]['raw_data'][file_key])
             raw_file = HDF_File[session_ID]['raw_data'][file_key]
+
+            if common_ref and f_idx==0:
+                print 'creating global reference'
+                refIm_glob = np.mean(raw_file[:50],axis=0)[:,128:-128]
+            elif not common_ref:
+                refIm_glob = None
+
             #print 'file open %ss' %(time.time() - st)
             st = time.time()
             print '\n registering %s \n' %file_key
@@ -57,7 +64,9 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
                                                      regFile,
                                                      maxIter=1,
                                                      Crop=True,
-                                                     inRAM=inRAM)
+                                                     inRAM=inRAM,
+                                                     common_ref=common_ref,
+                                                     refIm_glob=refIm_glob)
                 regFile.attrs['mean_image'] = np.mean(regFile,axis=0)
 
             else:
@@ -68,7 +77,9 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
                                                              maxIter=2,
                                                              Crop=True,
                                                              inRAM=inRAM,
-                                                             poolSize=16)
+                                                             poolSize=16,
+                                                             common_ref=common_ref,
+                                                             refIm_glob=None)
 
                 print 'Motion Register Duration %ss' %(time.time() - st)
                 #________________________________________________________________
@@ -84,7 +95,7 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo'):
             
 
             regFile.attrs['regInfo'] = regData_dir
-            regFile.attrs['GRABinfo'] = rawFile.attrs['GRABinfo']
+            regFile.attrs['GRABinfo'] = raw_file.attrs['GRABinfo']
 
 
 
@@ -121,7 +132,7 @@ def build_registration_log(areaFile,abs_loc,tot_shifts):
     return None
 
 
-def motion_register(imArray,regFile,maxIter=1,Crop=True,inRAM=True,poolSize=4):
+def motion_register(imArray,regFile,maxIter=1,Crop=True,inRAM=True,poolSize=4,common_ref=False,refIm_glob=None):
     global inRAM_flag; inRAM_flag = inRAM
     if inRAM:
         pool = Pool(poolSize)
@@ -129,10 +140,14 @@ def motion_register(imArray,regFile,maxIter=1,Crop=True,inRAM=True,poolSize=4):
     global crop; crop = Crop
 
     global refIm
-    if crop==True:
-    	refIm = np.mean(imArray[:50],axis=0)[:,128:-128]
+    if common_ref:
+        print 'using common refence image \n'
+        refIm = refIm_glob
     else:
-        refIm = np.mean(imArray[:50],axis=0)
+        if crop==True:
+        	refIm = np.mean(imArray[:50],axis=0)[:,128:-128]
+        else:
+            refIm = np.mean(imArray[:50],axis=0)
 
     converged = False
     iteration = 0

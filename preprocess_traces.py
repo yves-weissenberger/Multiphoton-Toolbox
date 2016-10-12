@@ -51,7 +51,7 @@ if __name__=="__main__":
         frameRate = gInfo['scanFrameRate']
         #print np.array([corr_traces[0]]).shape
         for i in range(n_neurons):
-            sys.stdout.write("\r running inference on cell: "+str(i)+"/"+str(n_neurons))
+            sys.stdout.write("\rrunning inference on cell: "+str(1+i)+"/"+str(n_neurons))
             sys.stdout.flush()
             data = [{'calcium':np.array([corr_traces[i]]),'fps': frameRate}]
         #data = [{'calcium':np.array([i]),'fps': frameRate} for i in corr_traces]
@@ -61,7 +61,19 @@ if __name__=="__main__":
         roiInfo['traces'] = np.array(raw_traces)
         roiInfo['corr_traces'] = np.array(corr_traces)
         roiInfo['df_F'] = np.array(df_F)
-        roiInfo['spikerates'] = np.array([i['predictions'] for i in inf])
+        roiInfo['spikeRate_inf'] = np.array([i['predictions'] for i in inf])
+
+
+        roiInfo['info'] = ['traces are raw traces',
+                           'corr_traces are neuropil corrected traces',
+                           'idxs are x and y coordinates of ROIs',
+                           'spikeRate_inf are inferred spike rate using Theis et al 2015',
+                           'df_F are neuropil corrected df/F traces',
+                           'centres are the locations of the centre of the ROIs',
+                           'patches are cut out patches of the mean image around the ROI',
+                           'masks are masks that can be overlayed on patches']
+
+
         with open(roiInfoLoc,'wb') as f:
             pickle.dump(roiInfo,f)
         print 'done!'

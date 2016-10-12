@@ -9,7 +9,11 @@ import twoptb as MP
 
 
 fpath = sys.argv[1]
+print fpath
 absPath = os.path.split(os.path.abspath(fpath))[0]
+
+common_ref = sys.argv[2]=='common'
+print "using common reference %s" %common_ref
 #print os.path.split(absPath)[0]
 ############## Load the HDF File
 
@@ -34,7 +38,8 @@ HDF_File = MP.image_registration.register_dayData(HDF_File=HDF_File,
                                                   session_ID=session_ID,
                                                   inRAM=False,
                                                   poolSize=16,
-                                                  abs_loc=absPath)
+                                                  abs_loc=absPath,
+                                                  common_ref=common_ref)
 print time.time() - st
 
 print 'Data Registered successfully: %s' %(all([i in (HDF_File[session_ID]['raw_data'].keys()) for i in HDF_File[session_ID]['registered_data'].keys()]))

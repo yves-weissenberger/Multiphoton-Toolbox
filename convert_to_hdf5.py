@@ -6,11 +6,19 @@
 #
 #
 # ==========================================
-
+import os
+import sys
+import re
+import time
+import numpy as np
+import h5py
+import matplotlib.pyplot as plt
+sys.path.append('/home/yves/Documents/')
+import twoptb as MP
 
 
 def convert_day_data_to_hdf5(base_path):
-    exclude_list = ['cent','Cent','proc_log.txt','processed']
+    exclude_list = ['cent','Cent','proc_log.txt','processed','random']
 
 
     #base_path = os.path.abspath('.')
@@ -72,12 +80,6 @@ def convert_day_data_to_hdf5(base_path):
 
 if __name__ == "__main__":
 
-    import os, sys, argparse, re, time
-    import numpy as np
-    import h5py
-    import matplotlib.pyplot as plt
-    sys.path.append('/home/yves/Documents/')
-    import twoptb as MP
 
     if sys.argv[1]=='-help':
         print 'first argument specifies what folders to exclude'

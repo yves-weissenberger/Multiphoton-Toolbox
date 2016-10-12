@@ -9,17 +9,18 @@ import numpy as np
 
 #def extract_spikes(areaF,roi_attrs,idx)
 
-def _extract_trace(areaF,roi_attrs,idx)
+def _extract_trace(areaF,roi_attrs,idx):
 
-	mpossx= roi_attrs['idxs'][idx][0]
+    mpossx= roi_attrs['idxs'][idx][0]
     mpossy = roi_attrs['idxs'][idx][1]
     xLims = [np.min(mpossx)-10,np.max(mpossx)+10]
     yLims = [np.min(mpossy)-10,np.max(mpossy)+10]
-	temp = areaF[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *roi_attrs['masks'][idx]
+    temp = areaF[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *roi_attrs['masks'][idx]
     temp = temp.astype('float64')
     temp[temp==0] = np.nan
     trace = np.nanmean(temp,axis=(1,2))
     return trace
+
 def neuropil_correct(areaF,roi_attrs,idx):
     
     mpossx= roi_attrs['idxs'][idx][0]
