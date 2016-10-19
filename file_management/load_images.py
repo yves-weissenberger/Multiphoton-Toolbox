@@ -30,11 +30,11 @@ def load_tiff_series(directory):
 
 
 
-        progress_bar(idx,nFiles)
-        #sys.stdout.write('\r')
-        #pStr = r"[%-" + str(nFiles) + r"s]  %d%%" 
-        #sys.stdout.write('\r' + pStr % ('.'*int(idx), np.round(100*np.divide(idx+1.,float(nFiles)))))
-        #sys.stdout.flush()
+        #progress_bar(idx,nFiles)
+        sys.stdout.write('\r')
+        pStr = r"[%-" + str(nFiles) + r"s]  %d%%" 
+        sys.stdout.write('\r' + pStr % ('.'*int(idx), np.round(100*np.divide(idx+1.,float(nFiles)))))
+        sys.stdout.flush()
         #print "loading %s \n" %fname
         if '.tif' in fname:
             if idx==0:
@@ -56,7 +56,7 @@ def load_tiff_series(directory):
                 print matFilePth
                 stimattrs = get_triggers(matFilePth) 
 
-        elif '2AFC' in fname:
+        elif ('2AFC' in fname or '_data.txt' in fname):
             matFilePth = os.path.join(directory,fname)
             stimattrs = get_triggers(matFilePth)
         else:

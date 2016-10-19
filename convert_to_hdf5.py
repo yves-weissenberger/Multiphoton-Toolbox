@@ -18,7 +18,7 @@ import twoptb as MP
 
 
 def convert_day_data_to_hdf5(base_path):
-    exclude_list = ['cent','Cent','proc_log.txt','processed','random']
+    exclude_list = ['cent','Cent','proc_log.txt','processed','random','.tar']
 
 
     #base_path = os.path.abspath('.')
@@ -26,7 +26,7 @@ def convert_day_data_to_hdf5(base_path):
 
 
     folders = os.listdir(base_path)
-    print folders
+    #print folders
     #print fs
     logLoc = os.path.join(base_path,'proc_log.txt')
 
@@ -36,13 +36,21 @@ def convert_day_data_to_hdf5(base_path):
 
         logF.close()
         print '...starting log'
+    else:
+        logF = open(logLoc,'r')
+        logF.close()
+
     #HDF_File,file_path = MP.file_management.create_base_hdf(animal_ID=animal_name,file_loc='/media/yves/Storage 2/')
 
+    print 'loading folders \n\n'
+    for fold_nm in folders:
+        print fold_nm
 
-    with open(logLoc) as logF:
+    ##################
+    with open(logLoc,'a') as logF:
     	
         for fold_nm in folders:
-            print folders
+            #print folders
             fold_dir = os.path.join(base_path,fold_nm)
 
             if all([crit not in fold_dir for crit in exclude_list]):
@@ -61,8 +69,8 @@ def convert_day_data_to_hdf5(base_path):
                 procDir = os.path.join(base_path,'processed')
                 if not os.path.exists(procDir):
                     os.mkdir(procDir)
-
-                HDF_File,file_path = MP.file_management.create_base_hdf(animal_ID=animal_ID,file_loc=procDir)
+                print fold_nm
+                HDF_File,file_path = MP.file_management.create_base_hdf(animal_ID=animal_ID+'_'+fold_nm,file_loc=procDir)
                 HDF_File = MP.file_management.add_session_groups(file_handle = HDF_File,
                                                  session_ID=session_ID)
 
@@ -74,6 +82,8 @@ def convert_day_data_to_hdf5(base_path):
                                                   file_Dirs=fs,
                                                   HDF_File=HDF_File,
                                                   session_ID=session_ID)
+
+                logF.write('converted %s to hdf5 \n' %fold_nm)
 
                 print time.time() - st
     return None

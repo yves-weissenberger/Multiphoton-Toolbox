@@ -99,10 +99,17 @@ def import_imaging_behaviour(pth,pretraining_type='2'):
     elif pretraining_type=='1':
         
         rewLst = np.array(rewLst); lick_R = np.array(lick_R); lick_L = np.array(lick_L)
-        rewLst[:,0] *= 1000; lick_R[:,0] *= 1000; lick_L[:,0] *= 1000
+        if len(rewLst)>0:
+            rewLst[:,0] *= 1000
+        if len(lick_R)>0:
+            lick_R[:,0] *= 1000
+        if len(lick_L)>0:
+            lick_L[:,0] *= 1000
+
         timestamp_dict['rew'] = rewLst
         stims = np.array(stims)
-        stims[:,0] *= 1000
+        if len(stims)>0:
+            stims[:,0] *= 1000
         timestamp_dict['click'] = np.array(stims)
     elif pretraining_type=='legacy':
         #print rew_L
@@ -148,6 +155,9 @@ def get_triggers(matFilePth,**kwargs):
     elif any(s in matFilePth for s in ('Marco','Ted')):
 
         stimattrs = import_imaging_behaviour(matFilePth,pretraining_type='legacy')
+
+    elif 'Pretaining1_self' in matFilePth:
+        stimattrs = import_imaging_behaviour(matFilePth,pretraining_type='1')
 
 
 

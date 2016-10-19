@@ -1,7 +1,15 @@
 import numpy as np
 
+# Kalman Filter Code Written by Alistair Muldal:
+# https://github.com/alimuldal
+#
+#
+#
+
 def runkalman(y, RQratio=10., meanwindow=10):
 	"""
+	
+
 	A simple vectorised 1D Kalman smoother
 
 	y

@@ -50,18 +50,19 @@ if __name__=="__main__":
         #gInfo = pickle.load(open(hdf['raw_data'][session][area].attrs['GRABinfo']))
         frameRate = gInfo['scanFrameRate']
         #print np.array([corr_traces[0]]).shape
+        inf = []
         for i in range(n_neurons):
             sys.stdout.write("\rrunning inference on cell: "+str(1+i)+"/"+str(n_neurons))
             sys.stdout.flush()
             data = [{'calcium':np.array([corr_traces[i]]),'fps': frameRate}]
         #data = [{'calcium':np.array([i]),'fps': frameRate} for i in corr_traces]
-            inf = c2s.predict(c2s.preprocess(data),verbosity=0)
+            inf.append(c2s.predict(c2s.preprocess(data),verbosity=0))
 
         print 'Saving Data'
         roiInfo['traces'] = np.array(raw_traces)
         roiInfo['corr_traces'] = np.array(corr_traces)
         roiInfo['df_F'] = np.array(df_F)
-        roiInfo['spikeRate_inf'] = np.array([i['predictions'] for i in inf])
+        roiInfo['spikeRate_inf'] = inf#np.array([i['predictions'] for i in inf])
 
 
         roiInfo['info'] = ['traces are raw traces',
