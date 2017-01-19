@@ -95,8 +95,14 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
             
 
             regFile.attrs['regInfo'] = regData_dir
-            regFile.attrs['GRABinfo'] = raw_file.attrs['GRABinfo']
 
+            regFile.attrs['GRABinfo'] = raw_file.attrs['GRABinfo']
+            if 'stimattrs' in raw_file.attrs.keys():
+                regFile.attrs['stimattrs'] = raw_file.attrs['stimattrs']
+            if common_ref:
+                regFile.attrs['common_ref'] = True
+            else:
+                regFile.attrs['common_ref'] = False
 
 
             build_registration_log(regFile,abs_loc=regData_dir,tot_shifts=tot_shifts)

@@ -130,7 +130,7 @@ def import_imaging_behaviour(pth,pretraining_type='2'):
 #---------------------------------------------------------------------------------------------------
 def get_triggers(matFilePth,**kwargs):
 
-    if 'Tones2to64thirdOct' in matFilePth:
+    if ('Tones2to64thirdOct' in matFilePth or 'tones2to64thirdOct' in matFilePth):
         matfile = spio.loadmat(matFilePth)
         stimattrs = {'stim_list': matfile['outDat'][0][0][2][:,0],
                      'stim_dur': matfile['outDat'][0][0][2][:,1][0],

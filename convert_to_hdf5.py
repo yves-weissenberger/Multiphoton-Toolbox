@@ -18,7 +18,7 @@ import twoptb as MP
 
 
 def convert_day_data_to_hdf5(base_path):
-    exclude_list = ['cent','Cent','proc_log.txt','processed','random','.tar']
+    exclude_list = ['cent','Cent','proc_log.txt','processed','random','.tar','false_starts']
 
 
     #base_path = os.path.abspath('.')
@@ -26,7 +26,7 @@ def convert_day_data_to_hdf5(base_path):
 
 
     folders = os.listdir(base_path)
-    #print folders
+    print folders
     #print fs
     logLoc = os.path.join(base_path,'proc_log.txt')
 
@@ -38,17 +38,21 @@ def convert_day_data_to_hdf5(base_path):
         print '...starting log'
     else:
         logF = open(logLoc,'r')
+        for l in logF:
+            if re.findall(r'converted (.*) to hdf5',l):
+                exclude_list.append(re.findall(r'converted (.*) to hdf5',l)[0])
         logF.close()
 
     #HDF_File,file_path = MP.file_management.create_base_hdf(animal_ID=animal_name,file_loc='/media/yves/Storage 2/')
-
+    print exclude_list 
     print 'loading folders \n\n'
     for fold_nm in folders:
-        print fold_nm
+        if all([crit not in fold_nm for crit in exclude_list]):
+            
+            print fold_nm
 
     ##################
     with open(logLoc,'a') as logF:
-    	
         for fold_nm in folders:
             #print folders
             fold_dir = os.path.join(base_path,fold_nm)
@@ -77,6 +81,8 @@ def convert_day_data_to_hdf5(base_path):
                 print 'converting data to HDF5...'
                 st = time.time()
                 fs = os.listdir(fold_dir)
+                fs.sort()   ######make sure things are loaded in the correct order
+                #print fs
 
                 MP.file_management.add_raw_series(baseDir=fold_dir,
                                                   file_Dirs=fs,

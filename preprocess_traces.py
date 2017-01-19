@@ -19,7 +19,7 @@ if __name__=="__main__":
     if len(sys.argv)==1:
         raise ValueError('first argument needs to be absolute or relative path to HDF file')  #wrong error type but cba
     else:
-        hdfPath = sys.argv[1]
+        hdfPath = os.path.abspath(sys.argv[1])
 
 
     with h5py.File(hdfPath, 'r', libver='latest') as hdf:

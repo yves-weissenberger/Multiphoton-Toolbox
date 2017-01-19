@@ -16,6 +16,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
     from skimage.filters.rank import median as median_filter
     from scipy.ndimage.morphology import binary_fill_holes
 
+    sys.path.append('/home/yves/Documents/Code/misc/')
+    import cell_magic_wand
+
 
 
 
@@ -80,15 +83,12 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             w.setLayout(layout)
             self.prevT = time.time()
 
-            self.IFI=10
-            self.vidTimer = QtCore.QTimer()
-            self.vidTimer.timeout.connect(self.update_video)
-            self.vidTimer.start(self.IFI)
 
-            self.img = pg.ImageItem(setAutoDownsample=True)
+
+            self.img = pg.ImageItem(setAutoDownsample=False)
             self.mask_img = pg.ImageItem()
             print areaFile.shape
-            self.img.setImage(areaFile[self.frame_idx,:,:].T)
+            self.img.setImage(self.mean_image)
             self.mask_img.setImage(self.mask)
             self.mask_img.setOpacity(self.maskalpha)
 
@@ -122,9 +122,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             self.Gplt.setXRange(0,self.nFrames)
             grV1.setFixedWidth(512)
 
-            self.timeLine = pg.InfiniteLine(pos=self.frame_idx,angle=90,movable=True)
-            self.Gplt.addItem(self.timeLine)
-            self.timeLine.sigDragged.connect(self.update_timeline)
 
             ############## INIT ROI IMAGES #######################
             cols,rows = areaFile.shape[1:3]
@@ -140,10 +137,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             btn4 = QtGui.QPushButton("Clear ROI", self)
             btn5 = QtGui.QPushButton("Play Video", self)
             btn6 = QtGui.QPushButton("Extract ROI Traces",self)
-            btn7 = QtGui.QPushButton("Increase Rolling Average", self)
-            btn8 = QtGui.QPushButton("Decrease Rolling Average", self)
-            btn9 = QtGui.QPushButton("Increase Spatial Smoothing", self)
-            btn10 = QtGui.QPushButton("Decrease Spatial Smoothing", self)
+
             btn11 = QtGui.QPushButton("Show Mean Image", self)
             btn12 = QtGui.QPushButton("Hide Mask", self)
 
@@ -160,14 +154,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             btn5.setStyleSheet("font-size:11px;")
             btn6.setFixedWidth(110)
             btn6.setStyleSheet("font-size:11px;")
-            btn7.setFixedWidth(110)
-            btn7.setStyleSheet("font-size:9px;")
-            btn8.setFixedWidth(110)
-            btn8.setStyleSheet("font-size:9px;")
-            btn9.setFixedWidth(110)
-            btn9.setStyleSheet("font-size:7px;")
-            btn10.setFixedWidth(110)
-            btn10.setStyleSheet("font-size:7px;")
             btn11.setFixedWidth(110)
             btn11.setStyleSheet("font-size:11px;")
             btn12.setFixedWidth(110)
@@ -180,10 +166,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             btn4.clicked.connect(self.buttonClicked)
             btn5.clicked.connect(self.buttonClicked)
             btn6.clicked.connect(self.buttonClicked)
-            btn7.clicked.connect(self.buttonClicked)
-            btn8.clicked.connect(self.buttonClicked)
-            btn9.clicked.connect(self.buttonClicked)
-            btn10.clicked.connect(self.buttonClicked)
             btn11.clicked.connect(self.buttonClicked)
             btn12.clicked.connect(self.buttonClicked)
 
@@ -197,10 +179,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             layout.addWidget(btn4,10,3,1,1)
             layout.addWidget(btn5,9,2,1,1)
             layout.addWidget(btn6,9,3,1,1)
-            layout.addWidget(btn7,9,5,1,1)
-            layout.addWidget(btn8,9,6,1,1)
-            layout.addWidget(btn9,10,5,1,1)
-            layout.addWidget(btn10,10,6,1,1)
             layout.addWidget(btn11,10,1,1,1)
             layout.addWidget(btn12,10,0,1,1)
             layout.addWidget(self.Gplt,11,0,3,8)
@@ -233,6 +211,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     dat = pickle.load(f)
 
                 self.ROI_attrs = dat
+                self.ROI_attrs['traces'] = list(dat['traces'])
                 self.nROIs = len(dat['idxs'])
                 for roiIdx in range(self.nROIs):
                     self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],0] = 1
@@ -246,8 +225,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
                 self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
 
-                self.Gplt.clear()
-                self.Gplt.addItem(self.timeLine)
                 self.Gplt.plot(self.ROI_attrs['traces'][-1])
             except EOFError:
                 print 'Warning old ROI file corrupted!'
@@ -257,7 +234,8 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
         def onClick(self,ev):
             #print self.vb.mapSceneToView(ev.pos())
             if ev.button()==1 and ev.double():
-                self.proc_roi_region(add_region=True)
+                click_loc = np.array([self.vb.mapSceneToView(ev.pos()).x(),self.vb.mapSceneToView(ev.pos()).y()])
+                self.proc_roi_region(add_region=True,c0=click_loc)
                 self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
             elif ev.button()==2:
                 # In this case, just select the roi
@@ -287,8 +265,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
                     self.roi_idx = roi_nr
                     print self.roi_idx
-                    self.Gplt.clear()
-                    self.Gplt.addItem(self.timeLine)
 
                     try:
                         self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx])
@@ -305,24 +281,28 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     pass
 
 
-        def proc_roi_region(self,add_region=True):
-            mpossx = self.roi_item.getArrayRegion(self.possx,self.img).astype(int)
-            mpossx = mpossx[np.nonzero(binary_fill_holes(mpossx))]#get the x pos from ROI
-            mpossy = self.roi_item.getArrayRegion(self.possy,self.img).astype(int)
-            mpossy = mpossy[np.nonzero(binary_fill_holes(mpossy))]# get the y pos from ROI
+        def proc_roi_region(self,add_region=True,c0=None):
+
+            #click_loc = np.array([self.vb.mapSceneToView(ev.pos()).x(),self.vb.mapSceneToView(ev.pos()).y()])
+
+            temp_mask = cell_magic_wand.cell_magic_wand(self.mean_image,np.flipud(c0),3,8,roughness=10)
+            #mpossx = self.roi_item.getArrayRegion(self.possx,self.img).astype(int)
+            #mpossx = mpossx[np.nonzero(binary_fill_holes(mpossx))]#get the x pos from ROI
+            #mpossy = self.roi_item.getArrayRegion(self.possy,self.img).astype(int)
+            #mpossy = mpossy[np.nonzero(binary_fill_holes(mpossy))]# get the y pos from ROI
+            mpossx,mpossy = np.where(temp_mask)
             xLims = [np.min(mpossx)-10,np.max(mpossx)+10]
             yLims = [np.min(mpossy)-10,np.max(mpossy)+10]
             #xLims = [np.mean(mpossx)-20,np.mean(mpossx)+20]; yLims = [np.mean(mpossy)-20,np.mean(mpossy)+20]
 
 
-            self.temp_mask[mpossx,mpossy] = 1
-            self.temp_mask = binary_fill_holes(self.temp_mask).T
+            self.temp_mask = temp_mask
+            #self.temp_mask = binary_fill_holes(self.temp_mask).T
 
             if add_region:
-                self.vidTimer.stop()
                 self.ROI_attrs['centres'].append([np.mean(mpossx),np.mean(mpossy)])
                 self.ROI_attrs['patches'].append(self.mean_image[yLims[0]:yLims[1],xLims[0]:xLims[1]])
-                self.ROI_attrs['idxs'].append([mpossx,mpossy])
+                self.ROI_attrs['idxs'].append([np.where(temp_mask)])
                 self.ROI_attrs['masks'].append(self.temp_mask[yLims[0]:yLims[1],xLims[0]:xLims[1]])
                 if online_trace_extract:
                     temp = areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *self.ROI_attrs['masks'][-1]
@@ -331,12 +311,10 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     self.ROI_attrs['traces'].append(np.nanmean(temp,axis=(1,2)))
                     #self.ROI_attrs['mask_arr'].append(temp_mask)
                     self.Gplt.clear()
-                    self.Gplt.addItem(self.timeLine)
                     self.Gplt.plot(self.ROI_attrs['traces'][-1])
                 else:
                     self.ROI_attrs['traces'].append([0])
 
-                self.vidTimer.start(self.IFI)
 
                 self.mask[:,:,0] += self.mask[:,:,1]
                 self.mask[:,:,1] = 0
@@ -361,7 +339,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     print 'viewing roi: %s' %self.roi_idx
 
                     self.Gplt.clear()
-                    self.Gplt.addItem(self.timeLine)
 
                     try:
                         self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx])
@@ -385,7 +362,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     self.Gplt.clear()
                     self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx])
 
-                    self.Gplt.addItem(self.timeLine)
 
                     self.mask[:,:,1] = 0
                     self.mask[self.ROI_attrs['idxs'][self.roi_idx+1][0],self.ROI_attrs['idxs'][self.roi_idx+1][1],0] = 1
@@ -414,7 +390,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 
                 self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
                 self.Gplt.clear()
-                self.Gplt.addItem(self.timeLine)
 
 
 
@@ -428,168 +403,10 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 else:
                     self.maskalpha=0
                     self.mask_img.setOpacity(self.maskalpha)
-
-            elif sender.text()=='Increase Rolling Average':
-                self.rolling_average += 1
-                print self.rolling_average
-            elif sender.text()=='Show Mean Image':
-                self.show_mean_image = not self.show_mean_image
-            elif sender.text()=='Decrease Rolling Average':
-                if self.rolling_average>=1:
-                    self.rolling_average -= 1
-                    print self.rolling_average
-            elif sender.text()=='Increase Spatial Smoothing':
-                self.smoothing += 0.1
-                print "gaussian smoothing sigma: %s" %self.smoothing
-
-            elif sender.text()=='Decrease Spatial Smoothing':
-
-                if self.smoothing>0:
-                    self.smoothing -= .1
-
-                print "gaussian smoothing sigma: %s" %self.smoothing
-            elif (sender.text()=='Play Video' or sender.text()=='Pause Video'):
-                self.play_video = not self.play_video
-                self.show_mean_image = False
-                if not self.play_video:
-                    sender.setText("Play Video")
-                else:
-                    sender.setText('Pause Video')
                 
 
 
-            elif sender.text()=="Extract ROI Traces":
-                print 'Starting Trace Extraction: \n'
-                del self.ROI_attrs['traces']
-                self.ROI_attrs['traces'] = np.zeros([self.nROIs,self.nFrames])
 
-                for i in range(self.nROIs):
-                    print 'extracting trace %s' %i
-                    self._extract_trace(i)
-                self.ROI_attrs['traces'] = self.ROI_attrs['traces'].tolist()
-
-                self.vidTimer.start(self.IFI)
-
-                    
-
-
-        def _extract_trace(self,idx):
-            mpossx= self.ROI_attrs['idxs'][idx][0]
-            mpossy = self.ROI_attrs['idxs'][idx][1]
-            xLims = [np.min(mpossx)-10,np.max(mpossx)+10]
-            yLims = [np.min(mpossy)-10,np.max(mpossy)+10]
-
-            temp = areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *self.ROI_attrs['masks'][idx]
-            temp = temp.astype('float64')
-            temp[temp==0] = np.nan
-                                                                
-            self.ROI_attrs['traces'][idx] = np.nanmean(temp,  axis=(1,2))
-            #self.ROI_attrs['traces'][idx] = (np.mean(
-            #                                areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *
-            #                                self.ROI_attrs['masks'][idx],
-            #                                axis=(1,2)))
-
-            self.Gplt.clear()
-            self.Gplt.addItem(self.timeLine)
-            self.Gplt.plot(self.ROI_attrs['traces'][idx])
-
-            try:
-                self.Gplt.plot(self.ROI_attrs['traces'][idx])
-            except IndexError:
-                print 'Trace for roi: %s not extracted yet' %self.roi_idx 
-
-
-
-        #Play Video Play Function    
-        def update_video(self):
-            
-            if self.play_video:
-                video_image = np.mean(self.video[self.frame_idx-self.rolling_average:self.frame_idx+self.rolling_average+1],axis=0).T
-
-                #video_image = median_filter(self.video,disk(2))
-                if self.smoothing>0:
-                    video_image = gaussian_filter(video_image,self.smoothing)
-                self.img.setImage(video_image,
-                                  autoLevels=False)
-
-                if self.frame_idx>=self.nFrames-1:
-                    self.frame_idx=self.rolling_average
-                
-                self.frame_idx += 1
-                self.frameTxt.setText('Frame Nr: ' + str(self.frame_idx+1) + '/' + str(self.nFrames))
-                self.timeLine.setPos(self.frame_idx)
-            if (self.show_mean_image and not self.play_video):
-                self.img.setImage(self.mean_image)
-                
-        
-        def update_timeline(self):
-
-            while self.timeLine.isUnderMouse():
-                self.play_video = False
-                self.frame_idx = int(self.timeLine.getXPos())
-                self.timeLine.setPos(self.frame_idx)
-                #img.setImage(np.fliplr(np.mean(b[frame_idx-rolling_average:frame_idx+rolling_average+1,:,:],axis=0).T),autoLevels=False)
-            self.play_video = True
-        
-        #def _restore_previous(self):
-
-
-        """def mouseMoved(self,e):
-                                        #Function Still under construction, the idea is that you 
-                                        #can modify individual ROIs when they are selected using 
-                                        #the features done here 
-                                    if False:#(time.time() - self.prevT)>0.01:                 ###NEEEEEDS TO BE CHANGED BACK!!!
-                                        a = self.img.mapFromScene(e)
-                                        x_pos = a.x()
-                                        y_pos = a.y()
-                        
-                                        if  (y_pos<(self.masks.shape[1]-1) and  x_pos<(self.masks.shape[0]-1) and
-                                             y_pos>0                   and  x_pos>0):
-                                            
-                                            
-                                            
-                                            if y_pos>self.masks.shape[1]:
-                                                y_pos=self.masks.shape[1]
-                                            if x_pos>self.masks.shape[0]:
-                                                x_pos=self.masks.shape[0]
-                        
-                                            modifiers = QtGui.QApplication.keyboardModifiers()
-                                            if modifiers == (QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier):
-                                                self.masks[:,:,self.idx][int(np.floor(x_pos)),int(np.floor(y_pos))] = 1
-                                                self.masks[:,:,self.idx][int(np.ceil(x_pos)),int(np.ceil(y_pos))] = 1
-                        
-                                                mask = np.zeros([self.masks.shape[0],self.masks.shape[1],3])
-                                                mask[np.where(self.masks[:,:,self.idx])] = (1,0,0)
-                        
-                        
-                                                self.img_ROI.setImage(mask)
-                        
-                                            elif (modifiers == QtCore.Qt.ControlModifier and
-                                            not modifiers == (QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier)):
-                                                self.masks[:,:,self.idx][int(x_pos),int(y_pos)] = 1
-                        
-                        
-                                                mask = np.zeros([self.masks.shape[0],self.masks.shape[1],3])
-                                                mask[np.where(self.masks[:,:,self.idx])] = (1,0,0)
-                                                self.img_ROI.setImage(mask)
-                        
-                                            elif (modifiers == QtCore.Qt.AltModifier and
-                                            not modifiers == (QtCore.Qt.ShiftModifier | QtCore.Qt.AltModifier)):
-                                                self.masks[:,:,self.idx][int(x_pos),int(y_pos)] = 0
-                        
-                                                mask = np.zeros([self.masks.shape[0],self.masks.shape[1],3])
-                                                mask[np.where(self.masks[:,:,self.idx])] = (1,0,0)
-                                                self.img_ROI.setImage(mask)
-                        
-                                            elif modifiers == (QtCore.Qt.ShiftModifier | QtCore.Qt.AltModifier):
-                                                self.masks[:,:,self.idx][int(np.floor(x_pos)),int(np.floor(y_pos))] = 0
-                                                self.masks[:,:,self.idx][int(np.ceil(x_pos)),int(np.ceil(y_pos))] = 0
-                        
-                                                mask = np.zeros([self.masks.shape[0],self.masks.shape[1],3])
-                                                mask[np.where(self.masks[:,:,self.idx])] = (1,0,0)
-                                                self.img_ROI.setImage(mask)
-                        
-                                        self.prevT = time.time()"""
 
 
     app = QtGui.QApplication([])

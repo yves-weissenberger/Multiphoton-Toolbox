@@ -9,13 +9,22 @@ import twoptb as MP
 
 
 fpath = sys.argv[1]
-print fpath
+#print fpath
 absPath = os.path.split(os.path.abspath(fpath))[0]
-
+fName = os.path.split(os.path.abspath(fpath))[1]
+print fName
 common_ref = sys.argv[2]=='common'
 print "using common reference %s" %common_ref
 #print os.path.split(absPath)[0]
 ############## Load the HDF File
+
+absDir = os.path.split(absPath)[0]
+
+procFDir = os.path.dirname(absDir)
+procFloc = os.path.join(procFDir,'proc_log.txt')
+
+with open(procFloc,'a') as f:
+    f.write('motion registered %s' %fName)
 
 HDF_File = h5py.File(fpath,'a',libver='latest')
 session_ID = HDF_File.keys()[0]
