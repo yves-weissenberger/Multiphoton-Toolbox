@@ -15,7 +15,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
     from skimage.morphology import disk, dilation, erosion
     from skimage.filters.rank import median as median_filter
     from scipy.ndimage.morphology import binary_fill_holes
-
+    from skimage.filters import scharr,sobel
 
 
 
@@ -48,8 +48,10 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 self.mean_image = np.mean(areaFile[:3000],axis=0).T
 
 
+            #self.mean_image = self.mean_image + self.mean_image*sobel(self.mean_image)/50
             self.mean_image /= np.max(self.mean_image)
-            self.mean_image = exposure.equalize_adapthist(self.mean_image,clip_limit=.01)
+
+            self.mean_image = exposure.equalize_adapthist(self.mean_image,clip_limit=.001)
 
 
             self.ROI_attrs = {'centres':[],

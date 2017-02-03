@@ -59,9 +59,10 @@ def convert_day_data_to_hdf5(base_path):
 
             if all([crit not in fold_dir for crit in exclude_list]):
 
-                if 'tonemapping' in fold_dir and fold_dir!=animal_ID+'_tonemapping':
+                if (('tonemapping' in fold_dir and fold_dir!=animal_ID+'_tonemapping') or 
+                  ('Tonotopy' in fold_dir and fold_dir!=animal_ID+'_Tonotopy')):
                     fs = os.listdir(fold_dir)
-                    fs = [i for i in fs if i !=(animal_ID + '_tonemapping')]
+                    fs = [i for i in fs if i !=((animal_ID + '_tonemapping') or (animal_ID + '_Tonotopy'))]
                     fs = [i for i in fs if i!=('proc_log.txt')]
                     print fs
                     session_ID = 'tonemapping'

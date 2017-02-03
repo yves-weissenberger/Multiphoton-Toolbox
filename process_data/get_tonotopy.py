@@ -15,9 +15,9 @@ import twoptb as MP
 
 hdf_path = os.path.abspath(sys.argv[1])
 hdf = h5py.File(hdf_path,'r+',libver='latest') #MP.file_management.load_hdf5(hdf_path,'wb')
-tonemap = hdf['tonemapping']['registered_data']#hdf['tonemapping']['registered_data']
+tonemap = hdf[u'20170201-213e']['registered_data']#hdf['tonemapping']['registered_data']
 areas = tonemap.keys()
-
+print areas
 def get_big_DM(x,n_back,rT,descriptor=None):
     """ Build the Big Design Matrix with
         all kinds of offsets """
@@ -164,7 +164,7 @@ for area in areas:
     centre = None
 
     areaF = tonemap[area]
-    if ('area' in area or 'Area' in area):
+    if ('Tonotopy' in area or 'area' in area or 'Area' in area):
 
 
         print 'processing area %s:' %idx,
