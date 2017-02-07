@@ -1,11 +1,11 @@
 
 from __future__ import division
-import re, os, csv, time
+import re, os, csv, time,sys
 import itertools
 import scipy.io as spio
 import numpy as np
 from twoptb.util import load_GRABinfo, get_DM
-
+from twoptb.imports import pt1_self_loader
 
 
 
@@ -157,7 +157,11 @@ def get_triggers(matFilePth,**kwargs):
         stimattrs = import_imaging_behaviour(matFilePth,pretraining_type='legacy')
 
     elif 'Pretaining1_self' in matFilePth:
-        stimattrs = import_imaging_behaviour(matFilePth,pretraining_type='1')
+        #sys.path.append('../imports/')
+        #print os.listdir('../imports/')
+        #import pt1_self_loader
+        stimattrs = pt1_self_loader.load_pretraining1_self(matFilePth)
+        #import_imaging_behaviour(matFilePth,pretraining_type='1')
 
 
 

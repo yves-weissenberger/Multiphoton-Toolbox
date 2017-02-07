@@ -27,6 +27,8 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
             QtGui.QMainWindow.__init__(self)
             self.Folder = os.path.split(os.path.abspath(areaFile.file.filename))[0]
+            if not os.path.isdir(os.path.join(self.Folder,'ROIs')):
+                os.mkdir(os.path.join(self.Folder,'ROIs'))
             #print "\n %s \n" %os.path.split(self.Folder)[0]
             self.idx = 0
             self.roi_idx = 0 
@@ -148,6 +150,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             btn10 = QtGui.QPushButton("Decrease Spatial Smoothing", self)
             btn11 = QtGui.QPushButton("Show Mean Image", self)
             btn12 = QtGui.QPushButton("Hide Mask", self)
+            btn13 = QtGui.QPushButton("Empty ROI", self)
 
 
             btn1.setFixedWidth(110)
@@ -174,6 +177,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             btn11.setStyleSheet("font-size:11px;")
             btn12.setFixedWidth(110)
             btn12.setStyleSheet("font-size:11px;")
+            btn13.setFixedWidth(110)
+            btn13.setStyleSheet("font-size:11px;")
+
 
 
             btn1.clicked.connect(self.buttonClicked)            
@@ -188,6 +194,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             btn10.clicked.connect(self.buttonClicked)
             btn11.clicked.connect(self.buttonClicked)
             btn12.clicked.connect(self.buttonClicked)
+            btn13.clicked.connect(self.buttonClicked)
 
             layout.addWidget(grV1,0,0,7,8)
             self.histLI.setFixedWidth(120)
@@ -205,20 +212,25 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             layout.addWidget(btn10,10,6,1,1)
             layout.addWidget(btn11,10,1,1,1)
             layout.addWidget(btn12,10,0,1,1)
+            layout.addWidget(btn13,8,6,1,1)
             layout.addWidget(self.Gplt,11,0,3,8)
 
             self.setCentralWidget(w)
             if not restart:
                 if 'ROI_dataLoc' in areaFile.attrs.iterkeys():
-                    self._restore_prev_session()
+                    if os.path.exists(areaFile.attrs['ROI_dataLoc']):
+                        self._restore_prev_session()
+                    else:
+                        pass
 
             self.show()
             #self.connect(self, Qt.SIGNAL('triggered()'), self.closeEvent
+            self.emptyText = pg.TextItem(text=str(self.roi_idx)+" Empty",color=[100,100,0])
 
         def save_ROIS(self):
             fName = areaFile.name[1:].replace('/','-') + '_ROIs.p'
             #print os.path.join(self.Folder,fName)
-            FLOC = os.path.join(self.Folder,fName)
+            FLOC = os.path.join(self.Folder,'ROIs',fName)
             with open(FLOC,'wb') as f:
                 pickle.dump(self.ROI_attrs,f)
 
@@ -240,6 +252,16 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],0] = 1
                     self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],0] = 1
                     self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],3] = 1
+
+
+
+                    ROItxt = pg.TextItem(str(roiIdx),color=[100,100,0])
+                    ROItxt.setPos(self.ROI_attrs['centres'][roiIdx][0]-2,self.ROI_attrs['centres'][roiIdx][1]-2)
+                    ROItxt.setParentItem(self.img)
+                    #print self.ROI_attrs['centres'][roiIdx]
+                    #self.vb.addItem(ROItxt)
+
+
 
 
                 self.roi_idx = self.nROIs-1
@@ -365,18 +387,31 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     self.Gplt.clear()
                     self.Gplt.addItem(self.timeLine)
 
-                    try:
-                        self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx])
-                    except IndexError:
-                        print 'Trace for roi: %s not extracted yet' %self.roi_idx 
 
-                    self.mask[:,:,1] = 0
-                    self.mask[self.ROI_attrs['idxs'][self.roi_idx-1][0],self.ROI_attrs['idxs'][self.roi_idx-1][1],0] = 1
-                    self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],0] = 0
+                    #color previously looked at (ie roi_idx - 1) ROI Red if is not empty ROI
+                    if type(self.ROI_attrs['centres'][self.roi_idx-1])!=type(None):
+                        self.mask[:,:,1] = 0
+                        self.mask[self.ROI_attrs['idxs'][self.roi_idx-1][0],self.ROI_attrs['idxs'][self.roi_idx-1][1],0] = 1
 
-                    self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],1] = 1
-                    self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
-                    #self.mask[:,:,1] = self.temp_mask.T
+
+                    print self.ROI_attrs['centres'][self.roi_idx]
+                    if type(self.ROI_attrs['centres'][self.roi_idx])==type(None):
+                        self.emptyText = pg.TextItem(text=str(self.roi_idx)+"Empty",color=[100,100,0])
+                        self.Gplt.addItem(self.emptyText)
+                        #self.emptyText.setParentItem(self.Gplt)
+
+                    else:
+                        #self.emptyText.hide()
+
+                        try:
+                            self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx])
+                        except IndexError:
+                            print 'Trace for roi: %s not extracted yet' %self.roi_idx 
+
+                        self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],0] = 0
+                        self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],1] = 1
+                        self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
+                        #self.mask[:,:,1] = self.temp_mask.T
 
             elif sender.text()=='Previous ROI':
                 if self.roi_idx>=1:
@@ -385,16 +420,27 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
                     #self.frame_idx = self.rolling_average
                     self.Gplt.clear()
-                    self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx])
-
                     self.Gplt.addItem(self.timeLine)
 
-                    self.mask[:,:,1] = 0
-                    self.mask[self.ROI_attrs['idxs'][self.roi_idx+1][0],self.ROI_attrs['idxs'][self.roi_idx+1][1],0] = 1
-                    self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],0] = 0
+                    #color previously looked at (ie roi_idx + 1) ROI Red if is not empty ROI
+                    if type(self.ROI_attrs['centres'][self.roi_idx+1])!=type(None):
+                        self.mask[:,:,1] = 0
+                        self.mask[self.ROI_attrs['idxs'][self.roi_idx+1][0],self.ROI_attrs['idxs'][self.roi_idx+1][1],0] = 1
 
-                    self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],1] = 1
-                    self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
+                    #if ROI is empty, make it so
+                    if type(self.ROI_attrs['centres'][self.roi_idx])==type(None):
+                        self.emptyText = pg.TextItem(text=str(self.roi_idx)+"Empty",color=[100,100,0])
+                        self.Gplt.addItem(self.emptyText)
+                        self.emptyText.setPos(0,0)
+
+                    else:
+                        #self.emptyText.hide()
+                        self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx])
+
+                        #color current ROI green
+                        self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],0] = 0
+                        self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],1] = 1
+                        self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
 
 
             elif sender.text()=='Clear ROI':
@@ -466,11 +512,24 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 self.ROI_attrs['traces'] = np.zeros([self.nROIs,self.nFrames])
 
                 for i in range(self.nROIs):
-                    print 'extracting trace %s' %i
-                    self._extract_trace(i)
+                    print type(self.ROI_attrs['centres'][i])
+                    if type(self.ROI_attrs['centres'][i])!=type(None):
+                        print 'extracting trace %s' %i
+                        self._extract_trace(i)
                 self.ROI_attrs['traces'] = self.ROI_attrs['traces'].tolist()
 
                 self.vidTimer.start(self.IFI)
+
+            elif sender.text()=="Empty ROI":
+                self.ROI_attrs['centres'].append(None)
+                self.ROI_attrs['patches'].append(np.nan)
+                self.ROI_attrs['idxs'].append(np.nan)
+                self.ROI_attrs['masks'].append(np.nan)
+                self.ROI_attrs['traces'].append(np.nan)
+                self.nROIs += 1
+                self.roi_idx += self.nROIs - 1
+
+
 
                     
 
