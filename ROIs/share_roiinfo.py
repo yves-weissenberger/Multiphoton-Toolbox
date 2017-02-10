@@ -34,7 +34,12 @@ if __name__=='__main__':
 		f = hdf[keys[0]]['registered_data']
 
 
-		sessions = list((i for i in f.iterkeys()))
+		all_sessions = list((i for i in f.iterkeys()))
+		sessions = [i for i in all_sessions if ( 'ROI_dataLoc' in f[i].attrs.keys())]
+
+		print sessions
+		#if len(f[i].attrs['ROI_dataLoc'])!=0))
+
 		#for idx,fn in enumerate(sessions):
 			#print idx, fn
 		#session = int(raw_input('Select Seed Session: '))
@@ -54,15 +59,14 @@ if __name__=='__main__':
 				raise "Largest File is not newest, be careful in erasing"
 		#print newest,largest
 		ROILoc = f[sessions[lIdx]].attrs['ROI_dataLoc']
-		print largest
 		print ROILoc
 		if ROILoc!=largest:
 			raise "Something went wrong, wrong file has been selected"
 		with open(ROILoc) as f_i:
 		        dat = pickle.load(f_i)
 
-		for s in sessions:
-			if s!=sessions[lIdx]:
+		for s in all_sessions:
+			if s!=all_sessions[lIdx]:
 				print s
 				save_ROIS(f[s],dat)
 

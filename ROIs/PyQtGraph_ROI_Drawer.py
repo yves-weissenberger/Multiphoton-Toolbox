@@ -218,7 +218,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             self.setCentralWidget(w)
             if not restart:
                 if 'ROI_dataLoc' in areaFile.attrs.iterkeys():
+                    print areaFile.attrs['ROI_dataLoc']
                     if os.path.exists(areaFile.attrs['ROI_dataLoc']):
+                        print "IN2"
                         self._restore_prev_session()
                     else:
                         pass
@@ -242,6 +244,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             """ restore  rois from the previous session"""
             areaFileLoc = os.path.split(os.path.abspath(areaFile.file.filename))[0]
             ROILoc = os.path.join(areaFileLoc,areaFile.attrs['ROI_dataLoc'])
+            print ROILoc
             try:
                 with open(ROILoc) as f:
                     dat = pickle.load(f)

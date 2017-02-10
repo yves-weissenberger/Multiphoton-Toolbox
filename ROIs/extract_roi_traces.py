@@ -10,6 +10,7 @@ def extract_traces(areaFile,roiattrs):
 	nROIs = len(roiattrs['idxs'])
 	len_trace = areaFile.shape[0]
 
+
 	roiattrs['traces'] = np.zeros([nROIs,len_trace])
 	for idx in range(nROIs):
 		sys.stdout.write('\r Extracting_Trace_from roi: %s' %idx)
@@ -28,6 +29,34 @@ def extract_traces(areaFile,roiattrs):
 
 
        
+def neuropil_correct(areaF,roi_attrs,idx):
+    
+
+
+	nROIs = len(roiattrs['idxs'])
+	len_trace = areaFile.shape[0]
+
+
+	roiattrs['traces'] = np.zeros([nROIs,len_trace])
+	for idx in range(nROIs):
+
+		mpossx= roi_attrs['idxs'][idx][0]
+		mpossy = roi_attrs['idxs'][idx][1]
+		xLims = [np.min(mpossx)-10,np.max(mpossx)+10]
+		yLims = [np.min(mpossy)-10,np.max(mpossy)+10]
+		temp = areaF[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *np.abs(roi_attrs['masks'][idx]-1)
+		temp = temp.astype('float64')
+		temp[temp==0] = np.nan
+		neuropil_trace = np.nanmean(temp,axis=(1,2))
+
+
+
+		temp = areaF[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *roi_attrs['masks'][idx]
+		temp = temp.astype('float64')
+		temp[temp==0] = np.nan
+		trace = np.nanmean(temp,axis=(1,2))
+		corrected_trace = trace - .7*neuropil_trace
+    return trace, corrected_trace, neuropil_trace
 
 
 
@@ -52,7 +81,14 @@ if __name__=='__main__':
 			print '\narea %s: %s' %(idx,fn)
 
 			areaFile = f[fn]
-			FLOC = areaFile.attrs['ROI_dataLoc']
+			if 'ROI_dataLoc' in areaFile.attrs.keys():
+
+				FLOC = areaFile.attrs['ROI_dataLoc']
+			else:
+				Folder = os.path.split(os.path.abspath(areaFile.file.filename))[0]
+				fName = areaFile.name[1:].replace('/','-') + '_ROIs.p'
+				FLOC = os.path.join(Folder,'ROIs',fName)
+				areaFile.attrs['ROI_dataLoc'] = FLOC
 
 			roiattrs = pickle.load(open(FLOC,'r'))
 
