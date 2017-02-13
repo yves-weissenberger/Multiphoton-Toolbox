@@ -228,18 +228,36 @@ def motion_register(imArray,regFile,maxIter=1,Crop=True,inRAM=True,poolSize=4,co
 
 
 def register_image(inp):
-    if not inRAM_flag:
-        image_idx = inp[0]
+
+    if 'inRAM_flag' not in globals():
+        inRAM_flag = True
+
+    if 'crop' not in globals() and 'crop' not in locals():
+        if inp[1].shape[0]>256:
+            crop = True
+            refIm = inp[0][:,128:-128]
+            upsample_factor = 10
+
+        else:
+            crop = False
+            refIm = inp[0]
+            upsample_factor = 1
         image = inp[1]
-        regFile = inp[2]
-    else:
-        image = inp
+
+    else: 
+        upsample_factor = 10
+        if not inRAM_flag:
+            image_idx = inp[0]
+            image = inp[1]
+            regFile = inp[2]
+        else:
+            image = inp
 
 
     if crop==True:
-        shift, _, _ = register_translation(refIm,image[:,128:-128],upsample_factor=10)
+        shift, _, _ = register_translation(refIm,image[:,128:-128],upsample_factor=upsample_factor)
     else:
-        shift, _, _ = register_translation(refIm, image, upsample_factor=10)
+        shift, _, _ = register_translation(refIm, image, upsample_factor=upsample_factor)
 
     if np.sum(np.abs(shift))!=0:
         regIm =  np.fft.ifftn(fourier_shift(np.fft.fftn(image), shift)).real
