@@ -5,7 +5,25 @@ import h5py
 import numpy as np
 import c2s
 import sys, os, re, pickle
-sys.path.append('/home/yves/Documents/')
+
+import sys
+import os
+
+def findpath():
+    twoptbDir = os.path.dirname(os.path.realpath(__file__))
+
+    found = False
+    while not found:
+        cDir,ext = os.path.split() 
+        if ext='twoptb':
+            found = False
+            twoptb_path = cDir
+            break
+    return twoptb_path
+
+
+sys.path.append(twoptb_path)
+
 
 from twoptb.process_data import neuropil_correct, runkalman
 from twoptb.util import _select_area, progress_bar

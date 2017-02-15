@@ -4,6 +4,26 @@ import re, os, csv, time,sys
 import itertools
 import scipy.io as spio
 import numpy as np
+
+
+import sys
+import os
+
+def findpath():
+    twoptbDir = os.path.dirname(os.path.realpath(__file__))
+
+    found = False
+    while not found:
+        cDir,ext = os.path.split() 
+        if ext='twoptb':
+            found = False
+            twoptb_path = cDir
+            break
+    return twoptb_path
+
+
+sys.path.append(twoptb_path)
+
 from twoptb.util import load_GRABinfo, get_DM
 from twoptb.imports import pt1_self_loader
 

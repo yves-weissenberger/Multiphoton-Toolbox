@@ -1,12 +1,25 @@
 from __future__ import division
 import h5py
-import sys
 import pickle
 import copy as cp
-import os
 import numpy as np
-print os.path.abspath(os.path.split(os.path.split(__file__)[0])[0])
-sys.path.append(os.path.abspath(os.path.split(os.path.split(os.path.split(__file__)[0])[0])[0]))
+import sys
+import os
+
+def findpath():
+    twoptbDir = os.path.dirname(os.path.realpath(__file__))
+
+    found = False
+    while not found:
+        cDir,ext = os.path.split() 
+        if ext='twoptb':
+            found = False
+            twoptb_path = cDir
+            break
+    return twoptb_path
+
+
+sys.path.append(twoptb_path)
 #sys.path.append(os.path.abspath())
 import twoptb as MP
 def extract_traces(areaFile,roiattrs):
@@ -75,42 +88,48 @@ def neuropil_correct(areaF,roi_attrs):
 
 
 def baseline_correct(roiattrs):
-	print roiattrs.keys()
+	import copy as cp
+	""" Correct for drifting baseline"""
 	nROIs = len(roiattrs['idxs'])
 	cFrames = roiattrs['traces'].shape[1]
 
 	roiattrs['dfF'] = np.zeros([nROIs,cFrames])
-
+	roiattrs['raw_traces'] = cp.deepcopy(roiattrs['traces'])
 	for idx in range(nROIs):
 		sys.stdout.write('\r Baseline Correcting ROI: %s' %idx)
 		sys.stdout.flush()
 
-		roiattrs['traces'][idx] -= MP.process_data.runkalman(roiattrs['traces'][idx],5000)
+		roiattrs['traces'][idx] = roiattrs['traces'][idx] - MP.process_data.runkalman(roiattrs['traces'][idx],5000)
 		baseline = MP.process_data.runkalman(roiattrs['corr_traces'][idx],5000)
-		roiattrs['corr_traces'][idx] -= baseline
+		roiattrs['corr_traces'][idx] = roiattrs['corr_traces'][idx] - baseline
 		roiattrs['dfF'][idx] = roiattrs2['corr_traces'][idx]/baseline
 		roiattrs['neuropil_traces'][idx] -= MP.process_data.runkalman(roiattrs['neuropil_traces'][idx],5000)
 
-	#for idx in range(nROIs):
 
 	return roiattrs
 
 def extract_spikes(roiattrs):
+
+	""" Infer approximate spike rates """
+	print "\nrunning spike extraction"
 	import c2s
 
 	frameRate = 25
 
 	data = [{'calcium':np.array([i]),'fps': frameRate} for i in roiattrs['corr_traces']]
-	spkt = c2s.predict(c2s.preprocess(data))
+	spkt = c2s.predict(c2s.preprocess(data),verbosity=0)
 
 	nROIs = len(roiattrs['idxs'])
 	cFrames = roiattrs['traces'].shape[1]
 
 	spk_traces = np.zeros([nROIs,cFrames])
+	spk_long = []
 	for i in range(nROIs):
 		spk_traces[i] = np.mean(spkt[i]['predictions'].reshape(-1,4),axis=1)
+		spk_long.append(spkt[i]['predictions'])
 
 	roiattrs['spike_inf'] = spk_traces
+	roiattrs['spike_long'] = np.squeeze(np.array(spk_long))
 	return roiattrs
 
 
@@ -130,9 +149,10 @@ if __name__=='__main__':
 
 
 		sessions = list((i for i in f.iterkeys()))
+		n_sess = len(sessions)
 		for idx,fn in enumerate(sessions):
 
-			print '\narea %s: %s' %(idx,fn)
+			print '\narea %s/%s: %s' %(idx,n_sess,fn)
 
 			areaFile = f[fn]
 			if 'ROI_dataLoc' in areaFile.attrs.keys():
@@ -147,6 +167,7 @@ if __name__=='__main__':
 			roiattrs = pickle.load(open(FLOC,'r'))
 
 			roiattrs2 = neuropil_correct(areaFile,roiattrs)
+			print "\n"
 			roiattrs2 = baseline_correct(roiattrs2)
 			roiattrs2 = extract_spikes(roiattrs2)
 			with open(FLOC,'wb') as fi:

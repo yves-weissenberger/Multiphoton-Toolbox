@@ -13,7 +13,23 @@ import time
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
-sys.path.append('/home/yves/Documents/')
+
+
+def findpath():
+    twoptbDir = os.path.dirname(os.path.realpath(__file__))
+
+    found = False
+    while not found:
+        cDir,ext = os.path.split() 
+        if ext='twoptb':
+            found = False
+            twoptb_path = cDir
+            break
+    return twoptb_path
+
+
+sys.path.append(twoptb_path)
+
 import twoptb as MP
 
 

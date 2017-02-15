@@ -1,6 +1,22 @@
 #!/home/yves/anaconda2/bin/python
 import h5py
 import sys
+import os
+
+def findpath():
+    twoptbDir = os.path.dirname(os.path.realpath(__file__))
+
+    found = False
+    while not found:
+        cDir,ext = os.path.split() 
+        if ext='twoptb':
+            found = False
+            twoptb_path = cDir
+            break
+    return twoptb_path
+
+
+sys.path.append(twoptb_path)
 
 
 def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):

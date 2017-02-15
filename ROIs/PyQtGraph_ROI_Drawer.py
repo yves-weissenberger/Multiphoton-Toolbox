@@ -1,6 +1,22 @@
 #!/home/yves/anaconda2/bin/python
 import h5py
 import sys
+import os
+
+def findpath():
+    twoptbDir = os.path.dirname(os.path.realpath(__file__))
+
+    found = False
+    while not found:
+        cDir,ext = os.path.split() 
+        if ext='twoptb':
+            found = False
+            twoptb_path = cDir
+            break
+    return twoptb_path
+
+
+sys.path.append(twoptb_path)
 
 
 def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
@@ -250,6 +266,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     dat = pickle.load(f)
 
                 self.ROI_attrs = dat
+                self.ROI_attrs['traces'] = dat['spike_inf']
                 self.nROIs = len(dat['idxs'])
                 for roiIdx in range(self.nROIs):
                     self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],0] = 1

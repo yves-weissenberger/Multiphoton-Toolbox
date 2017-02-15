@@ -4,9 +4,29 @@ import scipy.io as spio
 import tifffile
 import numpy as np
 import h5py
+
+
+
 from twoptb.util import load_GRABinfo, progress_bar
 from twoptb.file_management.load_events import get_triggers, import_imaging_behaviour, get_DM
 
+import sys
+import os
+
+def findpath():
+    twoptbDir = os.path.dirname(os.path.realpath(__file__))
+
+    found = False
+    while not found:
+        cDir,ext = os.path.split() 
+        if ext='twoptb':
+            found = False
+            twoptb_path = cDir
+            break
+    return twoptb_path
+
+
+sys.path.append(twoptb_path)
 
 
 
