@@ -66,6 +66,10 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
             #raw_file = np.array(HDF_File[session_ID]['raw_data'][file_key])
             raw_file = HDF_File[session_ID]['raw_data'][file_key]
 
+            frames = raw_file.shape[0]
+            chunkSize = np.max(np.array([x for x in range(2, 11) if frames%x == 0]))
+
+
             if common_ref and f_idx==0:
                 print 'creating global reference'
                 refIm_glob = np.mean(raw_file[:50],axis=0)[:,128:-128]
@@ -78,7 +82,7 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
             if not inRAM:
                 regFile = HDF_File[session_ID]['registered_data'].create_dataset(name=file_key,
                                                                                  shape=raw_file.shape,
-                                                                                 chunks=(10,512,512),
+                                                                                 chunks=(chunkSize,512,512),
                                                                                  dtype='uint16')
                 st = time.time()
                 shifts, tot_shifts = motion_register(raw_file,
@@ -105,9 +109,10 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
                 print 'Motion Register Duration %ss' %(time.time() - st)
                 #________________________________________________________________
                 st = time.time()
+
                 regFile = HDF_File[session_ID]['registered_data'].create_dataset(name=file_key,
                               	                                                 data=np.round(regIms).astype('uint16'),
-                     	                                                         chunks=(10,512,512),
+                     	                                                         chunks=(chunkSize,512,512),
                                                                                  dtype='uint16')
 
                 regFile.attrs['mean_image'] = np.mean(regIms.astype('uint16'),axis=0)
@@ -250,24 +255,29 @@ def motion_register(imArray,regFile,maxIter=1,Crop=True,inRAM=True,poolSize=4,co
 
 def register_image(inp):
 
-    if 'inRAM_flag' not in globals():
-        inRAM_flag = True
+    if 'inRAM_flag' in globals():
+        inRAM = inRAM_flag
+    else:
+        inRAM = True
 
+    if 'refIm' in globals():
+        refIm_ = refIm
     if 'crop' not in globals() and 'crop' not in locals():
         if inp[1].shape[0]>256:
-            crop = True
-            refIm = inp[0][:,128:-128]
+            crop_ = True
+            refIm_ = inp[0][:,128:-128]
             upsample_factor = 10
 
         else:
-            crop = False
-            refIm = inp[0]
+            crop_ = False
+            refIm_ = inp[0]
             upsample_factor = 1
         image = inp[1]
 
     else: 
+        crop_ = crop
         upsample_factor = 10
-        if not inRAM_flag:
+        if not inRAM:
             image_idx = inp[0]
             image = inp[1]
             regFile = inp[2]
@@ -275,10 +285,10 @@ def register_image(inp):
             image = inp
 
 
-    if crop==True:
-        shift, _, _ = register_translation(refIm,image[:,128:-128],upsample_factor=upsample_factor)
+    if crop_==True:
+        shift, _, _ = register_translation(refIm_,image[:,128:-128],upsample_factor=upsample_factor)
     else:
-        shift, _, _ = register_translation(refIm, image, upsample_factor=upsample_factor)
+        shift, _, _ = register_translation(refIm_, image, upsample_factor=upsample_factor)
 
     if np.sum(np.abs(shift))!=0:
         regIm =  np.fft.ifftn(fourier_shift(np.fft.fftn(image), shift)).real
@@ -286,7 +296,7 @@ def register_image(inp):
         regIm = image
 
     #added for reduce memory test
-    if not inRAM_flag:    
+    if not inRAM:    
         regFile[image_idx] = regIm
         return shift
     else:

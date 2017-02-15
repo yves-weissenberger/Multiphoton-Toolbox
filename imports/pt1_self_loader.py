@@ -77,7 +77,8 @@ def load_pretraining1_self(fPath):
 
 
         lickLs = []; lickRs = []; clicks = []; rews = [];
-        lickLsF = []; lickRsF = []; clicksF = []; rewsF = [];
+        lickLsF = []; lickRsF = []; clicksF = []; rewsF = []; 
+        freeRrews = []; freeLrews = []; freeRrewsF = []; freeLrewsF = [];
         t_old = -1
         done=False
         for row in reader:

@@ -108,6 +108,10 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID,get_DM=False):
         Dir = os.path.join(baseDir,fDir)
         st = time.time()
         print '\n loading %s \n' %os.path.split(fDir)[-1]
+
+
+        
+
         File, allSame, GRABinfo, stimattrs = load_tiff_series(Dir)
         print 'Load Data time: %s' %(time.time() - st)
         
@@ -116,11 +120,14 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID,get_DM=False):
             HDF_File = h5py.File(hdfPath,'a',libver='latest')
         
         st = time.time()
+
+        frames = File.shape[0]
+        chunkSize = np.max(np.array([x for x in range(2, 11) if frames%x == 0]))
+        print chunkSize
         areaDSet = HDF_File[session_ID]['raw_data'].create_dataset(name=fDir,
-                                                                   data=File.astype('uint16'),
-                                                                   chunks=(10,512,512),
-                                                                   dtype='uint16')
-        print 'Write %s Time: %s' %(i, time.time() - st)
+                                                           data=File.astype('uint16'),
+                                                           chunks=(chunkSize,512,512),
+                                                           dtype='uint16')
         
         if GRABinfo!=None:
             #HDF_dir = re.findall(r'(.*\/).*\.h5',HDF_File.filename)
@@ -155,6 +162,7 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID,get_DM=False):
             print '!!!WARINING!!! NO GRABINFO WAS FOUND, FILE INCOMPLETE'
         st = time.time()
         HDF_File.close()
+        del File
 
         i += 1
         HDF_File = h5py.File(hdfPath,'a',libver='latest')
