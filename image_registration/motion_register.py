@@ -111,8 +111,8 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
                 st = time.time()
 
                 regFile = HDF_File[session_ID]['registered_data'].create_dataset(name=file_key,
-                              	                                                 data=np.round(regIms).astype('uint16'),
-                     	                                                         chunks=(chunkSize,512,512),
+                                                                                 data=np.round(regIms).astype('uint16'),
+                                                                                 chunks=(chunkSize,512,512),
                                                                                  dtype='uint16')
 
                 regFile.attrs['mean_image'] = np.mean(regIms.astype('uint16'),axis=0)
@@ -145,8 +145,8 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
 
             #________________________________________________________________
 
-	st = time.time()
-	print 'Write to Disk time %ss:' %(time.time() - st)
+    st = time.time()
+    print 'Write to Disk time %ss:' %(time.time() - st)
     HDF_File = h5py.File(hdfPath,'a',libver='latest')
 
     return HDF_File
@@ -177,7 +177,7 @@ def motion_register(imArray,regFile,maxIter=1,Crop=True,inRAM=True,poolSize=4,co
         refIm = refIm_glob
     else:
         if crop==True:
-        	refIm = np.mean(imArray[:50],axis=0)[:,128:-128]
+            refIm = np.mean(imArray[:50],axis=0)[:,128:-128]
         else:
             refIm = np.mean(imArray[:50],axis=0)
 

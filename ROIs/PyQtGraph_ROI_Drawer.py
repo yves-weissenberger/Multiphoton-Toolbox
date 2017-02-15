@@ -708,53 +708,53 @@ if __name__=="__main__":
             restart = int(raw_input('Are you sure you want to restart? All work on this area will be deleted (0/1): '))
     else:
         restart = 0
-	with h5py.File(hdfPath, 'a', libver='latest') as HDF_File:
-		try:
-			print HDF_File.filename
-			print 'Sessions:'
+    with h5py.File(hdfPath, 'a', libver='latest') as HDF_File:
+        try:
+            print HDF_File.filename
+            print 'Sessions:'
 
-			sessions = list((i for i in HDF_File.iterkeys()))
-			for idx,f in enumerate(sessions):
-				print idx, f 
-			session = int(raw_input('Select Session Nr: '))
+            sessions = list((i for i in HDF_File.iterkeys()))
+            for idx,f in enumerate(sessions):
+                print idx, f 
+            session = int(raw_input('Select Session Nr: '))
 
-			sessions = list((i for i in HDF_File.iterkeys()))
+            sessions = list((i for i in HDF_File.iterkeys()))
 
-			dataType = 0
+            dataType = 0
             
 
-			if 'registered_data' in HDF_File[sessions[session]].iterkeys():
+            if 'registered_data' in HDF_File[sessions[session]].iterkeys():
                 if len(HDF_File[sessions[session]]['registered_data'])>0:
-    				print 'Using registered Data'
-    				dataType = 'registered_data'
+                    print 'Using registered Data'
+                    dataType = 'registered_data'
                 else:
                     print '\n!!!!!!!!!!WARNING!!!!!!!!!!!!\nUsing Raw Data\n!!!!!!!!!!WARNING!!!!!!!!!!!!'
                     dataType = 'raw_data'
 
-			else:
-				print '\n!!!!!!!!!!WARNING!!!!!!!!!!!!\nUsing Raw Data\n!!!!!!!!!!WARNING!!!!!!!!!!!!'
-				dataType = 'raw_data'
+            else:
+                print '\n!!!!!!!!!!WARNING!!!!!!!!!!!!\nUsing Raw Data\n!!!!!!!!!!WARNING!!!!!!!!!!!!'
+                dataType = 'raw_data'
 
 
 
-			areas = list((i for i in HDF_File[sessions[int(session)]][dataType].iterkeys()))
-			for idx,f in enumerate(areas):
-				print idx, f 
+            areas = list((i for i in HDF_File[sessions[int(session)]][dataType].iterkeys()))
+            for idx,f in enumerate(areas):
+                print idx, f 
 
 
-			areaID = int(raw_input('Select Area Nr: '))
-			areaFile = HDF_File[sessions[session]][dataType][areas[areaID]]; 
+            areaID = int(raw_input('Select Area Nr: '))
+            areaFile = HDF_File[sessions[session]][dataType][areas[areaID]]; 
             #print '...into function'
-			#areaFile.attrs['ROI_patches']
+            #areaFile.attrs['ROI_patches']
 
 
             
 
-			app = MASK_DRAWER_GUI(areaFile,restart=0,online_trace_extract=online_trace_extract)
-			#print sys.exit(app.exec_())
-		except:
+            app = MASK_DRAWER_GUI(areaFile,restart=0,online_trace_extract=online_trace_extract)
+            #print sys.exit(app.exec_())
+        except:
             #raise
             #print 'Something unexpected went wrong! :('
-			raise
+            raise
 
-	print 'HDF_File Closed, PyQt Closed'
+    print 'HDF_File Closed, PyQt Closed'

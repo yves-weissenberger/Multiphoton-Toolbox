@@ -56,7 +56,7 @@ Areas = HDF_File[session_ID]['raw_data'].keys()
 
 print 'Registering areas:'
 for a in Areas:
-	print a
+    print a
 st = time.time()
 
 #use inRAM if you have a lot of RAM. registering 40500 512x512 frames in

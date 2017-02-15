@@ -44,55 +44,55 @@ def save_ROIS(areaFile,ROI_attrs):
 
 
 if __name__=='__main__':
-	
-	hdf_path = os.path.abspath(sys.argv[1])
-	#roi_pth = os.path.join(hdf_path[:-3],'ROIs')
-	with h5py.File(hdf_path,'a',libver='latest') as hdf:
-		keys = hdf.keys()
-		Folder = os.path.split(os.path.abspath(hdf.filename))[0]
-		roi_pth = os.path.join(Folder,'ROIs')
-		print '\n\n'
-		f = hdf[keys[0]]['registered_data']
+    
+    hdf_path = os.path.abspath(sys.argv[1])
+    #roi_pth = os.path.join(hdf_path[:-3],'ROIs')
+    with h5py.File(hdf_path,'a',libver='latest') as hdf:
+        keys = hdf.keys()
+        Folder = os.path.split(os.path.abspath(hdf.filename))[0]
+        roi_pth = os.path.join(Folder,'ROIs')
+        print '\n\n'
+        f = hdf[keys[0]]['registered_data']
 
 
-		all_sessions = list((i for i in f.iterkeys()))
-		sessions = [i for i in all_sessions if ( 'ROI_dataLoc' in f[i].attrs.keys())]
+        all_sessions = list((i for i in f.iterkeys()))
+        sessions = [i for i in all_sessions if ( 'ROI_dataLoc' in f[i].attrs.keys())]
 
-		print sessions
-		#if len(f[i].attrs['ROI_dataLoc'])!=0))
+        print sessions
+        #if len(f[i].attrs['ROI_dataLoc'])!=0))
 
-		#for idx,fn in enumerate(sessions):
-			#print idx, fn
-		#session = int(raw_input('Select Seed Session: '))
+        #for idx,fn in enumerate(sessions):
+            #print idx, fn
+        #session = int(raw_input('Select Seed Session: '))
 
-		roiFs = [os.path.join(roi_pth,i) for i in os.listdir(roi_pth)]
-		lIdx = np.argmax([os.path.getsize(i) for i in roiFs])
-		largest = roiFs[lIdx]
-		print largest, '\n\n'
-		newest = max(roiFs , key = os.path.getctime)
-		print newest
+        roiFs = [os.path.join(roi_pth,i) for i in os.listdir(roi_pth)]
+        lIdx = np.argmax([os.path.getsize(i) for i in roiFs])
+        largest = roiFs[lIdx]
+        print largest, '\n\n'
+        newest = max(roiFs , key = os.path.getctime)
+        print newest
 
-		if largest!=newest:
-			resp = str(raw_input('do you want to continue? (y/n):'))
-			if resp=='y':
-				print "using largest file"
-			else:
-				raise "Largest File is not newest, be careful in erasing"
-		#print newest,largest
-		ROILoc = f[sessions[lIdx]].attrs['ROI_dataLoc']
-		print ROILoc
-		if ROILoc!=largest:
-			raise "Something went wrong, wrong file has been selected"
-		with open(ROILoc) as f_i:
-		        dat = pickle.load(f_i)
+        if largest!=newest:
+            resp = str(raw_input('do you want to continue? (y/n):'))
+            if resp=='y':
+                print "using largest file"
+            else:
+                raise "Largest File is not newest, be careful in erasing"
+        #print newest,largest
+        ROILoc = f[sessions[lIdx]].attrs['ROI_dataLoc']
+        print ROILoc
+        if ROILoc!=largest:
+            raise "Something went wrong, wrong file has been selected"
+        with open(ROILoc) as f_i:
+                dat = pickle.load(f_i)
 
-		for s in all_sessions:
-			if s!=all_sessions[lIdx]:
-				print s
-				save_ROIS(f[s],dat)
+        for s in all_sessions:
+            if s!=all_sessions[lIdx]:
+                print s
+                save_ROIS(f[s],dat)
 
-	print 'done!'
-				
+    print 'done!'
+                
 
 
 
