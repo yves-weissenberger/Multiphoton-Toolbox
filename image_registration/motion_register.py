@@ -11,18 +11,19 @@ import sys
 import os
 
 def findpath():
-    twoptbDir = os.path.dirname(os.path.realpath(__file__))
+    cDir = os.path.dirname(os.path.realpath(__file__))
 
     found = False
     while not found:
-        cDir,ext = os.path.split() 
-        if ext='twoptb':
+        cDir,ext = os.path.split(cDir) 
+        if ext=='twoptb':
             found = False
             twoptb_path = cDir
+            print 
             break
     return twoptb_path
 
-
+twoptb_path = findpath()
 sys.path.append(twoptb_path)
 
 from twoptb.util import progress_bar
