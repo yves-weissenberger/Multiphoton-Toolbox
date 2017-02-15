@@ -724,8 +724,13 @@ if __name__=="__main__":
             
 
 			if 'registered_data' in HDF_File[sessions[session]].iterkeys():
-				print 'Using registered Data'
-				dataType = 'registered_data'
+                if len(HDF_File[sessions[session]]['registered_data'])>0:
+    				print 'Using registered Data'
+    				dataType = 'registered_data'
+                else:
+                    print '\n!!!!!!!!!!WARNING!!!!!!!!!!!!\nUsing Raw Data\n!!!!!!!!!!WARNING!!!!!!!!!!!!'
+                    dataType = 'raw_data'
+
 			else:
 				print '\n!!!!!!!!!!WARNING!!!!!!!!!!!!\nUsing Raw Data\n!!!!!!!!!!WARNING!!!!!!!!!!!!'
 				dataType = 'raw_data'
