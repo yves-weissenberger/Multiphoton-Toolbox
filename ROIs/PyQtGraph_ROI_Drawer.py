@@ -614,7 +614,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
             while self.timeLine.isUnderMouse():
                 self.play_video = False
-                print self.play_video
+                #print self.play_video
                 self.show_mean_image = False
                 self.moving_timeLine = True
                 self.frame_idx = int(self.timeLine.getXPos())
