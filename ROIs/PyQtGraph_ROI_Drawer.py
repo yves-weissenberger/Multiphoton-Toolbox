@@ -43,9 +43,10 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
 
             QtGui.QMainWindow.__init__(self)
+
             self.Folder = os.path.split(os.path.abspath(areaFile.file.filename))[0]
-            if not os.path.isdir(os.path.join(self.Folder,'ROIs')):
-                os.mkdir(os.path.join(self.Folder,'ROIs'))
+            #if not os.path.isdir(os.path.join(self.Folder,'ROIs')):
+            #    os.mkdir(os.path.join(self.Folder,'ROIs'))
             #print "\n %s \n" %os.path.split(self.Folder)[0]
             self.idx = 0
             self.roi_idx = 0 
@@ -253,12 +254,12 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             with open(FLOC,'wb') as f:
                 pickle.dump(self.ROI_attrs,f)
 
-            areaFile.attrs['ROI_dataLoc'] = FLOC
+            #areaFile.attrs['ROI_dataLoc'] = FLOC
             print 'ROI MASKS SAVED'
 
         def _restore_prev_session(self):
 
-            """ restore  rois from the previous session"""
+            """ restore  rois from the previous session """
             areaFileLoc = os.path.split(os.path.abspath(areaFile.file.filename))[0]
             ROILoc = os.path.join(areaFileLoc,areaFile.attrs['ROI_dataLoc'])
             print ROILoc
@@ -267,7 +268,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     dat = pickle.load(f)
 
                 self.ROI_attrs = dat
-                self.ROI_attrs['traces'] = dat['spike_inf']
+                #self.ROI_attrs['traces'] = dat['spike_inf']
                 self.nROIs = len(dat['idxs'])
                 for roiIdx in range(self.nROIs):
                     self.mask[self.ROI_attrs['idxs'][roiIdx][0],self.ROI_attrs['idxs'][roiIdx][1],0] = 1
@@ -708,6 +709,8 @@ if __name__=="__main__":
             restart = int(raw_input('Are you sure you want to restart? All work on this area will be deleted (0/1): '))
     else:
         restart = 0
+
+
     with h5py.File(hdfPath, 'a', libver='latest') as HDF_File:
         try:
             print HDF_File.filename
@@ -747,14 +750,28 @@ if __name__=="__main__":
             #print '...into function'
             #areaFile.attrs['ROI_patches']
 
+            fName = areaFile.name[1:].replace('/','-') + '_ROIs.p'
+            Folder = os.path.split(os.path.abspath(areaFile.file.filename))[0]
+            if not os.path.isdir(os.path.join(Folder,'ROIs')):
+                os.mkdir(os.path.join(Folder,'ROIs'))
 
-            
+            #print os.path.join(self.Folder,fName)
+            FLOC = os.path.join(Folder,'ROIs',fName)
+            areaFile.attrs['ROI_dataLoc'] = FLOC
 
-            app = MASK_DRAWER_GUI(areaFile,restart=0,online_trace_extract=online_trace_extract)
-            #print sys.exit(app.exec_())
         except:
             #raise
             #print 'Something unexpected went wrong! :('
             raise
+            
+    with h5py.File(hdfPath, 'r', libver='latest') as HDF_File:
+        try:
+            areaFile = HDF_File[sessions[session]][dataType][areas[areaID]]; 
+            app = MASK_DRAWER_GUI(areaFile,restart=0,online_trace_extract=online_trace_extract)
+            #print sys.exit(app.exec_())
+
+        except:
+            raise
+    
 
     print 'HDF_File Closed, PyQt Closed'
