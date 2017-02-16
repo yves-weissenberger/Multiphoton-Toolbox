@@ -83,6 +83,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             self.rolling_average = 3
             self.ROI_centres = []#areaFile.attrs['ROI_centres']
             self.video = areaFile
+            self.moving_timeLine = False
             self.nFrames = self.video.shape[0]
             self.frame_idx = self.rolling_average
             self.smoothing = .1
@@ -147,6 +148,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             self.timeLine = pg.InfiniteLine(pos=self.frame_idx,angle=90,movable=True)
             self.Gplt.addItem(self.timeLine)
             self.timeLine.sigDragged.connect(self.update_timeline)
+            #self.timeLine.sigPositionChangeFinished(self._release_timeline)
 
             ############## INIT ROI IMAGES #######################
             cols,rows = areaFile.shape[1:3]
@@ -520,6 +522,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 print "gaussian smoothing sigma: %s" %self.smoothing
             elif (sender.text()=='Play Video' or sender.text()=='Pause Video'):
                 self.play_video = not self.play_video
+                self.moving_timeLine = False
                 self.show_mean_image = False
                 if not self.play_video:
                     sender.setText("Play Video")
@@ -586,7 +589,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
         #Play Video Play Function    
         def update_video(self):
             
-            if self.play_video:
+            if self.play_video or self.moving_timeLine:
                 video_image = np.mean(self.video[self.frame_idx-self.rolling_average:self.frame_idx+self.rolling_average+1],axis=0).T
 
                 #video_image = median_filter(self.video,disk(2))
@@ -603,16 +606,25 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 self.timeLine.setPos(self.frame_idx)
             if (self.show_mean_image and not self.play_video):
                 self.img.setImage(self.mean_image)
+
+            self.moving_timeLine = False
                 
         
         def update_timeline(self):
 
             while self.timeLine.isUnderMouse():
                 self.play_video = False
+                print self.play_video
+                self.show_mean_image = False
+                self.moving_timeLine = True
                 self.frame_idx = int(self.timeLine.getXPos())
                 self.timeLine.setPos(self.frame_idx)
                 #img.setImage(np.fliplr(np.mean(b[frame_idx-rolling_average:frame_idx+rolling_average+1,:,:],axis=0).T),autoLevels=False)
-            self.play_video = True
+            #self.play_video = True
+            #self.moving_timeLine = True
+
+        def _release_timeline(self):
+            self.moving_timeLine = False
         
         #def _restore_previous(self):
 
