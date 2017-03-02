@@ -23,6 +23,8 @@ twoptb_path = findpath()
 sys.path.append(twoptb_path)
 #sys.path.append(os.path.abspath())
 import twoptb as MP
+
+
 def extract_traces(areaFile,roiattrs):
         
     nROIs = len(roiattrs['idxs'])
@@ -116,8 +118,11 @@ def extract_spikes(roiattrs):
     import c2s
 
     frameRate = 25
-
-    data = [{'calcium':np.array([i]),'fps': frameRate} for i in roiattrs['corr_traces']]
+    if 'corr_traces' in roiattrs.keys():
+        trace_type = 'corr_traces'
+    else:
+        trace_type = 'traces'
+    data = [{'calcium':np.array([i]),'fps': frameRate} for i in roiattrs[trace_type]]
     spkt = c2s.predict(c2s.preprocess(data),verbosity=0)
 
     nROIs = len(roiattrs['idxs'])
@@ -139,6 +144,10 @@ def extract_spikes(roiattrs):
 if __name__=='__main__':
     
     hdf_path = os.path.abspath(sys.argv[1])
+    npc = sys.argv[2]=='y'
+    kf = sys.argv[3]=='y'
+    print "neuropil correct: %s" %npc
+    print "kalman filter: %s" %kf
     
     #roi_pth = os.path.join(hdf_path[:-3],'ROIs')
     with h5py.File(hdf_path,'a',libver='latest') as hdf:
@@ -166,10 +175,13 @@ if __name__=='__main__':
                 areaFile.attrs['ROI_dataLoc'] = FLOC
 
             roiattrs = pickle.load(open(FLOC,'r'))
-
-            roiattrs2 = neuropil_correct(areaFile,roiattrs)
+            if npc:
+                roiattrs2 = neuropil_correct(areaFile,roiattrs)
+            else:
+                roiattrs2 = roiattrs
             print "\n"
-            roiattrs2 = baseline_correct(roiattrs2)
+            if kf:
+                roiattrs2 = baseline_correct(roiattrs2)
             roiattrs2 = extract_spikes(roiattrs2)
             with open(FLOC,'wb') as fi:
                 pickle.dump(roiattrs2,fi)

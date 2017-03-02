@@ -26,8 +26,35 @@ twoptb_path = findpath()
 sys.path.append(twoptb_path)
 
 
+
+def extract_traces(areaFile,roiattrs):
+        
+    nROIs = len(roiattrs['idxs'])
+    len_trace = areaFile.shape[0]
+    print len_trace, '\n'
+
+
+    roiattrs['traces'] = np.zeros([nROIs,len_trace])
+    for idx in range(nROIs):
+        sys.stdout.write('\r Extracting_Trace_from roi: %s' %idx)
+        sys.stdout.flush()
+        mpossx= roiattrs['idxs'][idx][0]
+        mpossy = roiattrs['idxs'][idx][1]
+        xLims = [np.min(mpossx)-10,np.max(mpossx)+10]
+        yLims = [np.min(mpossy)-10,np.max(mpossy)+10]
+
+        temp = areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *roiattrs['masks'][idx]
+        temp = temp.astype('float64')
+        temp[temp==0] = np.nan
+                                                            
+        roiattrs['traces'][idx] = np.nanmean(temp,  axis=(1,2))
+    return roiattrs
+
+
+
 def save_ROIS(areaFile,ROI_attrs):
 
+    ROI_attrs = extract_traces(areaFile,ROI_attrs)
     print os.path.abspath(areaFile.file.filename)
     Folder = os.path.split(os.path.abspath(areaFile.file.filename))[0]
     fName = areaFile.name[1:].replace('/','-') + '_ROIs.p'
@@ -56,9 +83,16 @@ if __name__=='__main__':
 
 
         all_sessions = list((i for i in f.iterkeys()))
+
         sessions = [i for i in all_sessions if ( 'ROI_dataLoc' in f[i].attrs.keys())]
 
-        print sessions
+        new_sess= []
+        for i in sessions:
+            if os.path.exists(f[i].attrs['ROI_dataLoc']):
+                new_sess.append(i)
+        sessions = new_sess
+
+        #print sessions
         #if len(f[i].attrs['ROI_dataLoc'])!=0))
 
         #for idx,fn in enumerate(sessions):
@@ -68,13 +102,13 @@ if __name__=='__main__':
         roiFs = [os.path.join(roi_pth,i) for i in os.listdir(roi_pth)]
         lIdx = np.argmax([os.path.getsize(i) for i in roiFs])
         largest = roiFs[lIdx]
-        print largest, '\n\n'
+        #print largest, '\n\n'
         newest = max(roiFs , key = os.path.getctime)
         print newest
 
         if largest!=newest:
-            resp = str(raw_input('do you want to continue? (y/n):'))
-            if resp=='y':
+            resp = raw_input('do you want to continue? (y/n):')
+            if str(resp)=='y':
                 print "using largest file"
             else:
                 raise "Largest File is not newest, be careful in erasing"
@@ -87,7 +121,7 @@ if __name__=='__main__':
                 dat = pickle.load(f_i)
 
         for s in all_sessions:
-            if s!=all_sessions[lIdx]:
+            if s!=sessions[lIdx]:
                 print s
                 save_ROIS(f[s],dat)
 

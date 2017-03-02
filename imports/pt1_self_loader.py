@@ -14,24 +14,28 @@ def _get_files(dataPath,mouseID,train_type,date):
     """ helper function for  load_day_behaviour """
     Fs = os.listdir(dataPath)
     Fs_filt1 = [f for f in Fs if mouseID in f]
-    Fs_filt2 = [f for f in Fs_filt1 if date in f]
+    Fs_filt2 = [f for f in Fs_filt1 if re.findall(train_type + '_' + date,f)]
     Fs_filt3 = [f for f in Fs_filt2 if train_type in f]
     Fs_filt = [f for f in  Fs_filt3 if '.mat' not in f]
+    #Fs_filt = [f for f in Fs_filt if ]
 
     Fs_filt.sort()
+    #print [i for i in Fs_filt]
     return Fs_filt
 
 
 # In[162]:
 
-def _join_data_files(dicts,t_type='time'):
+def _join_data_files(dicts,t_type='time',frames_per_sess=None):
     """ helper function for  load_day_behaviour, 
         concatenates data dicts
     """
+    print t_type
     if t_type=='time':
         dicts = [d[0] for d in dicts]
     else:
         dicts = [d[1] for d in dicts]
+        print 'using frames'
     
     nDicts = len(dicts)
     dictNs = [d['fName'] for d in dicts]
@@ -40,33 +44,43 @@ def _join_data_files(dicts,t_type='time'):
     offset = 0
     
     bigDict = dicts[order[0]]
-    maxT = np.max([np.max(bigDict[k]) for k in bigDict.keys() if (k!='fName'
-        and len(bigDict[k])!=0)])
+    if type(frames_per_sess)==type(None):
+        maxT = np.max([np.max(bigDict[k]) for k in bigDict.keys() if (k!='fName'
+            and len(bigDict[k])!=0)])
+    else:
+        maxT = frames_per_sess[0]
 
     offset = maxT
+    iii = 1
     for idx in order[1:]:
         
         #sys.stdout.write(idx + "\n")
         dd = dicts[idx]
-        
-        maxT = np.max([np.max(dd[k]) for k in dd.keys() if (k!='fName' and
-            len(dd[k])!=0)])
+        if type(frames_per_sess)==type(None):
+            maxT = np.max([np.max(dd[k]) for k in dd.keys() if (k!='fName' and
+                len(dd[k])!=0)])
+        else:
+            maxT = frames_per_sess[iii]
 
         for k in bigDict.keys():
             if k!='fName':
                 bigDict[k] = bigDict[k] + [i+offset for i in dd[k]]
         
         offset += maxT
+
+        iii += 1
     
     for k in bigDict.keys():
         if k!='fName':
             bigDict[k] = np.array(bigDict[k])
+
+
     return bigDict
 
 
 # In[163]:
 
-def _load_pretraining1_self(fPath):
+def load_pretraining1_self(fPath):
     """ helper function for  load_day_behaviour loads
         behaviour data timestamps from individual files
     """
@@ -78,6 +92,7 @@ def _load_pretraining1_self(fPath):
         lickLsF = []; lickRsF = []; clicksF = []; rewsF = []; 
         freeRrews = []; freeLrews = []; freeRrewsF = []; freeLrewsF = [];
         t_old = -1
+        t = -1
         done=False
         for row in reader:
             if not done:
@@ -177,7 +192,7 @@ def _load_pretraining1_self(fPath):
 
 # In[164]:
 
-def load_day_behaviour(baseDir,mouseID,date,train_type,t_type='time'):
+def load_day_behaviour(baseDir,mouseID,date,train_type,t_type='time',fs=None,frames_per_sess=None):
     
     """ Load entire behaviour session from multiple files concatenated
         
@@ -201,15 +216,18 @@ def load_day_behaviour(baseDir,mouseID,date,train_type,t_type='time'):
 
     """
     
+    if type(fs)==type(None):
     #just get the data locations
-    fs = _get_files(baseDir,mouseID,train_type,date)
+        fs = _get_files(baseDir,mouseID,train_type,date)
+    else:
+        pass
         
     
     fs = [f for f in fs if os.stat(os.path.join(baseDir,f)).st_size>0]
     #sys.stdout.write(fs + "\n")
-    dataDicts = [_load_pretraining1_self(os.path.join(baseDir,f)) for f in fs]
+    dataDicts = [load_pretraining1_self(os.path.join(baseDir,f)) for f in fs]
     data_by_sess = cp.deepcopy(dataDicts)
-    allDict =_join_data_files(dataDicts,t_type=t_type)
+    allDict =_join_data_files(dataDicts,t_type=t_type,frames_per_sess=frames_per_sess)
     allDict['fName'] = mouseID + '_' + train_type + '_' + date
 
 
