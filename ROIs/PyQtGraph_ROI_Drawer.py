@@ -270,8 +270,12 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     dat = pickle.load(f)
                 import copy as cp
                 self.ROI_attrs = dat
-                if 'spike_inf' in dat.keys():
-                    self.ROI_attrs['traces'] = dat['spike_inf']
+
+                for key in dat.keys():
+                    if type(self.ROI_attrs[key])==type(np.zeros(5)):
+                        self.ROI_attrs[key] = self.ROI_attrs[key].tolist()
+                #if 'spike_inf' in dat.keys():
+                #    self.ROI_attrs['traces'] = dat['spike_inf']
                 #self.ROI_attrs['traces'] = dat['spike_inf']
                 self.nROIs = len(dat['idxs'])
                 for roiIdx in range(self.nROIs):

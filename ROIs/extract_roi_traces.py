@@ -126,7 +126,7 @@ def extract_spikes(roiattrs):
     spkt = c2s.predict(c2s.preprocess(data),verbosity=0)
 
     nROIs = len(roiattrs['idxs'])
-    cFrames = roiattrs['traces'].shape[1]
+    cFrames = np.array(roiattrs['traces']).shape[1]
 
     spk_traces = np.zeros([nROIs,cFrames])
     spk_long = []
