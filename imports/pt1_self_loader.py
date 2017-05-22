@@ -91,9 +91,11 @@ def load_pretraining1_self(fPath):
         lickLs = []; lickRs = []; clicks = []; rews = [];
         lickLsF = []; lickRsF = []; clicksF = []; rewsF = []; 
         freeRrews = []; freeLrews = []; freeRrewsF = []; freeLrewsF = [];
+        vols = [];
         t_old = -1
         t = -1
         done=False
+        #print fPath
         for row in reader:
             if not done:
                 if 'lick:L' in row[0]:
@@ -117,13 +119,28 @@ def load_pretraining1_self(fPath):
 
 
                 if 'Sound:click' in row[0]:
-                    t, frameN = re.findall(r'.*click_(.*)',row[0])[0].split('_')
 
-                    if float(frameN)>0:
-                        if float(t)<float(t_old):
-                            done = True 
-                        else:
-                            clicks.append(float(t));clicksF.append(float(frameN))
+
+                    if "multilevel" not in fPath:
+                        #print 'hoooor'
+                        t, frameN = re.findall(r'.*click_(.*)',row[0])[0].split('_')
+
+                        if float(frameN)>0:
+                            if float(t)<float(t_old):
+                                done = True 
+                            else:
+                                clicks.append(float(t));clicksF.append(float(frameN))
+                    else:
+                        #print 'here'
+                        t, frameN = re.findall(r'.*click_[0-9]_(.*)',row[0])[0].split('_')
+                        vol = re.findall(r'.*click_([0-9])_.*',row[0])[0]
+                        if float(frameN)>0:
+                            vols.append(int(vol))
+                            if float(t)<float(t_old):
+                                done = True 
+                            else:
+                                clicks.append(float(t));clicksF.append(float(frameN))
+
 
                 if 'rew:RL' in row[0]:
                     t, frameN = re.findall(r'.*RL_(.*)',row[0])[0].split('_')
@@ -186,6 +203,9 @@ def load_pretraining1_self(fPath):
               'rewL': rewLF,
               'fName': os.path.split(fPath)[-1]}
     
+    if "multilevel" in fPath:
+        data_F['vols'] = vols
+        data_t['vols'] = vols
     
     return data_t, data_F
 

@@ -31,10 +31,10 @@ import twoptb as MP
 
 hdf_path = os.path.abspath(sys.argv[1])
 hdf = h5py.File(hdf_path,'r+',libver='latest') #MP.file_management.load_hdf5(hdf_path,'wb')
-print hdf.keys()
+#print hdf.keys()
 tonemap = hdf[u'tonemapping']['registered_data']#hdf['tonemapping']['registered_data']
 areas = tonemap.keys()
-print areas
+#print areas
 def get_big_DM(x,n_back,rT,descriptor=None):
     """ Build the Big Design Matrix with
         all kinds of offsets """
@@ -160,7 +160,7 @@ def get_tuning_curves(areaF,centre=None):
 
 
 
-    good = (np.max(resps,axis=1) - np.mean(resps,axis=1))>.2
+    good = (np.max(resps,axis=1) - np.mean(resps,axis=1))>.5
     BFs = np.argmax(resps,axis=1)
     gBFs = BFs[good]
     gPos = absROI_pos[:,good]
@@ -185,30 +185,32 @@ for area in areas:
 
 
         print 'processing area %s:' %idx,
+        if "ROI_dataLoc" in areaF.attrs.keys():
+            print area
+            #if 'stimattrs' not in areaF.attrs.keys():
+            #    areaF.attrs['stimattrs'] = hdf['tonemapping']['raw_data'][area].attrs['stimattrs']
 
-        print area
-        if 'stimattrs' not in areaF.attrs.keys():
-            areaF.attrs['stimattrs'] = hdf['tonemapping']['raw_data'][area].attrs['stimattrs']
+            if 'ROI_dataLoc' in areaF.attrs.keys():
+                if idx==0:
+                    absROI_pos,BFs,gBFs,gPos,Tcs,goodN = get_tuning_curves(areaF,centre=centre)
+                else:
+                    T_absROI_pos,T_BFs,T_gBFs, T_gPos, T_Tcs,T_goodN = get_tuning_curves(tonemap[area],centre=centre)
+                    absROI_pos = np.hstack([absROI_pos,T_absROI_pos])
+                    BFs = np.concatenate([BFs,T_BFs])
+                    gBFs = np.concatenate([gBFs,T_gBFs])
+                    gPos = np.hstack([gPos,T_gPos])
+                    Tcs =  np.vstack([Tcs,T_Tcs])
+                    goodN = np.concatenate([goodN,T_goodN])
 
-        if 'ROI_dataLoc' in areaF.attrs.keys():
-            if idx==0:
-                absROI_pos,BFs,gBFs,gPos,Tcs,goodN = get_tuning_curves(areaF,centre=centre)
-            else:
-                T_absROI_pos,T_BFs,T_gBFs, T_gPos, T_Tcs,T_goodN = get_tuning_curves(tonemap[area],centre=centre)
-                absROI_pos = np.hstack([absROI_pos,T_absROI_pos])
-                BFs = np.concatenate([BFs,T_BFs])
-                gBFs = np.concatenate([gBFs,T_gBFs])
-                gPos = np.hstack([gPos,T_gPos])
-                Tcs =  np.vstack([Tcs,T_Tcs])
-                goodN = np.concatenate([goodN,T_goodN])
-
-            idx += 1
-            print idx
+                idx += 1
+                print idx
     else:
         pass
 
+    
 
-cmapN = 'jet'
+
+cmapN = 'viridis'
 cmap = matplotlib.cm.ScalarMappable(cmap=cmapN )
 norm = matplotlib.colors.Normalize(vmin=0, vmax=15)
 c=cmap.to_rgba(np.flipud(np.arange(0,15,1))).reshape(15,1,4)

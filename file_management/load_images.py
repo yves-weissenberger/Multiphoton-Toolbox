@@ -47,7 +47,7 @@ def load_tiff_series(directory):
     stimattrs = None
     sys.stdout.write('\r')
 
-    for idx, fname in enumerate(fnames):
+    for idx, fname in enumerate(sorted(fnames)):
 
 
 
@@ -122,7 +122,7 @@ def add_raw_series(baseDir,file_Dirs,HDF_File,session_ID,get_DM=False):
         st = time.time()
 
         frames = File.shape[0]
-        chunkSize = np.max(np.array([x for x in range(2, 11) if frames%x == 0]))
+        chunkSize = np.max(np.array([x for x in range(1, 11) if frames%x == 0]))
         print chunkSize
         areaDSet = HDF_File[session_ID]['raw_data'].create_dataset(name=fDir,
                                                            data=File.astype('uint16'),

@@ -102,26 +102,36 @@ if __name__=='__main__':
         roiFs = [os.path.join(roi_pth,i) for i in os.listdir(roi_pth)]
         lIdx = np.argmax([os.path.getsize(i) for i in roiFs])
         largest = roiFs[lIdx]
-        #print largest, '\n\n'
+        print "largest:", largest, '\n\n'
         newest = max(roiFs , key = os.path.getctime)
-        print newest
-
+        nIdx = int(np.where([i in newest for i in sessions])[0])
+        print "newest:", newest, nIdx,lIdx, "\n"
+        Idx = nIdx; should_be = newest
         if largest!=newest:
-            resp = raw_input('do you want to continue? (y/n):')
-            if str(resp)=='y':
+            resp = raw_input('how do you want to continue? (size/new/none):')
+            print str(resp)
+
+            if str(resp)=='size':
                 print "using largest file"
+                Idx = lIdx
+                should_be = largest
+            elif str(resp)=='new':
+                print "using newest file"
+                Idx = nIdx
+                should_be = newest
             else:
                 raise "Largest File is not newest, be careful in erasing"
         #print newest,largest
-        ROILoc = f[sessions[lIdx]].attrs['ROI_dataLoc']
+        ROILoc = f[sessions[Idx]].attrs['ROI_dataLoc']
         print ROILoc
-        if ROILoc!=largest:
+        if ROILoc!=should_be:
+
             raise "Something went wrong, wrong file has been selected"
         with open(ROILoc) as f_i:
                 dat = pickle.load(f_i)
 
         for s in all_sessions:
-            if s!=sessions[lIdx]:
+            if s!=sessions[Idx]:
                 print s
                 save_ROIS(f[s],dat)
 
