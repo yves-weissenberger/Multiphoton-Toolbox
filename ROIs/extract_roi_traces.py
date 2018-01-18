@@ -80,7 +80,7 @@ def neuropil_correct(areaF,roi_attrs):
         temp = temp.astype('float64')
         temp[temp==0] = np.nan
         trace = np.nanmean(temp,axis=(1,2))
-        corrected_trace = trace - .7*neuropil_trace
+        corrected_trace = trace - .4*neuropil_trace
 
         roiattrs['traces'][idx] = trace
         roiattrs['neuropil_traces'][idx] = neuropil_trace
@@ -103,7 +103,7 @@ def baseline_correct(roiattrs):
         sys.stdout.flush()
 
         roiattrs['traces'][idx] = roiattrs['traces'][idx] - MP.process_data.runkalman(roiattrs['traces'][idx],5000)
-        baseline = MP.process_data.runkalman(roiattrs['corr_traces'][idx],5000)
+        baseline = MP.process_data.runkalman(roiattrs['corr_traces'][idx],50000)
         roiattrs['corr_traces'][idx] = roiattrs['corr_traces'][idx] - baseline
         roiattrs['dfF'][idx] = roiattrs2['corr_traces'][idx]/baseline
         roiattrs['neuropil_traces'][idx] -= MP.process_data.runkalman(roiattrs['neuropil_traces'][idx],5000)

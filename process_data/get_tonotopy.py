@@ -1,6 +1,4 @@
 #!/home/yves/anaconda2/bin/python
-
-
 from __future__ import division
 import matplotlib.pyplot as plt
 import numpy as np
@@ -115,16 +113,20 @@ def ma(interval, window_size):
 def get_tuning_curves(areaF,centre=None):
     
     
-    
+    os.path.join(os.path.split(hdf_path)[0],"GRABinfos")
     #load the associated data
     #print areaF.attrs.keys()
-    grabI = pickle.load(open(areaF.attrs['GRABinfo']))
-    outDat = DM = pickle.load(open(areaF.attrs['stimattrs']))
+    grabI = pickle.load(open(os.path.join(os.path.join(os.path.split(hdf_path)[0],"GRABinfos"),os.path.split(areaF.attrs['GRABinfo'])[-1])))
+    outDat = DM = pickle.load(open(os.path.join(os.path.join(os.path.split(hdf_path)[0],"stims"),os.path.split(areaF.attrs['stimattrs'])[-1])))
+
+    #outDat = DM = pickle.load(open(areaF.attrs['stimattrs']))
     ROI_attrs = pickle.load(open(os.path.join(os.path.split(hdf.filename)[0],areaF.attrs['ROI_dataLoc']))) #this is monkey patch
     
     #absolute locations
     if centre==None:
         FOV_centre = np.array(grabI['xyzPosition'][:2])
+        FOV_centre = np.flipud(np.array(grabI['xyzPosition'][:2]))
+        print FOV_centre
     else:
         FOV_centre = centre
     #print FOV_centre
@@ -157,10 +159,12 @@ def get_tuning_curves(areaF,centre=None):
                 resps[neuron,stim-1] += np.mean(use_trace[(idx*stimSP):10+(idx*stimSP)])
 
         resps[neuron,:] = ma(resps[neuron,:],2)
+        #plt.plot(resps[neuron])
+        #plt.show()
 
 
 
-    good = (np.max(resps,axis=1) - np.mean(resps,axis=1))>.5
+    good = (np.max(resps,axis=1) - np.mean(resps,axis=1))>.1
     BFs = np.argmax(resps,axis=1)
     gBFs = BFs[good]
     gPos = absROI_pos[:,good]
@@ -181,7 +185,7 @@ for area in areas:
     centre = None
 
     areaF = tonemap[area]
-    if ('Tonotopy' in area or 'area' in area or 'Area' in area):
+    if ('Tonotopy' in area or 'area' in area or 'Area' in area or "zoom1" in area):
 
 
         print 'processing area %s:' %idx,
@@ -210,7 +214,8 @@ for area in areas:
     
 
 
-cmapN = 'viridis'
+#cmapN = 'viridis'
+cmapN = "jet"
 cmap = matplotlib.cm.ScalarMappable(cmap=cmapN )
 norm = matplotlib.colors.Normalize(vmin=0, vmax=15)
 c=cmap.to_rgba(np.flipud(np.arange(0,15,1))).reshape(15,1,4)

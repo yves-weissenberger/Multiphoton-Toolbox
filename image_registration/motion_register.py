@@ -70,30 +70,49 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
             frames = raw_file.shape[0]
             chunkSize = np.max(np.array([x for x in range(1, 11) if frames%x == 0]))
 
-            corrs_ = []
-            print frames
-            i = np.mean(raw_file[100:150],axis=0)
-            for j in raw_file[:frames]:
-                corrs_.append(np.corrcoef(i.flatten(),j.flatten())[0,1])
+            #corrs_ = []
+            #print frames
+            #nChunks = np.floor(frames/50)
+            #raw_file[:50*nChunks].reshape(-50,nChunks)
+            #for j in raw_file[:frames]:
+            #    corrs_.append(np. corrcoef(i.flatten(),j.flatten())[0,1])
 
-            ord_ = np.argsort(corrs_)
+            #ord_ = np.argsort(corrs_)
             
 
             if common_ref and f_idx==0:
                 print 'creating global reference'
                 #refIm_glob = np.mean(raw_file[ord_[-200:]],axis=0)[:,128:-128]
                 import Register_Image
-                refIm_glob = raw_file[ord_[-100]].astype('float')
-                for i in ord_[-99:]:
+
+                refss = []
+                for ix_,as_ in enumerate(HDF_File[session_ID]['raw_data'].keys()):
+                    a_ = np.mean(HDF_File[session_ID]['raw_data'][as_][-500:],axis=0)
+                    refss.append(a_)
+                    plt.figure(ix_)
+                    plt.imshow(a_,interpolation='None',cmap='gray')
+                    plt.title(ix_)
+                plt.show(block=False)
+
+                sel_ref = int(raw_input("selected mean: "))
+
+
+                plt.figure()
+                plt.imshow(refss[sel_ref],interpolation='None',cmap='gray')
+                plt.title("Selected Reference")
+                plt.show(block=False)
+
+                refIm_glob = refss[sel_ref]#np.mean(raw_file[:5000],axis=0)#raw_file[ord_[-100]].astype('float')
+                #for i in ord_[-99:]:
 
 
                     #image_idx = inp[0]
                     #image = inp[1]
                     #regFile = inp[2]
-                    out=Register_Image.Register_Image(raw_file[i],refIm_glob)
-                    refIm_glob += out[1].astype('float')
+                    #out=Register_Image.Register_Image(raw_file[i],refIm_glob)
+                    #refIm_glob += out[1].astype('float')
 
-                refIm_glob /= 100.
+                #refIm_glob /= 100.
                 #plt.imshow(refIm_glob,cmap='gray')
                 #plt.show()
                 refIm_glob = refIm_glob[128:-128,128:-128]
@@ -205,9 +224,9 @@ def motion_register(imArray,regFile,maxIter=1,Crop=True,inRAM=True,poolSize=4,co
         refIm = refIm_glob
     else:
         if crop==True:
-            refIm = np.mean(imArray[:50],axis=0)[128:-128,128:-128]
+            refIm = np.mean(imArray[:5000],axis=0)[128:-128,128:-128]
         else:
-            refIm = np.mean(imArray[:50],axis=0)
+            refIm = np.mean(imArray[:5000],axis=0)
 
     converged = False
     iteration = 0
@@ -318,11 +337,18 @@ def register_image(inp):
     else:
         shift, _, _ = register_translation(refIm_, image, upsample_factor=upsample_factor)
 
+
+    if np.any(shift>20):
+        #print "!!!!!!WARNING VERY LARGE SHIFTS!!!!!!"
+        shift = np.array([0,0])
+
+    
     if np.sum(np.abs(shift))!=0:
         regIm =  np.fft.ifftn(fourier_shift(np.fft.fftn(image), shift)).real
     else:
         regIm = image
 
+   
     #added for reduce memory test
     if not inRAM:    
         regFile[image_idx] = regIm

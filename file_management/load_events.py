@@ -43,12 +43,19 @@ def import_imaging_behaviour(pth,pretraining_type='2'):
         if entry[0]=='lick':
             licks.append(entry[1].split('_'))
         if entry[0]=='Sound':
-            if pretraining_type=='1':
+            if (pretraining_type=='1' and 'catch_trials' not in pretraining_type):
                 snd.append(entry[1].split('_'))
+
+            elif (pretraining_type=='1' and 'catch_trials' in pretraining_type and 'multilevel' not in pretraining_type):
+                print 'This has not been setup yet'
+                raise Exception("Not implemented error")
+            elif (pretraining_type=='1' and 'catch_trials' in pretraining_type and 'multilevel' in pretraining_type):
+                raise Exception("Not implemented error")
             elif pretraining_type=='2':
                 #print entry
                 tSL = [int(entry[1][0]),entry[2][:2]] + entry[3].split('_')
                 snd.append(tSL)
+
             else:
                 tt = entry[1].split('_')
                 tSL = [int(tt[0]),float(tt[1]),int(tt[2])]

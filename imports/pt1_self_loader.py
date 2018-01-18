@@ -12,12 +12,21 @@ import csv
 
 def _get_files(dataPath,mouseID,train_type,date):
     """ helper function for  load_day_behaviour """
-    Fs = os.listdir(dataPath)
-    Fs_filt1 = [f for f in Fs if mouseID in f]
-    Fs_filt2 = [f for f in Fs_filt1 if re.findall(train_type + '_' + date,f)]
-    Fs_filt3 = [f for f in Fs_filt2 if train_type in f]
-    Fs_filt = [f for f in  Fs_filt3 if '.mat' not in f]
-    #Fs_filt = [f for f in Fs_filt if ]
+    if "catch_trials" not in train_type:
+        Fs = os.listdir(dataPath)
+        Fs_filt1 = [f for f in Fs if mouseID in f]
+        Fs_filt2 = [f for f in Fs_filt1 if re.findall(train_type + '_' + date,f)]
+        Fs_filt3 = [f for f in Fs_filt2 if train_type in f]
+        Fs_filt = [f for f in  Fs_filt3 if '.mat' not in f]
+        #Fs_filt = [f for f in Fs_filt if ]
+    else:
+        print 'alt'
+        Fs = os.listdir(dataPath)
+        Fs_filt1 = [f for f in Fs if mouseID in f]
+        Fs_filt2 = [f for f in Fs_filt1 if date+'-' in f]
+        Fs_filt3 = [f for f in Fs_filt2 if train_type in f]
+        Fs_filt = [f for f in  Fs_filt3 if '.mat' not in f]
+        #Fs_filt = [f for f in Fs_filt if ]
 
     Fs_filt.sort()
     #print [i for i in Fs_filt]
@@ -64,7 +73,10 @@ def _join_data_files(dicts,t_type='time',frames_per_sess=None):
 
         for k in bigDict.keys():
             if k!='fName':
-                bigDict[k] = bigDict[k] + [i+offset for i in dd[k]]
+                if k!='vols':
+                    bigDict[k] = bigDict[k] + [i+offset for i in dd[k]]
+                else:
+                    bigDict[k] = bigDict[k] + [i for i in dd[k]]
         
         offset += maxT
 
@@ -88,8 +100,8 @@ def load_pretraining1_self(fPath):
         reader = csv.reader(fl)
 
 
-        lickLs = []; lickRs = []; clicks = []; rews = [];
-        lickLsF = []; lickRsF = []; clicksF = []; rewsF = []; 
+        lickLs = []; lickRs = []; clicks = []; rews = []; catches = []
+        lickLsF = []; lickRsF = []; clicksF = []; rewsF = []; catchesF = []
         freeRrews = []; freeLrews = []; freeRrewsF = []; freeLrewsF = [];
         vols = [];
         t_old = -1
@@ -123,24 +135,58 @@ def load_pretraining1_self(fPath):
 
                     if "multilevel" not in fPath:
                         #print 'hoooor'
-                        t, frameN = re.findall(r'.*click_(.*)',row[0])[0].split('_')
+                        if 'catch_trials' not in fPath:
+                            t, frameN = re.findall(r'.*click_(.*)',row[0])[0].split('_')
+                        else:
+                            t, frameN = re.findall(r'.*click_2(.*)',row[0])[0].split('_')
 
                         if float(frameN)>0:
+                            vols.append(1)
+                            if float(t)<float(t_old):
+                                done = True
+                            else:
+                                clicks.append(float(t));clicksF.append(float(frameN))
+                    else:
+                        #print 'here'
+                        t, frameN = re.findall(r'.*click_[0-9]{1,2}.{0,2}_(.*)',row[0])[0].split('_')
+                        vol = re.findall(r'.*click_([0-9]{1,2}.{0,2})_.*',row[0])[0]
+                        if float(frameN)>0:
+                            vols.append(float(vol))
+                            if float(t)<float(t_old):
+                                done = True 
+                            else:
+                                clicks.append(float(t));clicksF.append(float(frameN))
+
+                if 'Sound:catch_trial' in row[0]:
+                    if "multilevel" not in fPath:
+
+                        t, frameN = re.findall(r'.*catch_trial_2([0-9]{0,10}.{0,5}_[0-9]{1,8})',row[0])[0].split('_')
+                        if float(frameN)>0:
+                            vols.append(0)
                             if float(t)<float(t_old):
                                 done = True 
                             else:
                                 clicks.append(float(t));clicksF.append(float(frameN))
                     else:
-                        #print 'here'
-                        t, frameN = re.findall(r'.*click_[0-9]_(.*)',row[0])[0].split('_')
-                        vol = re.findall(r'.*click_([0-9])_.*',row[0])[0]
+                        t, frameN = re.findall(r'.*catch_trial_[0-9]{0,2}.{0,2}_(.*)',row[0])[0].split('_')
+                        vol = re.findall(r'.*catch_trial_([0-9]{1,2}.{0,2})_.*',row[0])[0]
                         if float(frameN)>0:
-                            vols.append(int(vol))
+                            vols.append(float(vol))
                             if float(t)<float(t_old):
                                 done = True 
                             else:
                                 clicks.append(float(t));clicksF.append(float(frameN))
 
+
+
+                #if 'Sound:catch_trial' in row[0]:
+                #    t, frameN = re.findall(r'.*catch_trial_(.*)',row[0])[0].split('_')
+                #
+                #    if float(frameN)>0:
+                #        if float(t)<float(t_old):
+                #            done = True 
+                #        else:
+                #            catches.append(float(t));catchesF.append(float(frameN))
 
                 if 'rew:RL' in row[0]:
                     t, frameN = re.findall(r'.*RL_(.*)',row[0])[0].split('_')
@@ -203,9 +249,9 @@ def load_pretraining1_self(fPath):
               'rewL': rewLF,
               'fName': os.path.split(fPath)[-1]}
     
-    if "multilevel" in fPath:
-        data_F['vols'] = vols
-        data_t['vols'] = vols
+    #if "multilevel" in fPath:
+    data_F['vols'] = vols
+    data_t['vols'] = vols
     
     return data_t, data_F
 

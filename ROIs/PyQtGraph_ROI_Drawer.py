@@ -68,11 +68,19 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 self.mean_image = np.mean(areaFile[:3000],axis=0).T
 
 
-            #self.mean_image = self.mean_image + self.mean_image*sobel(self.mean_image)/50
+
+            #if 'max_image' in areaFile.attrs.iterkeys():
+            #    self.mean_image = areaFile.attrs['max_image'].T
+            #else:
+            #    print 'No mean Image provided, computing....'
+            #    self.mean_image = np.max(areaFile[:6000],axis=0).T
+
+            #self.mean_image = self.mean_image + self.mean_image*sobel(self.mean_image)/50 #out
             self.mean_image /= np.max(self.mean_image)
 
             self.mean_image = exposure.equalize_adapthist(self.mean_image,clip_limit=.001)
-
+            print np.min(self.mean_image)
+            print np.max(self.mean_image)
 
             self.ROI_attrs = {'centres':[],
                               'patches':[],
@@ -285,7 +293,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
 
 
-                    ROItxt = pg.TextItem(str(roiIdx),color=[100,100,0])
+                    ROItxt = pg.TextItem(str(roiIdx),color=[00,250,0])
                     ROItxt.setPos(self.ROI_attrs['centres'][roiIdx][0]-2,self.ROI_attrs['centres'][roiIdx][1]-2)
                     ROItxt.setParentItem(self.img)
                     #print self.ROI_attrs['centres'][roiIdx]
@@ -309,6 +317,8 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
 
         def onClick(self,ev):
+
+            modifiers = QtGui.QApplication.keyboardModifiers()
             #print self.vb.mapSceneToView(ev.pos())
             if ev.button()==1 and ev.double():
                 self.proc_roi_region(add_region=True)
@@ -351,7 +361,10 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
 
                     self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],0] = 0
-                    self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],1] = 1
+                    if modifiers == QtCore.Qt.ShiftModifier:
+                        self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],2] = 1
+                    else:
+                        self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],1] = 1
                     self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
                     #self.proc_roi_region(add_region=False)
                     #self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
@@ -748,6 +761,7 @@ if __name__=="__main__":
                 if len(HDF_File[sessions[session]]['registered_data'])>0:
                     print 'Using registered Data'
                     dataType = 'registered_data'
+                    #dataType = 'raw_data'
                 else:
                     print '\n!!!!!!!!!!WARNING!!!!!!!!!!!!\nUsing Raw Data\n!!!!!!!!!!WARNING!!!!!!!!!!!!'
                     dataType = 'raw_data'

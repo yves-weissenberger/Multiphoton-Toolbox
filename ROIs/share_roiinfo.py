@@ -102,11 +102,14 @@ if __name__=='__main__':
         roiFs = [os.path.join(roi_pth,i) for i in os.listdir(roi_pth)]
         lIdx = np.argmax([os.path.getsize(i) for i in roiFs])
         largest = roiFs[lIdx]
-        print "largest:", largest, '\n\n'
+        lIdx = int(np.where([i in largest for i in sessions])[0])
+        print "largest:", largest, lIdx, '\n\n'
         newest = max(roiFs , key = os.path.getctime)
         nIdx = int(np.where([i in newest for i in sessions])[0])
-        print "newest:", newest, nIdx,lIdx, "\n"
-        Idx = nIdx; should_be = newest
+        print "newest:", newest 
+
+        print lIdx,nIdx, "\n"
+        #Idx = nIdx; should_be = newest
         if largest!=newest:
             resp = raw_input('how do you want to continue? (size/new/none):')
             print str(resp)
@@ -114,10 +117,13 @@ if __name__=='__main__':
             if str(resp)=='size':
                 print "using largest file"
                 Idx = lIdx
+                print [sessions[Idx]]
                 should_be = largest
             elif str(resp)=='new':
-                print "using newest file"
+                print "using newest file:",
                 Idx = nIdx
+                print [sessions[Idx]]
+
                 should_be = newest
             else:
                 raise "Largest File is not newest, be careful in erasing"
