@@ -3,12 +3,28 @@
     outputs the mean images as .jpg files. Can do multiple directions """
 
 
-
 import sys
 import h5py
-import matplotlib.pyplot as plt
 import numpy as np
 import os
+
+
+def findpath():
+    cDir = os.path.dirname(os.path.realpath(__file__))
+
+    found = False
+    while not found:
+        cDir,ext = os.path.split(cDir) 
+        if ext=='twoptb':
+            found = False
+            twoptb_path = cDir
+            print 
+            break
+    return twoptb_path
+
+twoptb_path = findpath()
+sys.path.append(twoptb_path)
+
 
 if __name__=="__main__":
 
@@ -28,6 +44,7 @@ if __name__=="__main__":
                      hdfPaths.append(os.path.join(root,fl))
 
 
+    ### Collect all the mean images and ROI locations
     for hdfPath in hdfPaths:
         hdf2 = h5py.File(hdfPath,'r',libver='latest')
 

@@ -148,6 +148,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             #self.sigClicked.connect(self.test1)
             self.vb.scene().sigMouseClicked.connect(self.onClick)          #THIS IS IT!
 
+            #self.vb.scene().keyPressEvent.connect(self.keypress)
             self.Gplt = pg.PlotWidget(background='w')
             self.Gplt.setFixedHeight(200)
             self.Gplt.setXRange(0,self.nFrames)
@@ -266,6 +267,15 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
             #areaFile.attrs['ROI_dataLoc'] = FLOC
             print 'ROI MASKS SAVED'
+
+        def keyPressEvent(self,ev):
+            modifiers = QtGui.QApplication.keyboardModifiers()
+
+            key = ev.key()
+            if modifiers == QtCore.Qt.ShiftModifier:
+                print key
+
+            #pass
 
         def _restore_prev_session(self):
 
