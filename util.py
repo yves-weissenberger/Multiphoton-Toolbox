@@ -30,21 +30,34 @@ def load_GRABinfo(matobj):
     '''
     A recursive function which constructs from matobjects nested dictionaries
     '''
-    dict = {}
+    dictA = {}
     for strg in matobj._fieldnames:
         elem = matobj.__dict__[strg]
         if isinstance(elem, spio.matlab.mio5_params.mat_struct):
-            dict[strg] = _todict(elem)
+            dictA[strg] = _todict(elem)
         else:
-            dict[strg] = elem
-    return dict
+            dictA[strg] = elem
+    return dictA
 
 
 def copy_ROIs(hdf):
 
     return None
 
-
+def _todict(matobj):
+    '''
+    A recursive function which constructs from matobjects nested dictionaries
+    '''
+    d = {}
+    for strg in matobj._fieldnames:
+        elem = matobj.__dict__[strg]
+        if isinstance(elem, spio.matlab.mio5_params.mat_struct):
+            d[strg] = _todict(elem)
+        elif isinstance(elem, np.ndarray):
+            d[strg] = _tolist(elem)
+        else:
+            d[strg] = elem
+    return d
 
 def _select_area(hdf):
 

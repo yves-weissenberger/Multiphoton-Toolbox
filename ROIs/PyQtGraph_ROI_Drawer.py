@@ -273,7 +273,33 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
             key = ev.key()
             if modifiers == QtCore.Qt.ShiftModifier:
-                print key
+                print self.roi_idx
+
+                self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],0] = 0
+                self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],3] = 0
+                self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],3] = 0
+                if key==16777235:
+                    print 'Up'
+                    self.ROI_attrs['idxs'][self.roi_idx][1] += 1
+                elif key==16777234:
+                    print 'Left'
+                    self.ROI_attrs['idxs'][self.roi_idx][0] -= 1
+                elif key==16777236:
+                    print 'Right'
+                    self.ROI_attrs['idxs'][self.roi_idx][0] += 1
+
+                elif key==16777237:
+                    print 'Down'
+                    self.ROI_attrs['idxs'][self.roi_idx][1] -= 1
+
+                else:
+                    pass
+
+                self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],1] = 1
+                self.mask[self.ROI_attrs['idxs'][self.roi_idx][0],self.ROI_attrs['idxs'][self.roi_idx][1],3] = 1
+
+                self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
+
 
             #pass
 
