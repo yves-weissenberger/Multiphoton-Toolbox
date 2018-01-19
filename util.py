@@ -59,6 +59,24 @@ def _todict(matobj):
             d[strg] = elem
     return d
 
+def _tolist(ndarray):
+    '''
+    A recursive function which constructs lists from cellarrays
+    (which are loaded as numpy ndarrays), recursing into the elements
+    if they contain matobjects.
+    '''
+    elem_list = []
+    for sub_elem in ndarray:
+        if isinstance(sub_elem, spio.matlab.mio5_params.mat_struct):
+            elem_list.append(_todict(sub_elem))
+        elif isinstance(sub_elem, np.ndarray):
+            elem_list.append(_tolist(sub_elem))
+        else:
+            elem_list.append(sub_elem)
+    return elem_list
+data = scipy.io.loadmat(filename, struct_as_record=False, squeeze_me=True)
+return _check_keys(data)
+
 def _select_area(hdf):
 
     print hdf.filename
