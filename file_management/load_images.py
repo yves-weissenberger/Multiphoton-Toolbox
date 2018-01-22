@@ -62,27 +62,27 @@ def load_tiff_series(directory):
                 pth = os.path.join(directory,fname)
                 b = tifffile.TiffFile(pth)
                 imageArr = b.series[0].asarray()
-                if np.any(imageArr<0):
-                    imageArr += int(1+np.min(imageArr,axis=(0,1,2)))
-                if np.any(imageArr>(2**16-2)):
-                    imageArr = np.clip(imageArr,0,2**16-2)
-                    print "!!!!!!!!!!!!!!!!!! WARNING VALUES GREATER THAN 2^16 in TIFF; CLIPPING  !!!!!!!!!!!!!!!!!!"
+                #if np.any(imageArr<0):
+                #    imageArr += int(1+np.min(imageArr,axis=(0,1,2)))
+                #if np.any(imageArr>(2**16-2)):
+                #    imageArr = np.clip(imageArr,0,2**16-2)
+                #    print "!!!!!!!!!!!!!!!!!! WARNING VALUES GREATER THAN 2^16 in TIFF; CLIPPING  !!!!!!!!!!!!!!!!!!"
 
-                if np.any(np.logical_not(np.isfinite(imageArr))):
-                    print "!!!!!!!!!!!!!!!!!! WARNING NOT FINITE VALUES in TIFF  !!!!!!!!!!!!!!!!!!"
+                #if np.any(np.logical_not(np.isfinite(imageArr))):
+                #    print "!!!!!!!!!!!!!!!!!! WARNING NOT FINITE VALUES in TIFF  !!!!!!!!!!!!!!!!!!"
 
             else:
                 pth = os.path.join(directory,fname)
                 b = tifffile.TiffFile(pth)
                 imageArr = np.concatenate([imageArr,b.series[0].asarray()])
-                if np.any(imageArr<0):
-                    imageArr += int(1+np.min(imageArr,axis=(0,1,2)))
-                if np.any(imageArr>(2**16-2)):
-                    imageArr = np.clip(imageArr,0,2**16-2)
-                    print "!!!!!!!!!!!!!!!!!! WARNING VALUES GREATER THAN 2^16 in TIFF; CLIPPING  !!!!!!!!!!!!!!!!!!"
+                #if np.any(imageArr<0):
+                #    imageArr += int(1+np.min(imageArr,axis=(0,1,2)))
+                #if np.any(imageArr>(2**16-2)):
+                #    imageArr = np.clip(imageArr,0,2**16-2)
+                #    print "!!!!!!!!!!!!!!!!!! WARNING VALUES GREATER THAN 2^16 in TIFF; CLIPPING  !!!!!!!!!!!!!!!!!!"
 
-                if np.any(np.logical_not(np.isfinite(imageArr))):
-                    print "!!!!!!!!!!!!!!!!!! WARNING NOT FINITE VALUES in TIFF  !!!!!!!!!!!!!!!!!!"
+                #if np.any(np.logical_not(np.isfinite(imageArr))):
+                #    print "!!!!!!!!!!!!!!!!!! WARNING NOT FINITE VALUES in TIFF  !!!!!!!!!!!!!!!!!!"
 
 
         elif 'GRABinfo' in fname:
