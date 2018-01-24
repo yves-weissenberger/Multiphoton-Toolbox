@@ -49,7 +49,11 @@ def get_hdf_paths(n_basedirs,in_args):
     return hdfPaths
 
 
-def get_patch_mask(arr):
+def get_patch_mask(roi_idxs,meanIm):
+    centroid = 1
+
+
+
     return None
 def get_overlap_ids(roi_locs,roiinfo2,thresh=.4):
 
@@ -190,7 +194,8 @@ def load_data(hdfDir):
 
     sharpness = []
     for iiii,sess in enumerate(hdf2[d]['registered_data'].keys()):
-        sharpness.append(get_gradsum(hdf2[d]['registered_data'][sess].attrs['mean_image']))
+        #sharpness.append(get_gradsum(hdf2[d]['registered_data'][sess].attrs['mean_image']))
+        sharpness.append(hdf2[d]['registered_data'][sess].attrs['mean_image'])
         #print 'jere'
 
         #if iiii==0:
@@ -200,9 +205,11 @@ def load_data(hdfDir):
 
 
     #meanIm2 /= iiii
-    im_idx = np.argmax(np.asarray(sharpness))
-    bsess = (hdf2[d]['registered_data'].keys())[im_idx]
-    meanIm2 = hdf2[d]['registered_data'][bsess].attrs['mean_image']
+    #im_idx = np.argmax(np.asarray(sharpness))
+    #bsess = (hdf2[d]['registered_data'].keys())[im_idx]
+    #meanIm2 = hdf2[d]['registered_data'][bsess].attrs['mean_image']
+    meanIm2 = np.max(np.array(sharpness),axis=0)
+    print "image shape ", np.shape(meanIm2)
 
     roiInfoloc = hdf2[d]['registered_data'][hdf2[d]['registered_data'].keys()[0]].attrs['ROI_dataLoc']
     hdf2.close()
@@ -389,7 +396,7 @@ if __name__=="__main__":
 
         plt.title(hdfPath)
         plt.imshow(meanIm2,cmap='binary_r',interpolation='None')
-        plt.imshow(maskNew,alpha=.15,interpolation='None')
+        plt.imshow(maskNew,alpha=.075,interpolation='None')
 
 
 
@@ -411,7 +418,7 @@ if __name__=="__main__":
         plt.text(np.mean(ypos),np.mean(xpos),str(n_),color='green')
 
     plt.imshow(globalIM,cmap='binary_r',interpolation='None')
-    plt.imshow(maskNew,alpha=.15,interpolation='None')
+    plt.imshow(maskNew,alpha=.075,interpolation='None')
 
     plt.show()
 
