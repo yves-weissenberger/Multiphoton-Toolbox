@@ -49,6 +49,8 @@ def get_hdf_paths(n_basedirs,in_args):
     return hdfPaths
 
 
+def get_patch_mask(arr):
+    return None
 def get_overlap_ids(roi_locs,roiinfo2,thresh=.4):
 
     """ This returns cells where there is a lot of overlap 
@@ -76,6 +78,8 @@ def get_overlap_ids(roi_locs,roiinfo2,thresh=.4):
     #print np.max(np.max(overlap,axis=1))
     good_idxs2 = np.argmax(overlap,axis=1)[good_idxs1]
     bad_idxs2 = np.argmax(overlap,axis=1)[bad_idxs1]
+
+
 
     estimated_pairs = [(i,j) for i,j in zip(good_idxs1,good_idxs2)]
 
@@ -270,31 +274,75 @@ if __name__=="__main__":
                 #bad_idxs2 are the rois that are present in meanIm2 that are not present in the global one
                 estimated_pairs, good_idxs1, good_idxs2, bad_idxs1, bad_idxs2 = get_overlap_ids(roi_locs,
                                                                                                 all_ROI,
-                                                                                                thresh=.4)
+                                                                                                thresh=.5)
 
 
-                # Here run day refers to the day that is currently run in the looop
+                # Here run day refers to the day that is currently run in the loop
+                #importantly, the curr duplicates are 
+                curr_duplicates = [i[0] for i in duplicate_list]
+
                 for runn_day, glob_day in estimated_pairs:
-                    duplicate_list.append([{hdfPath:runn_day}])
+                    if glob_day in curr_duplicates:
+                        ix_ = np.where(np.array(curr_duplicates)==glob_day)[0]
+                        if len(ix_)==1:
+                        #print type(duplicate_list[ix_][1])
+                            duplicate_list[ix_][1][hdfPath] = runn_day
+                        elif len(ix_)>0:
+                            for ixx_ in ix_:
+                                duplicate_list[ixx_][1][hdfPath] = runn_day
+
+                    else:
+                        duplicate_list.append([glob_day,{hdfPath:runn_day}])
 
                 all_seen += len(roiinfo2['idxs'])
                 print len(bad_idxs1)/float(len(good_idxs1)+len(bad_idxs1))
                 #bad idxs1 should be the rois from roi_locs
-                for idx in bad_idxs1:
+                for i_,idx in enumerate(bad_idxs1):
 
                     
                     all_ROI['idxs'].append(roi_locs[idx])
                     all_ROI['centres'].append(np.mean(roi_locs[idx],axis=1))
                     all_ROI['sess'].append(hdfPath)
+                    ### THE INDEX OF THIS ROI IN THE ORIGINAL SESSION; NOT SURE THIS IS CORRECT
+                    all_ROI['orig_index'].append(bad_idxs2[i_])   
+                   
             except UnboundLocalError:
+                print "!!!!! WARNING SESSION %s not loaded !!!!!" %hdfPath 
                 pass
 
 
+     ### This block of code runs over the other days like this
+     #specifically, for each hdfPath you map all the ROIs over, unless
+    for hdfPath in hdfPaths[1:]:
+
+
+        meanIm2,roiinfo2 = load_data(hdfPath)
+        nCells_day = len(roiinfo2['idxs'])
+
+        roiinfo2['sess'] = [hdfPath]*nCells_day
+
+        roiinfo_set.append(roiinfo2)
+        #print 'loaded'
+
+        ## here, meanIm2 and globalIM are reversed relative to one another
+        #Here the roi_locs are the locations of ALL Rois from all images shifted onto
+        #the hdfPath image
+        roi_locs, shift_all = patch_register_roi_locs(meanIm2,globalIM,all_ROI,l=32)
+
+
+        #In this block of code deal with the bad_idx ROIs
+        for i in len(all_ROI['sess']):
+            if all_ROI['sess'][i]==hdfPath:
+                roi_locs[i] = roiinfo2[all_ROI['orig_index'][i]]
+
+
+        #In this block of code deal with the duplicate ROIs
+        for i in 
 
 
     #### END OF FOR LOOP #########
     print len(backup['idxs']),len(all_ROI['idxs']), all_seen
-
+    print duplicate_list
     maskNew = np.zeros([512,512,4])
 
     for n_,idxp in enumerate(all_ROI['idxs']):
