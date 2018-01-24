@@ -166,6 +166,39 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             self.possy = m[1,:,:]# make the y pos array
 
 
+            self.img02 = pg.ImageItem(setAutoDownsample=True)
+            self.img03 = pg.ImageItem(setAutoDownsample=True)
+            self.img04 = pg.ImageItem(setAutoDownsample=True)
+
+
+
+
+            grV2 = pg.GraphicsView(useOpenGL=False)
+            grV3 = pg.GraphicsView(useOpenGL=False)
+            grV4 = pg.GraphicsView(useOpenGL=False)
+
+            self.vb2 = pg.ViewBox()
+            self.vb2.setAspectLocked(1)
+            self.vb2.addItem(self.img02)
+
+            self.vb3 = pg.ViewBox()
+            self.vb3.setAspectLocked(1)
+            self.vb3.addItem(self.img03)
+
+
+
+            self.vb4 = pg.ViewBox()
+            self.vb4.setAspectLocked(1)
+            self.vb4.addItem(self.img04)
+
+
+            grV2.setCentralItem(self.vb2)
+            grV3.setCentralItem(self.vb3)
+            grV4.setCentralItem(self.vb4)
+
+
+
+
             ############## INIT BUTTONS #######################
             btn1 = QtGui.QPushButton("Next ROI", self)
             btn2 = QtGui.QPushButton("Previous ROI", self)
@@ -242,7 +275,13 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             layout.addWidget(btn11,10,1,1,1)
             layout.addWidget(btn12,10,0,1,1)
             layout.addWidget(btn13,8,6,1,1)
-            layout.addWidget(self.Gplt,11,0,3,8)
+            layout.addWidget(self.Gplt,11,0,3,7)
+            
+
+            layout.addWidget(grV2,0,6,1,1)
+            layout.addWidget(grV3,2,6,1,1)
+            layout.addWidget(grV4,4,6,1,1)
+
 
             self.setCentralWidget(w)
             if not restart:
@@ -257,6 +296,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             self.show()
             #self.connect(self, Qt.SIGNAL('triggered()'), self.closeEvent
             self.emptyText = pg.TextItem(text=str(self.roi_idx)+" Empty",color=[100,100,0])
+            self.set_small_ims()
 
         def save_ROIS(self):
             fName = areaFile.name[1:].replace('/','-') + '_ROIs.p'
@@ -267,6 +307,13 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
             #areaFile.attrs['ROI_dataLoc'] = FLOC
             print 'ROI MASKS SAVED'
+
+        def set_small_ims(self):
+
+            self.img02.setImage(self.ROI_attrs['patches'][self.roi_idx],autoLevels=False,levels=[0,2])
+
+
+
 
         def keyPressEvent(self,ev):
             modifiers = QtGui.QApplication.keyboardModifiers()

@@ -84,7 +84,7 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
                 print 'creating global reference'
                 #refIm_glob = np.mean(raw_file[ord_[-200:]],axis=0)[:,128:-128]
                 import Register_Image
-
+                ############# HERE TRY TO FIND A REFERENCE IMAGE ###############
                 refss = []
                 for ix_,as_ in enumerate(HDF_File[session_ID]['raw_data'].keys()):
                     a_ = np.mean(HDF_File[session_ID]['raw_data'][as_][-500:],axis=0)
