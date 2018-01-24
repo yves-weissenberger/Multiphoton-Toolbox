@@ -237,7 +237,8 @@ if __name__=="__main__":
 
     backup = cp.deepcopy(globalROI)
     all_ROI = {'idxs': globalROI['idxs'],
-               'centres': globalROI['centres']}
+               'centres': globalROI['centres'],
+               'orig_index': range(len(globalROI['idxs']))}
 
     nCells_day = len(all_ROI['idxs'])
 
@@ -259,7 +260,7 @@ if __name__=="__main__":
 
     for hdfPath in hdfPaths[1:]:
         print hdfPath
-        if '29' not in hdfPath:
+        if 1:#'29' not in hdfPath:
             try:
                 meanIm2,roiinfo2 = load_data(hdfPath)
                 nCells_day = len(roiinfo2['idxs'])
@@ -274,7 +275,7 @@ if __name__=="__main__":
                 #bad_idxs2 are the rois that are present in meanIm2 that are not present in the global one
                 estimated_pairs, good_idxs1, good_idxs2, bad_idxs1, bad_idxs2 = get_overlap_ids(roi_locs,
                                                                                                 all_ROI,
-                                                                                                thresh=.5)
+                                                                                                thresh=.3)
 
 
                 # Here run day refers to the day that is currently run in the loop
@@ -304,7 +305,8 @@ if __name__=="__main__":
                     all_ROI['centres'].append(np.mean(roi_locs[idx],axis=1))
                     all_ROI['sess'].append(hdfPath)
                     ### THE INDEX OF THIS ROI IN THE ORIGINAL SESSION; NOT SURE THIS IS CORRECT
-                    all_ROI['orig_index'].append(bad_idxs2[i_])   
+                    ### MAYBE SHOULD BE bad_idxs2/1??
+                    all_ROI['orig_index'].append(bad_idxs1[i_])   
                    
             except UnboundLocalError:
                 print "!!!!! WARNING SESSION %s not loaded !!!!!" %hdfPath 
@@ -313,7 +315,11 @@ if __name__=="__main__":
 
      ### This block of code runs over the other days like this
      #specifically, for each hdfPath you map all the ROIs over, unless
+
+    print '\nRunning over other areas...\n'
     for hdfPath in hdfPaths[1:]:
+
+
 
 
         meanIm2,roiinfo2 = load_data(hdfPath)
@@ -331,19 +337,70 @@ if __name__=="__main__":
 
 
         #In this block of code deal with the bad_idx ROIs
-        for i in len(all_ROI['sess']):
-            if all_ROI['sess'][i]==hdfPath:
-                roi_locs[i] = roiinfo2[all_ROI['orig_index'][i]]
+        for i_ in range(len(all_ROI['sess'])):
+            if all_ROI['sess'][i_]==hdfPath:
+
+                roi_locs[i_] = roiinfo2['idxs'][all_ROI['orig_index'][i_]]
+
 
 
         #In this block of code deal with the duplicate ROIs
-        for i in 
+        #for i in
+
+        #POTENTIAL BUG FROM ABOVE IS TWO MAP ON SAME DAY DOES IT OVERWRITE? YES BECAUSE PROBABLY CLOSE TOGETHER
+        dupl_glob = [i[0] for i in duplicate_list]
+        
+        # the i_ here is the cells in the glbal ROI that have duplicates
+        for ix1, i_ in enumerate(dupl_glob):
+            if hdfPath in duplicate_list[ix1][1].keys():
+                #ixx_ = np.where(np.array(dupl_glob)==i_)[0]
+                #print type(ixx_)
+                ixx_ = np.array([duplicate_list[ix1][1][hdfPath]]).astype('int')
+                if len(ixx_)>0:
+                    ixx_ = ixx_[0]
+                #print type(duplicate_list[ixx_][1][hdfPath])
+                #if type(ixx_)
+                roi_locs[i_] = roiinfo2['idxs'][ixx_]
+
+            #duplicate_list.append([glob_day,{hdfPath:runn_day}])  #here for refernce
+
+        print len(roi_locs)
+        plt.figure()
+
+        maskNew = np.zeros([512,512,4])
+        for n_,idxp in enumerate(roi_locs):
+            xpos = np.clip(idxp[1].astype('int'),0,511)
+            ypos = np.clip(idxp[0].astype('int'),0,511)
+
+            maskNew[xpos,ypos,0] = 1
+            maskNew[xpos,ypos,3] = 1
+
+            #plt.text(np.mean(ypos),np.mean(xpos),str(n_),color='green')
+
+
+        for n_,idxp in enumerate(roiinfo2['idxs']):
+            xpos = np.clip(idxp[1].astype('int'),0,511)
+            ypos = np.clip(idxp[0].astype('int'),0,511)
+
+            maskNew[xpos,ypos,1] = 1
+            maskNew[xpos,ypos,3] = 1
+
+
+
+        plt.title(hdfPath)
+        plt.imshow(meanIm2,cmap='binary_r',interpolation='None')
+        plt.imshow(maskNew,alpha=.15,interpolation='None')
+
+
+
 
 
     #### END OF FOR LOOP #########
     print len(backup['idxs']),len(all_ROI['idxs']), all_seen
-    print duplicate_list
+    #print duplicate_list
     maskNew = np.zeros([512,512,4])
+
+    plt.figure()
 
     for n_,idxp in enumerate(all_ROI['idxs']):
         xpos = np.clip(idxp[1].astype('int'),0,511)
@@ -351,8 +408,8 @@ if __name__=="__main__":
 
         maskNew[xpos,ypos,0] = 1
         maskNew[xpos,ypos,3] = 1
+        plt.text(np.mean(ypos),np.mean(xpos),str(n_),color='green')
 
-    plt.figure()
     plt.imshow(globalIM,cmap='binary_r',interpolation='None')
     plt.imshow(maskNew,alpha=.15,interpolation='None')
 
@@ -361,6 +418,8 @@ if __name__=="__main__":
 
 #mask1 =np.ma.masked_where(mask1==False,mask)
 
+
+#As a test on the final version of this show the ROIs that are the same
 
 
 
