@@ -49,8 +49,25 @@ def get_hdf_paths(n_basedirs,in_args):
     return hdfPaths
 
 
-def get_patch_mask(roi_idxs,meanIm):
-    centroid = 1
+def get_patch_mask(roi_idxs,meanIm,sz=25):
+    """ Return a list of centroids, patches and masks based on
+         extracted mask indices  """
+
+    centroids = []
+    masks = []
+    patches = []
+    for rixs_ in roi_idxs:
+        centroid = np.mean(rixs_,axis=1).astype('int')
+        mask_big = np.zeros([512,512])
+        mask_big[rixs_[1],rixs_[0]] = 1
+        mask = mask_big[centroid[1]-sz:centroid[1]+sz,centroid[0]-sz:centroid[0]+sz]
+        masks.append(mask)
+        patches.append(meanIm[centroid[1]-sz:centroid[1]+sz,centroid[0]-sz:centroid[0]+sz])
+        centroids.append(centroid)
+
+    return centroids, patches, masks
+
+
 
 
 
@@ -194,21 +211,21 @@ def load_data(hdfDir):
 
     sharpness = []
     for iiii,sess in enumerate(hdf2[d]['registered_data'].keys()):
-        #sharpness.append(get_gradsum(hdf2[d]['registered_data'][sess].attrs['mean_image']))
-        sharpness.append(hdf2[d]['registered_data'][sess].attrs['mean_image'])
+        sharpness.append(get_gradsum(hdf2[d]['registered_data'][sess].attrs['mean_image']))
+        #sharpness.append(hdf2[d]['registered_data'][sess].attrs['mean_image'])
         #print 'jere'
 
-        #if iiii==0:
-        #    meanIm2 = hdf2[d]['registered_data'][sess].attrs['mean_image']
-        #else:
-        #    meanIm2 += hdf2[d]['registered_data'][sess].attrs['mean_image']
+        if iiii==0:
+            meanIm2 = hdf2[d]['registered_data'][sess].attrs['mean_image']
+        else:
+            meanIm2 += hdf2[d]['registered_data'][sess].attrs['mean_image']
 
 
     #meanIm2 /= iiii
-    #im_idx = np.argmax(np.asarray(sharpness))
-    #bsess = (hdf2[d]['registered_data'].keys())[im_idx]
-    #meanIm2 = hdf2[d]['registered_data'][bsess].attrs['mean_image']
-    meanIm2 = np.max(np.array(sharpness),axis=0)
+    im_idx = np.argmax(np.asarray(sharpness))
+    bsess = (hdf2[d]['registered_data'].keys())[im_idx]
+    meanIm2 = hdf2[d]['registered_data'][bsess].attrs['mean_image']
+    #meanIm2 = np.max(np.array(sharpness),axis=0)
     print "image shape ", np.shape(meanIm2)
 
     roiInfoloc = hdf2[d]['registered_data'][hdf2[d]['registered_data'].keys()[0]].attrs['ROI_dataLoc']
@@ -313,7 +330,9 @@ if __name__=="__main__":
                     all_ROI['sess'].append(hdfPath)
                     ### THE INDEX OF THIS ROI IN THE ORIGINAL SESSION; NOT SURE THIS IS CORRECT
                     ### MAYBE SHOULD BE bad_idxs2/1??
-                    all_ROI['orig_index'].append(bad_idxs1[i_])   
+                    all_ROI['orig_index'].append(bad_idxs1[i_])
+
+
                    
             except UnboundLocalError:
                 print "!!!!! WARNING SESSION %s not loaded !!!!!" %hdfPath 
@@ -322,6 +341,21 @@ if __name__=="__main__":
 
      ### This block of code runs over the other days like this
      #specifically, for each hdfPath you map all the ROIs over, unless
+    centroids, patches, masks = get_patch_mask(all_ROI['idxs'],globalIM)
+    glob_rois = {'idxs': all_ROI['idxs'],
+                  'centres': centroids,
+                  'patches': patches,
+                  'masks': masks,
+                  'isPresent': np.ones(len(masks)),
+                  'mean_image': globalIM }
+
+
+    Folder = os.path.split(hdfPaths[0])[0]
+    fName = os.path.split(hdfPaths[0])[1][:-3] + 'ROIs_glob.p'
+    #print os.path.join(self.Folder,fName)
+    FLOC = os.path.join(Folder,fName)
+    with open(FLOC,'wb') as f:
+            pickle.dump(glob_rois,f)
 
     print '\nRunning over other areas...\n'
     for hdfPath in hdfPaths[1:]:
@@ -396,7 +430,25 @@ if __name__=="__main__":
 
         plt.title(hdfPath)
         plt.imshow(meanIm2,cmap='binary_r',interpolation='None')
-        plt.imshow(maskNew,alpha=.075,interpolation='None')
+        plt.imshow(maskNew,alpha=.1,interpolation='None')
+
+        centroids, patches, masks = get_patch_mask(roi_locs,meanIm2)
+        glob_rois = {'idxs': roi_locs,
+                     'centres': centroids,
+                     'patches': patches,
+                     'masks': masks,
+                     'isPresent': np.ones(len(masks)),
+                     'mean_image':meanIm2 } 
+
+        Folder = os.path.split(hdfPath)[0]
+        fName = os.path.split(hdfPath)[1][:-3] + 'ROIs_glob.p'
+        #print os.path.join(self.Folder,fName)
+        FLOC = os.path.join(Folder,fName)
+        with open(FLOC,'wb') as f:
+                pickle.dump(glob_rois,f)
+
+
+
 
 
 

@@ -3,6 +3,9 @@ import h5py
 import sys
 import os
 import copy as cp
+import pickle
+import matplotlib.pyplot as plt
+
 
 def findpath():
     cDir = os.path.dirname(os.path.realpath(__file__))
@@ -21,21 +24,21 @@ twoptb_path = findpath()
 sys.path.append(twoptb_path)
 
 
-def get_hdf_paths(n_basedirs,in_args):
+def get_roi_paths(n_basedirs,in_args):
 
     """ Returns list of all hdf paths"""
-    hdfPaths = []
+    roiPaths = []
     for dir_ix in range(1,1+n_basedirs):
         base_dir = in_args[dir_ix]
         for root, dirs, files in os.walk(base_dir):
             for fl in files:
-                if fl.endswith(".h5"):
+                if fl.endswith("glob.p"):
                      # print(os.path.join(root, fl)) 
-                     hdfPaths.append(os.path.join(root,fl))
+                     roiPaths.append(os.path.join(root,fl))
 
-    return hdfPaths
+    return roiPaths
 
-def MASK_DRAWER_GUI(areaFiles):
+def MASK_DRAWER_GUI(roi_sets):
     import numpy as np
     from pyqtgraph.Qt import QtGui, QtCore
     from pyqtgraph import Qt
@@ -53,53 +56,21 @@ def MASK_DRAWER_GUI(areaFiles):
 
     class Visualizator(QtGui.QMainWindow):
 
-        def __init__(self, areaFile):
+        def __init__(self, roi_sets):
 
 
 
             QtGui.QMainWindow.__init__(self)
+            #sizePolicy = QtCore.QSizePolicy(QtCore.QSizePolicy.Preferred, QtCoreQSizePolicy.Preferred)
+            #sizePolicy.setHeightForWidth(True)
+            #self.setSizePolicy(sizePolicy)
 
-            self.Folder = os.path.split(os.path.abspath(areaFile.file.filename))[0]
-            #if not os.path.isdir(os.path.join(self.Folder,'ROIs')):
-            #    os.mkdir(os.path.join(self.Folder,'ROIs'))
-            #print "\n %s \n" %os.path.split(self.Folder)[0]
+
             self.roi_idx = 0 
+            self.roi_sets = cp.deepcopy(roi_sets)
+            self.selected_window = None
+            self.resize(1000,200)
 
-            #print self.masks.shape, ROI_masks.shape
-            #self.masks[:,:,:ROI_masks.shape[2]] = ROI_masks
-            #print "file is %s MB \n" %1e-6 * areaFile[0].itemsize * np.product(areaFile.shape)
-            print 'loading data into RAM.... \n'
-            #self.video = np.zeros(areaFile.shape,dtype='uint16')
-            #self.video = np.asarray(areaFile.astpye('uint16'),dtype='uint16')
-            print "done!\n"
-
-            if 'mean_image' in areaFile.attrs.iterkeys():
-                self.mean_image = areaFile.attrs['mean_image'].T
-            else:
-                print 'No mean Image provided, computing....'
-                self.mean_image = np.mean(areaFile[:3000],axis=0).T
-
-
-            #if 'max_image' in areaFile.attrs.iterkeys():
-            #    self.mean_image = areaFile.attrs['max_image'].T
-            #else:
-            #    print 'No mean Image provided, computing....'
-            #    self.mean_image = np.max(areaFile[:6000],axis=0).T
-
-            #self.mean_image = self.mean_image + self.mean_image*sobel(self.mean_image)/50 #out
-            self.mean_image /= np.max(self.mean_image)
-
-            self.mean_image = exposure.equalize_adapthist(self.mean_image,clip_limit=.001)
-
-            self.ROI_attrs = {'centres':[],
-                              'patches':[],
-                              'masks':[],
-                              'idxs':[],
-                              'traces':[]}
-
-            self.show_mean_image = True
-            #self.masks = np.zeros(ROI_patches.shape)
-            #initialise the main window
 
 
 
@@ -108,8 +79,8 @@ def MASK_DRAWER_GUI(areaFiles):
             self.w.setLayout(layout)
             #print '2'
 
-            nCols = 4
-            nRows = 2#np.ceil(len(areaFiles/float(nCols)))
+            nCols = 7
+            nRows = 1
             self.vbs = []
             self.grvs = []
             self.imgs = []
@@ -118,22 +89,58 @@ def MASK_DRAWER_GUI(areaFiles):
             self.frames = []
             #print '2.5'
 
-            self.patch_size= [20,20]
-            for i in range(8):
+            self.patch_size= [50,50]
 
-                self.imgs.append(pg.ImageItem(setAutoDownsample=True))
-                self.masks.append(pg.ImageItem(setAutoDownsample=True))
-                fr = np.dstack([np.zeros(self.patch_size),np.pad(np.zeros([self.patch_size[0]-2]*2),1,'constant',constant_values=1)]*2)
-                self.frames.append(pg.ImageItem(setAutoDownsample=True))
-                self.frames[-1].setImage(fr)
+            self.blueframe = np.dstack([np.zeros(self.patch_size),
+                                    np.zeros(self.patch_size),
+                                    np.pad(np.zeros([self.patch_size[0]-2]*2),1,'constant',constant_values=1),
+                                    np.pad(np.zeros([self.patch_size[0]-2]*2),1,'constant',constant_values=1)
+                                    ])
+
+            self.redframe = np.dstack([ np.pad(np.zeros([self.patch_size[0]-2]*2),1,'constant',constant_values=1),
+                                np.zeros(self.patch_size),
+                                np.zeros(self.patch_size),
+                                np.pad(np.zeros([self.patch_size[0]-2]*2),1,'constant',constant_values=1)
+                                ])
+            self.greenframe = np.dstack([np.zeros(self.patch_size),np.pad(np.zeros([self.patch_size[0]-2]*2),1,'constant',constant_values=1)]*2)
+
+
+            for i in range(len(self.roi_sets)):
+
+                nm = os.path.split(self.roi_sets[i][1])[1][:8]
+                self.frameTxt = pg.TextItem(nm,color=[00,250,0])
+                self.frameTxt.setPos(0,60)
+
+
+
+                self.imgs.append(pg.ImageItem(setAutoDownsample=0))
+                self.masks.append(pg.ImageItem(setAutoDownsample=0))
+                #print self.roi_sets[i][0]['isPresent'][self.roi_idx]
+                #if self.roi_sets[i][0]['isPresent'][self.roi_idx]==0:
+                #    fr = self.redframe
+                #else:
+                #    fr = self.greenframe
+                self.frames.append(pg.ImageItem(setAutoDownsample=0))
+                #self.frames[-1].setImage(fr)
+                self.frameTxt.setParentItem(self.imgs[-1])
+
                 #print '2.6'
+
                 self.vbs.append(pg.ViewBox())
 
-                self.vbs[-1].setAspectLocked(1)
+                #self.vbs[-1].setAspectLocked(2)
+                #self.vbs[-1].setFixedWidth(100)
+                #self.vbs[-1].setFixedHeight(10)
+
+
                 #print '2.7'
                 #self.vbs[-1].addItem(self.imgs[-1])
                 #self.vbs[-1].addItem(self.masks[-1])
+                self.vbs[-1].addItem(self.imgs[-1])
+                self.vbs[-1].addItem(self.masks[-1])
                 self.vbs[-1].addItem(self.frames[-1])
+
+
                 self.grvs.append(pg.GraphicsView(useOpenGL=False))
                 #print '2.8'
                 self.grvs[-1].setCentralItem(self.vbs[-1])
@@ -150,60 +157,176 @@ def MASK_DRAWER_GUI(areaFiles):
 
 
 
-
+            self.set_roi_images()
             self.setCentralWidget(self.w)
 
             self.show()
             #self.connect(self, Qt.SIGNAL('triggered()'), self.closeEvent
 
-        def save_ROIS(self):
-            fName = areaFile.name[1:].replace('/','-') + '_ROIs.p'
-            #print os.path.join(self.Folder,fName)
-            FLOC = os.path.join(self.Folder,'ROIs',fName)
-            with open(FLOC,'wb') as f:
-                pickle.dump(self.ROI_attrs,f)
 
-            #areaFile.attrs['ROI_dataLoc'] = FLOC
-            print 'ROI MASKS SAVED'
+
+
+        def set_roi_images(self):
+            for i,rois_ in enumerate(self.roi_sets):
+                self.imgs[i].setImage(rois_[0]['patches'][self.roi_idx],autolevels=1)
+                m_ = rois_[0]['masks'][self.roi_idx]
+                m2_ = np.dstack([m_,np.zeros(m_.shape),np.zeros(m_.shape),m_])
+                self.masks[i].setImage(m2_)
+                self.masks[i].setOpacity(.2)
+                if rois_[0]['isPresent'][self.roi_idx]==0:
+                    fr = self.redframe
+                else:
+                    fr = self.greenframe
+                self.frames[i].setImage(fr)
+
+
 
         def onClick(self,event,window):
-            modifiers = QtGui.QApplication.keyboardModifiers()
-            if modifiers == QtCore.Qt.ShiftModifier:
-                fr = np.dstack([ np.pad(np.zeros([self.patch_size[0]-2]*2),1,'constant',constant_values=1),
-                                np.zeros(self.patch_size),
-                                np.zeros(self.patch_size),
-                                np.pad(np.zeros([self.patch_size[0]-2]*2),1,'constant',constant_values=1)
-                                ])
+            if event.button()==1 and not event.double():
+                modifiers = QtGui.QApplication.keyboardModifiers()
+                if modifiers == QtCore.Qt.ShiftModifier:
+                    self.roi_sets[window][0]['isPresent'][self.roi_idx] = 0
+                    fr = self.redframe
 
-                self.frames[window].setImage(fr)
-            else:
+                    self.frames[window].setImage(fr)
+                else:
+                    if window!=self.selected_window:
+                        self.roi_sets[window][0]['isPresent'][self.roi_idx] = 1
 
-                fr = np.dstack([np.zeros(self.patch_size),np.pad(np.zeros([self.patch_size[0]-2]*2),1,'constant',constant_values=1)]*2)
-                self.frames[window].setImage(fr)
+                        fr = self.greenframe
+                        self.frames[window].setImage(fr)
+                    else:
+                        pass
+            elif event.button()==1 and event.double():
+                for i_ in range(len(self.roi_sets)):
+
+                    if  i_== window:
+                        print 'hooo'
+                        fr = self.blueframe
+                        self.frames[i_].setImage(fr)
+                    else:
+                        if self.roi_sets[i_][0]['isPresent'][self.roi_idx]==0:
+                            fr = self.redframe
+
+                        else:
+                            fr = self.greenframe
+                        self.frames[i_].setImage(fr)
+
+
+                    #self.frames[window].setImage(fr)
+                    self.selected_window = window
+
+
+        def update_mask(self):
+            sz = 25
+            rixs_ = self.roi_sets[self.selected_window][0]['idxs'][self.roi_idx]
+            mask_big = np.zeros([512,512])
+
+
+            mask_big[rixs_[1],rixs_[0]] = 1
+
+            #plt.imshow(mask_big)
+            #plt.show()
+            #print len(self.roi_sets[self.selected_window][0]['centres'])
+            centroid = self.roi_sets[self.selected_window][0]['centres'][self.roi_idx]
+            mask = mask_big[centroid[1]-sz:centroid[1]+sz,centroid[0]-sz:centroid[0]+sz]
+            #print sorted(rixs_[0])[:5]
+            #print sorted(rixs_[1])[:5]
+            #print sorted(np.where(mask_big)[0])[:5] 
+            #print sorted(np.where(mask_big)[1])[:5]
+
+            #print np.allclose(np.where(mask_big)[0][:5],rixs_[0][:5])
+
+
+            #plt.figure()
+            #plt.imshow(mask)
+            #plt.figure()
+            #plt.imshow(self.roi_sets[self.selected_window][0]['masks'][self.roi_idx])
+            #plt.show()
+            #print mask.shape
+            self.roi_sets[self.selected_window][0]['masks'][self.roi_idx] = mask
+
+
+
+        def update_mask_im(self):
+            m_ = self.roi_sets[self.selected_window][0]['masks'][self.roi_idx]
+            m2_ = np.dstack([m_,np.zeros(m_.shape),np.zeros(m_.shape),m_])
+            self.masks[self.selected_window].setImage(m2_)
+            #plt.imshow(m2_)
+            #plt.show()
+            #self.masks[self.selected_window].setOpacity(.2)
+
+        def erode_mask(self):
+
+            sz = 25
+            rixs_ = self.roi_sets[self.selected_window][0]['idxs'][self.roi_idx]
+            mask_big = np.zeros([512,512])
+
+        def _save(self):
+            print 'saving....'
+            for rset in self.roi_sets:
+                with open(rset[1],'wb') as f:
+                    pickle.dump(rset[0],f)
+
+            print 'saved!'
+
+
 
 
         def keyPressEvent(self,ev):
             modifiers = QtGui.QApplication.keyboardModifiers()
 
             key = ev.key()
+            print key
             if modifiers == QtCore.Qt.ShiftModifier:
-                print self.roi_idx
+                if self.selected_window!=None:
 
-                if key==16777235:
-                    print 'Up'
-                elif key==16777234:
-                    print 'Left'
-                elif key==16777236:
-                    print 'Right'
+                    if key==16777235:
+                        print 'Up'
+                        self.roi_sets[self.selected_window][0]['idxs'][self.roi_idx][0] += 1
+                        self.update_mask()
+                        self.update_mask_im()
 
-                elif key==16777237:
-                    print 'Down'
+                    elif key==16777234:
+                        print 'Left'
+                        self.roi_sets[self.selected_window][0]['idxs'][self.roi_idx][1] -= 1
+                        self.update_mask()
+                        self.update_mask_im()
+
+                    elif key==16777236:
+                        print 'Right'
+                        self.roi_sets[self.selected_window][0]['idxs'][self.roi_idx][1] += 1
+                        self.update_mask()
+                        self.update_mask_im()
+
+                    elif key==16777237:
+                        print 'Down'
+                        self.roi_sets[self.selected_window][0]['idxs'][self.roi_idx][0] -= 1
+                        self.update_mask()
+                        self.update_mask_im()
+
+                    elif key==83:
+                        print 'save'
+                        self._save()
 
             else:
                 if key==16777234:
-                    print 'Previous ROI'
+                    self.roi_idx = np.clip(self.roi_idx-1,0,1e3).astype('int')
+                    print 'Previous ROI: %s' %self.roi_idx
+
+                    self.selected_window = None
+                    self.set_roi_images()
+
+
                 elif key==16777236:
-                    print 'Next ROI'
+                    self.roi_idx = np.clip(self.roi_idx+1,0,1e3).astype('int')
+                    print 'Next ROI: %s' %self.roi_idx
+
+                    self.selected_window = None
+                    self.set_roi_images()
+
+
+
 
 
 
@@ -211,100 +334,34 @@ def MASK_DRAWER_GUI(areaFiles):
 
 
     app = QtGui.QApplication([])
-    win = Visualizator(areaFile)
+    win = Visualizator(roi_sets)
     print sys.exit(app.exec_())
 
     return app
 
+def sortkey(pth):
+    return os.path.split(pth)[1][:8]
 
 if __name__=="__main__":
 
 
-    if len(sys.argv)==1:
-        raise ValueError('first argument needs to be absolute or relative path to HDF file')  #wrong error type but cba
-    else:
-        hdfPath = sys.argv[1]
+    n_basedirs = len(sys.argv) - 1
+    roiPaths = get_roi_paths(n_basedirs,sys.argv)
+    roi_sets = []
+    print 'loading ROI paths'
 
-    if len(sys.argv)>2:
-        print sys.argv[2]
-        online_trace_extract = bool(int(sys.argv[2]))
-        
-        print "%s extracting traces online" %('not' if online_trace_extract==False else '')
-    else:
-        online_trace_extract = 1
-        print 'extracting traces online; may lead to performance issues. Set second argument to 0 to prevent'
-    if len(sys.argv)>3:
-        restart = sys.argv[3]
-        print sys.argv[3]
-        if restart:
-            restart = int(raw_input('Are you sure you want to restart? All work on this area will be deleted (0/1): '))
-    else:
-        restart = 0
-
-
-    with h5py.File(hdfPath, 'a', libver='latest') as HDF_File:
-        try:
-            print HDF_File.filename
-            print 'Sessions:'
-
-            sessions = list((i for i in HDF_File.iterkeys()))
-            for idx,f in enumerate(sessions):
-                print idx, f 
-            session = int(raw_input('Select Session Nr: '))
-
-            sessions = list((i for i in HDF_File.iterkeys()))
-
-            dataType = 0
-            
-
-            if 'registered_data' in HDF_File[sessions[session]].iterkeys():
-                if len(HDF_File[sessions[session]]['registered_data'])>0:
-                    print 'Using registered Data'
-                    dataType = 'registered_data'
-                    #dataType = 'raw_data'
-                else:
-                    print '\n!!!!!!!!!!WARNING!!!!!!!!!!!!\nUsing Raw Data\n!!!!!!!!!!WARNING!!!!!!!!!!!!'
-                    dataType = 'raw_data'
-
-            else:
-                print '\n!!!!!!!!!!WARNING!!!!!!!!!!!!\nUsing Raw Data\n!!!!!!!!!!WARNING!!!!!!!!!!!!'
-                dataType = 'raw_data'
+    for fpath in sorted(roiPaths,key=sortkey):
+        with open(fpath) as f:
+            roi_sets.append([pickle.load(f),fpath])
 
 
 
-            areas = list((i for i in HDF_File[sessions[int(session)]][dataType].iterkeys()))
-            for idx,f in enumerate(areas):
-                print idx, f 
+ 
+    app = MASK_DRAWER_GUI(roi_sets)
+        #print sys.exit(app.exec_())
 
-
-            areaID = int(raw_input('Select Area Nr: '))
-            areaFile = HDF_File[sessions[session]][dataType][areas[areaID]]; 
-            #print '...into function'
-            #areaFile.attrs['ROI_patches']
-
-            fName = areaFile.name[1:].replace('/','-') + '_ROIs.p'
-            Folder = os.path.split(os.path.abspath(areaFile.file.filename))[0]
-            if not os.path.isdir(os.path.join(Folder,'ROIs')):
-                os.mkdir(os.path.join(Folder,'ROIs'))
-
-            #print os.path.join(self.Folder,fName)
-            FLOC = os.path.join(Folder,'ROIs',fName)
-            areaFile.attrs['ROI_dataLoc'] = FLOC
-
-        except:
-            #raise
-            #print 'Something unexpected went wrong! :('
-            raise
-            
-    with h5py.File(hdfPath, 'r', libver='latest') as HDF_File:
-        #try:
-        #    print 'here'
-        areaFile = HDF_File[sessions[session]][dataType][areas[areaID]]; 
-        app = MASK_DRAWER_GUI(areaFile)
-            #print sys.exit(app.exec_())
-
-        #except:
-        #    raise
+    #except:
+    #    raise
     
 
     print 'HDF_File Closed, PyQt Closed'
