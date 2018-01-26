@@ -104,12 +104,15 @@ def MASK_DRAWER_GUI(roi_sets):
                                 ])
             self.greenframe = np.dstack([np.zeros(self.patch_size),np.pad(np.zeros([self.patch_size[0]-2]*2),1,'constant',constant_values=1)]*2)
 
+            self.drawOnDay = pg.TextItem('Drawn on day',color=[0,0,250])
+            self.drawCopy = pg.TextItem('Copied',color=[250,0,0])
 
+            self.drawnTexts = []
             for i in range(len(self.roi_sets)):
 
                 nm = os.path.split(self.roi_sets[i][1])[1][:8]
-                self.frameTxt = pg.TextItem(nm,color=[00,250,0])
-                self.frameTxt.setPos(0,60)
+                self.frameTxt = pg.TextItem(nm)
+                self.frameTxt.setPos(0,55)
 
 
 
@@ -128,14 +131,7 @@ def MASK_DRAWER_GUI(roi_sets):
 
                 self.vbs.append(pg.ViewBox())
 
-                #self.vbs[-1].setAspectLocked(2)
-                #self.vbs[-1].setFixedWidth(100)
-                #self.vbs[-1].setFixedHeight(10)
 
-
-                #print '2.7'
-                #self.vbs[-1].addItem(self.imgs[-1])
-                #self.vbs[-1].addItem(self.masks[-1])
                 self.vbs[-1].addItem(self.imgs[-1])
                 self.vbs[-1].addItem(self.masks[-1])
                 self.vbs[-1].addItem(self.frames[-1])
@@ -144,6 +140,12 @@ def MASK_DRAWER_GUI(roi_sets):
                 self.grvs.append(pg.GraphicsView(useOpenGL=False))
                 #print '2.8'
                 self.grvs[-1].setCentralItem(self.vbs[-1])
+
+
+                self.drawnTexts.append(pg.TextItem('Drawn on day',color=[0,0,250]))
+                self.drawnTexts[-1].setParentItem(self.imgs[-1])
+                self.drawnTexts[-1].setPos(0,50)
+
 
 
                 #current column and row
@@ -178,6 +180,12 @@ def MASK_DRAWER_GUI(roi_sets):
                 else:
                     fr = self.greenframe
                 self.frames[i].setImage(fr)
+                if rois_[0]['drawn_onday'][self.roi_idx]:
+                    self.drawnTexts[i].setText('Drawn On Day',color=[0,0,250])
+                else:
+                    self.drawnTexts[i].setText('Copied',color=[250,0,0])
+
+
 
 
 

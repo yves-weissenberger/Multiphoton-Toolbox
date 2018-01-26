@@ -57,6 +57,8 @@ def get_patch_mask(roi_idxs,meanIm,sz=25):
     masks = []
     patches = []
     for rixs_ in roi_idxs:
+        rixs_[0] = np.clip(rixs_[0],0,511)
+        rixs_[1] = np.clip(rixs_[1],0,511)
         centroid = np.mean(rixs_,axis=1).astype('int')
         mask_big = np.zeros([512,512])
         mask_big[rixs_[1],rixs_[0]] = 1
@@ -72,6 +74,7 @@ def get_patch_mask(roi_idxs,meanIm,sz=25):
 
 
     return None
+
 def get_overlap_ids(roi_locs,roiinfo2,thresh=.4):
 
     """ This returns cells where there is a lot of overlap 
@@ -105,10 +108,6 @@ def get_overlap_ids(roi_locs,roiinfo2,thresh=.4):
     estimated_pairs = [(i,j) for i,j in zip(good_idxs1,good_idxs2)]
 
     return estimated_pairs, good_idxs1, good_idxs2, bad_idxs1, bad_idxs2
-
-
-
-
 
 def patch_register_roi_locs(meanIm1,meanIm2,roiinfo1,l=32):
     """ Function that takes as input two mean images and 
@@ -166,7 +165,7 @@ def patch_register_roi_locs(meanIm1,meanIm2,roiinfo1,l=32):
                                              regIm2[stx:stx+l,sty:sty+l]
                                              ,upsample_factor=5.)
             #print shift
-            if np.any(shift>15):
+            if np.any(shift>30):
                 shift = np.array([0,0])
 
             rois_patch = np.unique(mask_num[stx:stx+l,sty:sty+l]).tolist()
@@ -182,8 +181,6 @@ def patch_register_roi_locs(meanIm1,meanIm2,roiinfo1,l=32):
 
 
     return roi_locs,shift_all
-
-
 
 def load_data(hdfDir):
 
@@ -211,6 +208,7 @@ def load_data(hdfDir):
 
     sharpness = []
     for iiii,sess in enumerate(hdf2[d]['registered_data'].keys()):
+        print sess
         sharpness.append(get_gradsum(hdf2[d]['registered_data'][sess].attrs['mean_image']))
         #sharpness.append(hdf2[d]['registered_data'][sess].attrs['mean_image'])
         #print 'jere'
@@ -222,11 +220,12 @@ def load_data(hdfDir):
 
 
     #meanIm2 /= iiii
+    #print sharpness
     im_idx = np.argmax(np.asarray(sharpness))
     bsess = (hdf2[d]['registered_data'].keys())[im_idx]
     meanIm2 = hdf2[d]['registered_data'][bsess].attrs['mean_image']
     #meanIm2 = np.max(np.array(sharpness),axis=0)
-    print "image shape ", np.shape(meanIm2)
+
 
     roiInfoloc = hdf2[d]['registered_data'][hdf2[d]['registered_data'].keys()[0]].attrs['ROI_dataLoc']
     hdf2.close()
@@ -236,9 +235,8 @@ def load_data(hdfDir):
     #plt.figure(figsize=(12,12))
     #plt.imshow(meanIm2,cmap='binary_r',interpolation='None')
     #plt.show(block=False)
+    hasROIs = 0
     return meanIm2, roiinfo
-
-
 
 def cartesian(pools):
     result = [[]]
@@ -262,7 +260,8 @@ if __name__=="__main__":
     backup = cp.deepcopy(globalROI)
     all_ROI = {'idxs': globalROI['idxs'],
                'centres': globalROI['centres'],
-               'orig_index': range(len(globalROI['idxs']))}
+               'orig_index': range(len(globalROI['idxs'])),
+               'drawn_onday':[1]*(len(globalROI['idxs']))}
 
     nCells_day = len(all_ROI['idxs'])
 
@@ -331,6 +330,7 @@ if __name__=="__main__":
                     ### THE INDEX OF THIS ROI IN THE ORIGINAL SESSION; NOT SURE THIS IS CORRECT
                     ### MAYBE SHOULD BE bad_idxs2/1??
                     all_ROI['orig_index'].append(bad_idxs1[i_])
+                    all_ROI['drawn_onday'].append(0)
 
 
                    
@@ -347,7 +347,8 @@ if __name__=="__main__":
                   'patches': patches,
                   'masks': masks,
                   'isPresent': np.ones(len(masks)),
-                  'mean_image': globalIM }
+                  'mean_image': globalIM,
+                  'drawn_onday': all_ROI['drawn_onday'] }
 
 
     Folder = os.path.split(hdfPaths[0])[0]
@@ -357,8 +358,16 @@ if __name__=="__main__":
     with open(FLOC,'wb') as f:
             pickle.dump(glob_rois,f)
 
+
+
+
+    ###### NOW RUN OVER THE OTHER IMAGING SESSIONS #########
+
+
+
     print '\nRunning over other areas...\n'
     for hdfPath in hdfPaths[1:]:
+        drawn_onday = [0]*len(masks)
 
 
 
@@ -402,6 +411,7 @@ if __name__=="__main__":
                 #print type(duplicate_list[ixx_][1][hdfPath])
                 #if type(ixx_)
                 roi_locs[i_] = roiinfo2['idxs'][ixx_]
+                drawn_onday[i_] = 1
 
             #duplicate_list.append([glob_day,{hdfPath:runn_day}])  #here for refernce
 
@@ -438,7 +448,8 @@ if __name__=="__main__":
                      'patches': patches,
                      'masks': masks,
                      'isPresent': np.ones(len(masks)),
-                     'mean_image':meanIm2 } 
+                     'mean_image':meanIm2,
+                     'drawn_onday': drawn_onday } 
 
         Folder = os.path.split(hdfPath)[0]
         fName = os.path.split(hdfPath)[1][:-3] + 'ROIs_glob.p'
