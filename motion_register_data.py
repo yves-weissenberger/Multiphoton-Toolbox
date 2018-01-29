@@ -40,6 +40,7 @@ print "using common reference %s" %common_ref
 absDir = os.path.split(absPath)[0]
 
 procFDir = os.path.dirname(absDir)
+print absDir
 procFloc = os.path.join(procFDir,'proc_log.txt')
 
 with open(procFloc,'a') as f:

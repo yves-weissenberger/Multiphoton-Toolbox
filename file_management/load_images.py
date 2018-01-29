@@ -49,7 +49,7 @@ def load_tiff_series(directory):
 
     for idx, fname in enumerate(sorted(fnames)):
 
-
+    
 
         #progress_bar(idx,nFiles)
         sys.stdout.write('\r')
@@ -101,10 +101,10 @@ def load_tiff_series(directory):
             stimattrs = get_triggers(matFilePth)
         else:
             pass
-
-        imageArr += 1000
-        if np.any(imageArr<0):
-            print "!!!!!!! WARNING TIFF CONTAINS VALUES BELOW 0 !!!!!!!"
+        #if np.any(imageArr<0):
+    imageArr += 1000
+    if np.any(imageArr<0):
+        print "!!!!!!! WARNING TIFF CONTAINS VALUES BELOW 0 !!!!!!!"
         
         #print pth,
     return imageArr, allSame, GRABinfo, stimattrs

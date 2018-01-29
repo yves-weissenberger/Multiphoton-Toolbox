@@ -296,7 +296,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             self.show()
             #self.connect(self, Qt.SIGNAL('triggered()'), self.closeEvent
             self.emptyText = pg.TextItem(text=str(self.roi_idx)+" Empty",color=[100,100,0])
-            self.set_small_ims()
+            #self.set_small_ims()
 
         def save_ROIS(self):
             fName = areaFile.name[1:].replace('/','-') + '_ROIs.p'
@@ -308,9 +308,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             #areaFile.attrs['ROI_dataLoc'] = FLOC
             print 'ROI MASKS SAVED'
 
-        def set_small_ims(self):
-
-            self.img02.setImage(self.ROI_attrs['patches'][self.roi_idx],autoLevels=False,levels=[0,2])
+        #def set_small_ims(self):
+        #
+        #    self.img02.setImage(self.ROI_attrs['patches'][self.roi_idx],autoLevels=False,levels=[0,2])
 
 
 
@@ -843,7 +843,7 @@ if __name__=="__main__":
             if 'registered_data' in HDF_File[sessions[session]].iterkeys():
                 if len(HDF_File[sessions[session]]['registered_data'])>0:
                     print 'Using registered Data'
-                    dataType = 'registered_data'
+                    dataType = 'raw_data'
                     #dataType = 'raw_data'
                 else:
                     print '\n!!!!!!!!!!WARNING!!!!!!!!!!!!\nUsing Raw Data\n!!!!!!!!!!WARNING!!!!!!!!!!!!'

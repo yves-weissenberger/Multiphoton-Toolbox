@@ -81,28 +81,50 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
             
 
             if common_ref and f_idx==0:
-                print 'creating global reference'
-                #refIm_glob = np.mean(raw_file[ord_[-200:]],axis=0)[:,128:-128]
-                import Register_Image
-                ############# HERE TRY TO FIND A REFERENCE IMAGE ###############
+                """print 'creating global reference'
+                                                                #refIm_glob = np.mean(raw_file[ord_[-200:]],axis=0)[:,128:-128]
+                                                                import Register_Image
+                                                                ############# HERE TRY TO FIND A REFERENCE IMAGE ###############
+                                                                refss = []
+                                                                for ix_,as_ in enumerate(HDF_File[session_ID]['raw_data'].keys()):
+                                                                    a_ = np.mean(HDF_File[session_ID]['raw_data'][as_][-500:],axis=0)
+                                                                    refss.append(a_)
+                                                                    plt.figure(ix_)
+                                                                    plt.imshow(a_,interpolation='None',cmap='gray')
+                                                                    plt.title(ix_)
+                                                                plt.show(block=False)
+                                                
+                                                                sel_ref = int(raw_input("selected mean: "))"""
+
+                ###########
+
                 refss = []
-                for ix_,as_ in enumerate(HDF_File[session_ID]['raw_data'].keys()):
-                    a_ = np.mean(HDF_File[session_ID]['raw_data'][as_][-500:],axis=0)
+                im_grads = []
+                hdf_keys = HDF_File[session_ID]['raw_data'].keys()
+                st = time.time()
+                kix_ = hdf_keys[-1]
+                temp = np.array(HDF_File[session_ID]['raw_data'][kix_])
+                print 'load time:', np.round(time.time() - st,decimals=1)
+                for ii in range(200):
+                    #kix = np.random.randint(len(hdf_keys))
+                    ixs = np.random.permutation(np.arange(HDF_File[session_ID]['raw_data'][kix_].shape[0]))[:500]
+
+                    a_ = np.mean(temp[np.array(sorted(ixs)),:,:],axis=0)
                     refss.append(a_)
-                    plt.figure(ix_)
-                    plt.imshow(a_,interpolation='None',cmap='gray')
-                    plt.title(ix_)
-                plt.show(block=False)
+                    im_grads.append(np.sum(np.abs(np.gradient(refss[-1]))))
+                    #print time.time() - st
+                    print '.',
+
+                ord_grads = np.argsort(np.array(im_grads))[-10:]
+                for ux in ord_grads:
+                    plt.figure()
+                    plt.title(ux)
+                    plt.imshow(refss[ux],interpolation='None',cmap='gray')
+                    plt.show(block=False)
 
                 sel_ref = int(raw_input("selected mean: "))
-
-
-                plt.figure()
-                plt.imshow(refss[sel_ref],interpolation='None',cmap='gray')
-                plt.title("Selected Reference")
-                plt.show(block=False)
-
-                refIm_glob = refss[sel_ref]#np.mean(raw_file[:5000],axis=0)#raw_file[ord_[-100]].astype('float')
+                refIm_glob = refss[sel_ref]
+                #np.mean(raw_file[:5000],axis=0)#raw_file[ord_[-100]].astype('float')
                 #for i in ord_[-99:]:
 
 
