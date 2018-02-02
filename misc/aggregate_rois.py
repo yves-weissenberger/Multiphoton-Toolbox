@@ -49,25 +49,46 @@ def get_hdf_paths(n_basedirs,in_args):
     return hdfPaths
 
 
-def get_patch_mask(roi_idxs,meanIm,sz=25):
+def get_patch_mask(roi_idxs,meanIm,centroid_im=None,sz=50):
     """ Return a list of centroids, patches and masks based on
          extracted mask indices  """
 
     centroids = []
     masks = []
     patches = []
+    centroid_patches = []
+    kk = 0
     for rixs_ in roi_idxs:
+        #print kk
         rixs_[0] = np.clip(rixs_[0],0,511)
         rixs_[1] = np.clip(rixs_[1],0,511)
         centroid = np.mean(rixs_,axis=1).astype('int')
+
+        centroid[0] = np.clip(centroid[0],sz+1,512-sz-1)
+        centroid[1] = np.clip(centroid[1],sz+1,512-sz-1)
+
+
+        #print 'centroid', centroid[0]
+        #print np.clip(centroid[0],0,512)
         mask_big = np.zeros([512,512])
         mask_big[rixs_[1],rixs_[0]] = 1
         mask = mask_big[centroid[1]-sz:centroid[1]+sz,centroid[0]-sz:centroid[0]+sz]
         masks.append(mask)
-        patches.append(meanIm[centroid[1]-sz:centroid[1]+sz,centroid[0]-sz:centroid[0]+sz])
+        if type(meanIm)==type(range(2)):
+            temptemp = []
+            for mIm in meanIm:
+                temptemp.append(mIm[centroid[1]-sz:centroid[1]+sz,centroid[0]-sz:centroid[0]+sz])
+            patches.append(temptemp)
+
+        else:
+            patches.append(meanIm[centroid[1]-sz:centroid[1]+sz,centroid[0]-sz:centroid[0]+sz])
         centroids.append(centroid)
 
-    return centroids, patches, masks
+        if type(centroid_im)!=type(None):
+            centroid_patches.append(centroid_im[centroid[1]-sz:centroid[1]+sz,centroid[0]-sz:centroid[0]+sz])
+        kk +=1
+
+    return centroids, patches, masks, centroid_patches
 
 
 
@@ -207,12 +228,14 @@ def load_data(hdfDir):
     d = hdf2.keys()[0]
 
     sharpness = []
+    mean_ims = []
     for iiii,sess in enumerate(hdf2[d]['registered_data'].keys()):
         print sess
         sharpness.append(get_gradsum(hdf2[d]['registered_data'][sess].attrs['mean_image']))
         #sharpness.append(hdf2[d]['registered_data'][sess].attrs['mean_image'])
         #print 'jere'
 
+        mean_ims.append(hdf2[d]['registered_data'][sess].attrs['mean_image'])
         if iiii==0:
             meanIm2 = hdf2[d]['registered_data'][sess].attrs['mean_image']
         else:
@@ -227,6 +250,7 @@ def load_data(hdfDir):
     #meanIm2 = np.max(np.array(sharpness),axis=0)
 
 
+
     roiInfoloc = hdf2[d]['registered_data'][hdf2[d]['registered_data'].keys()[0]].attrs['ROI_dataLoc']
     hdf2.close()
     print 'loading rois...'
@@ -236,7 +260,7 @@ def load_data(hdfDir):
     #plt.imshow(meanIm2,cmap='binary_r',interpolation='None')
     #plt.show(block=False)
     hasROIs = 0
-    return meanIm2, roiinfo
+    return meanIm2, roiinfo, mean_ims
 
 def cartesian(pools):
     result = [[]]
@@ -255,13 +279,14 @@ if __name__=="__main__":
     #   ]
 
 
-    globalIM,globalROI = load_data(hdfPaths[0])
+    globalIM,globalROI,mean_ims = load_data(hdfPaths[0])
 
     backup = cp.deepcopy(globalROI)
     all_ROI = {'idxs': globalROI['idxs'],
                'centres': globalROI['centres'],
                'orig_index': range(len(globalROI['idxs'])),
-               'drawn_onday':[1]*(len(globalROI['idxs']))}
+               'drawn_onday':[1]*(len(globalROI['idxs'])),
+               'mean_ims':mean_ims}
 
     nCells_day = len(all_ROI['idxs'])
 
@@ -285,7 +310,7 @@ if __name__=="__main__":
         print hdfPath
         if 1:#'29' not in hdfPath:
             try:
-                meanIm2,roiinfo2 = load_data(hdfPath)
+                meanIm2,roiinfo2,mean_ims = load_data(hdfPath)
                 nCells_day = len(roiinfo2['idxs'])
 
                 roiinfo2['sess'] = [hdfPath]*nCells_day
@@ -293,7 +318,7 @@ if __name__=="__main__":
                 roiinfo_set.append(roiinfo2)
                 #print 'loaded'
                 ## Returns the locations of ROIs of meanIm2 mapped onto globalIM
-                roi_locs, shift_all = patch_register_roi_locs(meanIm2,globalIM,roiinfo2,l=32)
+                roi_locs, shift_all = patch_register_roi_locs(meanIm2,globalIM,roiinfo2,l=64)
                 #print 'regged'
                 #bad_idxs2 are the rois that are present in meanIm2 that are not present in the global one
                 estimated_pairs, good_idxs1, good_idxs2, bad_idxs1, bad_idxs2 = get_overlap_ids(roi_locs,
@@ -338,17 +363,26 @@ if __name__=="__main__":
                 print "!!!!! WARNING SESSION %s not loaded !!!!!" %hdfPath 
                 pass
 
+    centroid_mask = np.zeros([512,512,4])
+    for n_,idxp in enumerate(all_ROI['idxs']):
+        xpos = np.mean(np.clip(idxp[1].astype('int'),0,511))
+        ypos = np.mean(np.clip(idxp[0].astype('int'),0,511))
+
+        centroid_mask[xpos,ypos,2] = 1
+        centroid_mask[xpos,ypos,3] = 1
 
      ### This block of code runs over the other days like this
      #specifically, for each hdfPath you map all the ROIs over, unless
-    centroids, patches, masks = get_patch_mask(all_ROI['idxs'],globalIM)
+    centroids, patches, masks,centroid_patches = get_patch_mask(all_ROI['idxs'],mean_ims,centroid_mask)
     glob_rois = {'idxs': all_ROI['idxs'],
                   'centres': centroids,
                   'patches': patches,
                   'masks': masks,
-                  'isPresent': np.ones(len(masks)),
+                  'isPresent': np.zeros(len(masks)),
                   'mean_image': globalIM,
-                  'drawn_onday': all_ROI['drawn_onday'] }
+                  'drawn_onday': all_ROI['drawn_onday'],
+                  'centroid_patches': centroid_patches,
+                  'confidence': [1]*len(masks) }
 
 
     Folder = os.path.split(hdfPaths[0])[0]
@@ -359,9 +393,11 @@ if __name__=="__main__":
             pickle.dump(glob_rois,f)
 
 
-
-
-    ###### NOW RUN OVER THE OTHER IMAGING SESSIONS #########
+    ##########################################################################
+    ##########################################################################
+    ################## NOW RUN OVER THE OTHER IMAGING SESSIONS ###############
+    ##########################################################################
+    ##########################################################################
 
 
 
@@ -372,7 +408,7 @@ if __name__=="__main__":
 
 
 
-        meanIm2,roiinfo2 = load_data(hdfPath)
+        meanIm2,roiinfo2,mean_ims = load_data(hdfPath)
         nCells_day = len(roiinfo2['idxs'])
 
         roiinfo2['sess'] = [hdfPath]*nCells_day
@@ -399,7 +435,7 @@ if __name__=="__main__":
 
         #POTENTIAL BUG FROM ABOVE IS TWO MAP ON SAME DAY DOES IT OVERWRITE? YES BECAUSE PROBABLY CLOSE TOGETHER
         dupl_glob = [i[0] for i in duplicate_list]
-        
+        roi_locs55 = cp.deepcopy(roi_locs)
         # the i_ here is the cells in the glbal ROI that have duplicates
         for ix1, i_ in enumerate(dupl_glob):
             if hdfPath in duplicate_list[ix1][1].keys():
@@ -426,6 +462,23 @@ if __name__=="__main__":
             maskNew[xpos,ypos,0] = 1
             maskNew[xpos,ypos,3] = 1
 
+        maskNew55 = np.zeros([512,512,4])
+        for n_,idxp in enumerate(roi_locs55):
+            xpos = np.clip(idxp[1].astype('int'),0,511)
+            ypos = np.clip(idxp[0].astype('int'),0,511)
+
+            maskNew55[xpos,ypos,0] = 1
+            maskNew55[xpos,ypos,3] = 1
+
+
+        centroid_mask = np.zeros([512,512,4])
+        for n_,idxp in enumerate(roi_locs):
+            xpos = np.mean(np.clip(idxp[1].astype('int'),0,511))
+            ypos = np.mean(np.clip(idxp[0].astype('int'),0,511))
+
+            centroid_mask[xpos,ypos,2] = 1
+            centroid_mask[xpos,ypos,3] = 1
+
             #plt.text(np.mean(ypos),np.mean(xpos),str(n_),color='green')
 
 
@@ -442,14 +495,16 @@ if __name__=="__main__":
         plt.imshow(meanIm2,cmap='binary_r',interpolation='None')
         plt.imshow(maskNew,alpha=.1,interpolation='None')
 
-        centroids, patches, masks = get_patch_mask(roi_locs,meanIm2)
+        centroids, patches, masks,centroid_patches = get_patch_mask(roi_locs,mean_ims,centroid_mask)
         glob_rois = {'idxs': roi_locs,
                      'centres': centroids,
                      'patches': patches,
                      'masks': masks,
-                     'isPresent': np.ones(len(masks)),
+                     'isPresent': np.zeros(len(masks)),
                      'mean_image':meanIm2,
-                     'drawn_onday': drawn_onday } 
+                     'drawn_onday': drawn_onday,
+                     'centroid_patches': centroid_patches,
+                     'confidence': [1]*len(masks) } 
 
         Folder = os.path.split(hdfPath)[0]
         fName = os.path.split(hdfPath)[1][:-3] + 'ROIs_glob.p'

@@ -69,7 +69,14 @@ def MASK_DRAWER_GUI(roi_sets):
             self.roi_idx = 0 
             self.roi_sets = cp.deepcopy(roi_sets)
             self.selected_window = None
-            self.resize(1000,200)
+            self.resize(1000,300)
+
+            for i_,rois_ in enumerate(self.roi_sets):
+                if 'confidence' in rois_[0].keys():
+                    pass
+                else:
+                    self.roi_sets[i_][0]['confidence'] =  [1]*len(self.roi_sets[i_][0]['masks'])
+
 
 
 
@@ -79,17 +86,10 @@ def MASK_DRAWER_GUI(roi_sets):
             self.w.setLayout(layout)
             #print '2'
 
-            nCols = 7
-            nRows = 1
-            self.vbs = []
-            self.grvs = []
-            self.imgs = []
-            self.masks = []
-            self.click_funs = []
-            self.frames = []
-            #print '2.5'
-
-            self.patch_size= [50,50]
+            #print type(self.roi_sets[0][0]['patches'][0])
+            patch_area = self.roi_sets[0][0]['patches'][0][0].shape
+            self.patch_size= patch_area
+            print self.patch_size
 
             self.blueframe = np.dstack([np.zeros(self.patch_size),
                                     np.zeros(self.patch_size),
@@ -108,15 +108,40 @@ def MASK_DRAWER_GUI(roi_sets):
             self.drawCopy = pg.TextItem('Copied',color=[250,0,0])
 
             self.drawnTexts = []
+            self.confidence = 0
+
+            self.confidence_labels = ['absent','low','med','certain']
+
+
+
+
+
+            nCols = 7
+            nRows = 1
+            self.vbs = []
+            self.grvs = []
+            self.imgs = []
+            self.masks = []
+            self.click_funs = []
+            self.centroid_patches = []
+            self.frames = []
+            self.confTxts = []
+            #print '2.5'
             for i in range(len(self.roi_sets)):
 
                 nm = os.path.split(self.roi_sets[i][1])[1][:8]
                 self.frameTxt = pg.TextItem(nm)
                 self.frameTxt.setPos(0,55)
 
+                self.confTxts.append(pg.TextItem('',color='r'))
+                self.confTxts[-1].setPos(40,55)
+
+
+
 
 
                 self.imgs.append(pg.ImageItem(setAutoDownsample=0))
+                self.centroid_patches.append(pg.ImageItem(setAutoDownsample=0))
                 self.masks.append(pg.ImageItem(setAutoDownsample=0))
                 #print self.roi_sets[i][0]['isPresent'][self.roi_idx]
                 #if self.roi_sets[i][0]['isPresent'][self.roi_idx]==0:
@@ -126,6 +151,7 @@ def MASK_DRAWER_GUI(roi_sets):
                 self.frames.append(pg.ImageItem(setAutoDownsample=0))
                 #self.frames[-1].setImage(fr)
                 self.frameTxt.setParentItem(self.imgs[-1])
+                self.confTxts[-1].setParentItem(self.imgs[-1])
 
                 #print '2.6'
 
@@ -133,6 +159,7 @@ def MASK_DRAWER_GUI(roi_sets):
 
 
                 self.vbs[-1].addItem(self.imgs[-1])
+                self.vbs[-1].addItem(self.centroid_patches[-1])
                 self.vbs[-1].addItem(self.masks[-1])
                 self.vbs[-1].addItem(self.frames[-1])
 
@@ -148,6 +175,8 @@ def MASK_DRAWER_GUI(roi_sets):
 
 
 
+
+
                 #current column and row
                 cCol= int(np.remainder(i,float(nCols)))
                 cRow = int(np.floor(i/float(nCols)))
@@ -159,18 +188,63 @@ def MASK_DRAWER_GUI(roi_sets):
 
 
 
-            self.set_roi_images()
-            self.setCentralWidget(self.w)
 
+            btn1 = QtGui.QPushButton("Save", self)
+            btn1.setFixedWidth(110)
+            btn1.setStyleSheet("font-size:11px;")
+            btn1.clicked.connect(self.buttonClicked)
+            layout.addWidget(btn1,0,2*cCol+2,1,1)
+
+
+
+
+            #btn2 = QtGui.QPushButton("zoom", self)
+            #btn2.setFixedWidth(110)
+            #btn2.setStyleSheet("font-size:11px;")
+            #btn2.clicked.connect(self.buttonClicked)
+
+            #layout.addWidget(btn2,2,2*cCol+2,1,1)
+
+
+            #cCol= int(np.remainder(i,float(nCols)))
+            #cRow = int(np.floor(i/float(nCols)))
+
+            self._show_im = [0]*len(self.roi_sets)
+            print self._show_im
+
+
+            self.set_roi_images()
+
+            
+
+
+            self.setCentralWidget(self.w)
+            self._nDays = len(self.roi_sets)
             self.show()
             #self.connect(self, Qt.SIGNAL('triggered()'), self.closeEvent
 
 
 
+        def buttonClicked(self):
+            sender = self.sender()
+            if sender.text()=='Save':
+                self._save()
+            else:
+                pass #print 'scaling'
+                #self.vbs[0].scaleBy((.9),center=(40,20))
+
+
+        def set_confidence(self):
+            for i,rois_ in enumerate(self.roi_sets):
+                self.confTxts[i].setText(self.confidence_labels[(rois_[0]['confidence'][self.roi_idx])])
+
+
 
         def set_roi_images(self):
             for i,rois_ in enumerate(self.roi_sets):
-                self.imgs[i].setImage(rois_[0]['patches'][self.roi_idx],autolevels=1)
+                self.imgs[i].setImage(rois_[0]['patches'][self.roi_idx][self._show_im[i]],autolevels=1)
+                #if  'centroid_patches' in rois_[0].keys():
+                #    self.centroid_patches[i].setImage(rois_[0]['centroid_patches'][self.roi_idx],autolevels=1)
                 m_ = rois_[0]['masks'][self.roi_idx]
                 m2_ = np.dstack([m_,np.zeros(m_.shape),np.zeros(m_.shape),m_])
                 self.masks[i].setImage(m2_)
@@ -185,27 +259,37 @@ def MASK_DRAWER_GUI(roi_sets):
                 else:
                     self.drawnTexts[i].setText('Copied',color=[250,0,0])
 
+                self.confTxts[i].setText(self.confidence_labels[(rois_[0]['confidence'][self.roi_idx])])
+
 
 
 
 
         def onClick(self,event,window):
+            """ window is the image that has been clicked on """
             if event.button()==1 and not event.double():
                 modifiers = QtGui.QApplication.keyboardModifiers()
                 if modifiers == QtCore.Qt.ShiftModifier:
                     self.roi_sets[window][0]['isPresent'][self.roi_idx] = 0
+                    self.roi_sets[window][0]['confidence'][self.roi_idx] = 0
                     fr = self.redframe
 
                     self.frames[window].setImage(fr)
+                    self.set_confidence()
                 else:
                     if window!=self.selected_window:
                         self.roi_sets[window][0]['isPresent'][self.roi_idx] = 1
+                        self.roi_sets[window][0]['confidence'][self.roi_idx] = self.confidence
+                        self.set_confidence()
+
 
                         fr = self.greenframe
                         self.frames[window].setImage(fr)
                     else:
-                        pass
+                        self.roi_sets[window][0]['confidence'][self.roi_idx] = self.confidence
+                        self.set_confidence()
             elif event.button()==1 and event.double():
+                """ Here you go to select the window and color it blue """
                 for i_ in range(len(self.roi_sets)):
 
                     if  i_== window:
@@ -286,8 +370,8 @@ def MASK_DRAWER_GUI(roi_sets):
 
             key = ev.key()
             print key
-            if modifiers == QtCore.Qt.ShiftModifier:
-                if self.selected_window!=None:
+            if self.selected_window!=None:
+                if modifiers == QtCore.Qt.ShiftModifier:
 
                     if key==16777235:
                         print 'Up'
@@ -317,7 +401,23 @@ def MASK_DRAWER_GUI(roi_sets):
                         print 'save'
                         self._save()
 
-            else:
+                else:
+                    if key==16777235:
+                        print self._show_im
+                        ln = len(self.roi_sets[self.selected_window][0]['patches'][self.roi_idx])
+                        self._show_im[self.selected_window] = np.clip(self._show_im[self.selected_window]+1,0,
+                            ln-1)
+                        self.set_roi_images()
+
+
+                    elif key==16777237:
+                        print self._show_im
+                        ln = len(self.roi_sets[self.selected_window][0]['patches'][self.roi_idx])
+                        self._show_im[self.selected_window] = np.clip(self._show_im[self.selected_window]-1,0,
+                            ln-1)
+                        self.set_roi_images()
+
+            if modifiers != QtCore.Qt.ShiftModifier:
                 if key==16777234:
                     self.roi_idx = np.clip(self.roi_idx-1,0,1e3).astype('int')
                     print 'Previous ROI: %s' %self.roi_idx
@@ -332,6 +432,17 @@ def MASK_DRAWER_GUI(roi_sets):
 
                     self.selected_window = None
                     self.set_roi_images()
+
+                elif key==49:
+                    self.confidence = 1
+                elif key==50:
+                    self.confidence = 2
+                elif key==51:
+                    self.confidence = 3
+
+        
+
+                   
 
 
 

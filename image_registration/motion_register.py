@@ -116,14 +116,14 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
                     print '.',
 
                 ord_grads = np.argsort(np.array(im_grads))[-10:]
-                for ux in ord_grads:
-                    plt.figure()
-                    plt.title(ux)
-                    plt.imshow(refss[ux],interpolation='None',cmap='gray')
-                    plt.show(block=False)
+                #for ux in ord_grads:
+                #    plt.figure()
+                #    plt.title(ux)
+                #    plt.imshow(refss[ux],interpolation='None',cmap='gray')
+                #    plt.show(block=False)
 
                 sel_ref = int(raw_input("selected mean: "))
-                refIm_glob = refss[sel_ref]
+                refIm_glob = refss[ord_grads[-1]]
                 #np.mean(raw_file[:5000],axis=0)#raw_file[ord_[-100]].astype('float')
                 #for i in ord_[-99:]:
 
@@ -360,8 +360,8 @@ def register_image(inp):
         shift, _, _ = register_translation(refIm_, image, upsample_factor=upsample_factor)
 
 
-    if np.any(shift>20):
-        #print "!!!!!!WARNING VERY LARGE SHIFTS!!!!!!"
+    if np.any(shift>40):
+        print "!!!!!!WARNING VERY LARGE SHIFTS!!!!!!"
         shift = np.array([0,0])
 
     
