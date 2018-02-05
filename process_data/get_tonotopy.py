@@ -33,6 +33,16 @@ hdf = h5py.File(hdf_path,'r+',libver='latest') #MP.file_management.load_hdf5(hdf
 tonemap = hdf[u'tonemapping']['registered_data']#hdf['tonemapping']['registered_data']
 areas = tonemap.keys()
 #print areas
+
+if len(sys.argv>2):
+    objective = sys.argv[2]
+    if objective == 16:
+        objective_multiplier = 1000./512.
+    elif objective==20:
+        objective_multiplier =  (1000./512.) * (16./20.)
+
+
+        
 def get_big_DM(x,n_back,rT,descriptor=None):
     """ Build the Big Design Matrix with
         all kinds of offsets """
@@ -131,9 +141,11 @@ def get_tuning_curves(areaF,centre=None):
         FOV_centre = centre
     #print FOV_centre
     ## so centres[0] is the x-coordinate and centres[1] is the y coordinate
+
     roi_centres = np.array(ROI_attrs['centres'])
-    xPos = -roi_centres[:,0] + FOV_centre[0]
-    yPos = roi_centres[:,1] + FOV_centre[1]
+    xPos = (-roi_centres[:,0]*objective_multiplier/zoom_multiplier) + FOV_centre[0]
+    yPos = (roi_centres[:,1]*objective_multiplier/zoom_multiplier) + FOV_centre[1]
+
     absROI_pos = -np.vstack([xPos,yPos])
     
     
