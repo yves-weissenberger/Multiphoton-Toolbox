@@ -42,7 +42,7 @@ if len(sys.argv>2):
         objective_multiplier =  (1000./512.) * (16./20.)
 
 
-        
+
 def get_big_DM(x,n_back,rT,descriptor=None):
     """ Build the Big Design Matrix with
         all kinds of offsets """
@@ -145,7 +145,7 @@ def get_tuning_curves(areaF,centre=None):
     roi_centres = np.array(ROI_attrs['centres'])
     xPos = (-roi_centres[:,0]*objective_multiplier/zoom_multiplier) + FOV_centre[0]
     yPos = (roi_centres[:,1]*objective_multiplier/zoom_multiplier) + FOV_centre[1]
-
+c
     absROI_pos = -np.vstack([xPos,yPos])
     
     
