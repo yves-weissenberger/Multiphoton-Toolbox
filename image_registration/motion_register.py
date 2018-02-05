@@ -226,7 +226,7 @@ def build_registration_log(areaFile,abs_loc,tot_shifts):
     fName = areaFile.name.replace('/','_')
     logF = os.path.join(abs_loc, str(fName) + str('_shifts.txt'))
     roi_pos_str = [str(i)+','+str(j)+'\n' for i,j in tot_shifts]
-    with open(logF,'a') as logFile:
+    with open(logF,'wb') as logFile:
         for i in roi_pos_str:
             logFile.write(i)
 

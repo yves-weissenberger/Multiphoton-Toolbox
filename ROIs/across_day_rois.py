@@ -310,7 +310,7 @@ def MASK_DRAWER_GUI(roi_sets):
 
 
         def update_mask(self):
-            sz = 25
+            sz = int(self.patch_size[0]/2)
             rixs_ = self.roi_sets[self.selected_window][0]['idxs'][self.roi_idx]
             mask_big = np.zeros([512,512])
 
@@ -322,6 +322,7 @@ def MASK_DRAWER_GUI(roi_sets):
             #print len(self.roi_sets[self.selected_window][0]['centres'])
             centroid = self.roi_sets[self.selected_window][0]['centres'][self.roi_idx]
             mask = mask_big[centroid[1]-sz:centroid[1]+sz,centroid[0]-sz:centroid[0]+sz]
+            print mask.shape
             #print sorted(rixs_[0])[:5]
             #print sorted(rixs_[1])[:5]
             #print sorted(np.where(mask_big)[0])[:5] 

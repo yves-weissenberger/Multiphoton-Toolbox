@@ -32,6 +32,14 @@ sys.path.append(twoptb_path)
 import twoptb as MP
 
 hdf_path = os.path.abspath(sys.argv[1])
+
+if len(sys.argv>2):
+    objective = sys.argv[2]
+    if objective == 16:
+        objective_multiplier = 1000./512.
+    elif objective==20:
+        objective_multiplier =  (1000./512.) * (16./20.)
+
 hdf = h5py.File(hdf_path,'r+',libver='latest') #MP.file_management.load_hdf5(hdf_path,'wb')
 #print hdf.keys()
 tonemap = hdf[u'tonemapping']['registered_data']#hdf['tonemapping']['registered_data']
@@ -133,9 +141,12 @@ def get_tuning_curves(areaF,centre=None):
         FOV_centre = centre
     #print FOV_centre
     ## so centres[0] is the x-coordinate and centres[1] is the y coordinate
+
+    zoom_multiplier = grabI['scanZoomFactor']
+
     roi_centres = np.array(ROI_attrs['centres'])
-    xPos = -roi_centres[:,0] + FOV_centre[0]
-    yPos = roi_centres[:,1] + FOV_centre[1]
+    xPos = (-roi_centres[:,0]*objective_multiplier/zoom_multiplier) + FOV_centre[0]
+    yPos = (roi_centres[:,1]*objective_multiplier/zoom_multiplier) + FOV_centre[1]
     absROI_pos = -np.vstack([xPos,yPos])
     
     
