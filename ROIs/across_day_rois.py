@@ -131,10 +131,10 @@ def MASK_DRAWER_GUI(roi_sets):
 
                 nm = os.path.split(self.roi_sets[i][1])[1][:8]
                 self.frameTxt = pg.TextItem(nm)
-                self.frameTxt.setPos(0,55)
+                self.frameTxt.setPos(0,self.patch_size[0])
 
                 self.confTxts.append(pg.TextItem('',color='r'))
-                self.confTxts[-1].setPos(40,55)
+                self.confTxts[-1].setPos(40,self.patch_size[0])
 
 
 
@@ -317,26 +317,10 @@ def MASK_DRAWER_GUI(roi_sets):
 
             mask_big[rixs_[1],rixs_[0]] = 1
 
-            #plt.imshow(mask_big)
-            #plt.show()
-            #print len(self.roi_sets[self.selected_window][0]['centres'])
             centroid = self.roi_sets[self.selected_window][0]['centres'][self.roi_idx]
             mask = mask_big[centroid[1]-sz:centroid[1]+sz,centroid[0]-sz:centroid[0]+sz]
-            print mask.shape
-            #print sorted(rixs_[0])[:5]
-            #print sorted(rixs_[1])[:5]
-            #print sorted(np.where(mask_big)[0])[:5] 
-            #print sorted(np.where(mask_big)[1])[:5]
-
-            #print np.allclose(np.where(mask_big)[0][:5],rixs_[0][:5])
 
 
-            #plt.figure()
-            #plt.imshow(mask)
-            #plt.figure()
-            #plt.imshow(self.roi_sets[self.selected_window][0]['masks'][self.roi_idx])
-            #plt.show()
-            #print mask.shape
             self.roi_sets[self.selected_window][0]['masks'][self.roi_idx] = mask
 
 
@@ -370,41 +354,41 @@ def MASK_DRAWER_GUI(roi_sets):
             modifiers = QtGui.QApplication.keyboardModifiers()
 
             key = ev.key()
-            print key
+            #print key
             if self.selected_window!=None:
                 if modifiers == QtCore.Qt.ShiftModifier:
 
                     if key==16777235:
-                        print 'Up'
+                        #print 'Up'
                         self.roi_sets[self.selected_window][0]['idxs'][self.roi_idx][0] += 1
                         self.update_mask()
                         self.update_mask_im()
 
                     elif key==16777234:
-                        print 'Left'
+                        #print 'Left'
                         self.roi_sets[self.selected_window][0]['idxs'][self.roi_idx][1] -= 1
                         self.update_mask()
                         self.update_mask_im()
 
                     elif key==16777236:
-                        print 'Right'
+                        #print 'Right'
                         self.roi_sets[self.selected_window][0]['idxs'][self.roi_idx][1] += 1
                         self.update_mask()
                         self.update_mask_im()
 
                     elif key==16777237:
-                        print 'Down'
+                        #print 'Down'
                         self.roi_sets[self.selected_window][0]['idxs'][self.roi_idx][0] -= 1
                         self.update_mask()
                         self.update_mask_im()
 
                     elif key==83:
-                        print 'save'
+                        #print 'save'
                         self._save()
 
                 else:
                     if key==16777235:
-                        print self._show_im
+                        #print self._show_im
                         ln = len(self.roi_sets[self.selected_window][0]['patches'][self.roi_idx])
                         self._show_im[self.selected_window] = np.clip(self._show_im[self.selected_window]+1,0,
                             ln-1)
@@ -412,7 +396,7 @@ def MASK_DRAWER_GUI(roi_sets):
 
 
                     elif key==16777237:
-                        print self._show_im
+                        #print self._show_im
                         ln = len(self.roi_sets[self.selected_window][0]['patches'][self.roi_idx])
                         self._show_im[self.selected_window] = np.clip(self._show_im[self.selected_window]-1,0,
                             ln-1)
