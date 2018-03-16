@@ -287,9 +287,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             layout.addWidget(self.Gplt,11,0,3,7)
             
 
-            layout.addWidget(grV2,0,6,1,1)
-            layout.addWidget(grV3,2,6,1,1)
-            layout.addWidget(grV4,4,6,1,1)
+            #layout.addWidget(grV2,0,6,1,1)
+            #layout.addWidget(grV3,2,6,1,1)
+            #layout.addWidget(grV4,4,6,1,1)
 
 
             self.setCentralWidget(w)
@@ -470,49 +470,56 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
 
         def proc_roi_region(self,add_region=True):
+
             mpossx = self.roi_item.getArrayRegion(self.possx,self.img).astype(int)
             mpossx = mpossx[np.nonzero(binary_fill_holes(mpossx))]#get the x pos from ROI
             mpossy = self.roi_item.getArrayRegion(self.possy,self.img).astype(int)
+
+
+
             mpossy = mpossy[np.nonzero(binary_fill_holes(mpossy))]# get the y pos from ROI
             xLims = [np.min(mpossx)-10,np.max(mpossx)+10]
             yLims = [np.min(mpossy)-10,np.max(mpossy)+10]
             #xLims = [np.mean(mpossx)-20,np.mean(mpossx)+20]; yLims = [np.mean(mpossy)-20,np.mean(mpossy)+20]
+            xIn = np.all(np.logical_and(xLims[0]>1,xLims[1]<510))
+            yIn = np.all(np.logical_and(yLims[0]>1,yLims[1]<510))
+            if np.logical_and(xIn,yIn):
 
+                self.temp_mask[mpossx,mpossy] = 1
+                self.temp_mask = binary_fill_holes(self.temp_mask).T
+                if add_region:
+                    self.vidTimer.stop()
+                    self.ROI_attrs['centres'].append([np.mean(mpossx),np.mean(mpossy)])
+                    self.ROI_attrs['patches'].append(self.mean_image[yLims[0]:yLims[1],xLims[0]:xLims[1]])
+                    self.ROI_attrs['idxs'].append([mpossx,mpossy])
+                    self.ROI_attrs['masks'].append(self.temp_mask[yLims[0]:yLims[1],xLims[0]:xLims[1]])
+                    if online_trace_extract:
+                        temp = areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *self.ROI_attrs['masks'][-1]
+                        temp = temp.astype('float64')
+                        temp[temp==0] = np.nan
+                        self.ROI_attrs['traces'].append(np.nanmean(temp,axis=(1,2)))
+                        #self.ROI_attrs['mask_arr'].append(temp_mask)
+                        self.Gplt.clear()
+                        self.Gplt.addItem(self.timeLine)
+                        self.Gplt.plot(self.ROI_attrs['traces'][-1])
+                    else:
+                        self.ROI_attrs['traces'].append([0])
 
-            self.temp_mask[mpossx,mpossy] = 1
-            self.temp_mask = binary_fill_holes(self.temp_mask).T
+                    self.vidTimer.start(self.IFI)
 
-            if add_region:
-                self.vidTimer.stop()
-                self.ROI_attrs['centres'].append([np.mean(mpossx),np.mean(mpossy)])
-                self.ROI_attrs['patches'].append(self.mean_image[yLims[0]:yLims[1],xLims[0]:xLims[1]])
-                self.ROI_attrs['idxs'].append([mpossx,mpossy])
-                self.ROI_attrs['masks'].append(self.temp_mask[yLims[0]:yLims[1],xLims[0]:xLims[1]])
-                if online_trace_extract:
-                    temp = areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *self.ROI_attrs['masks'][-1]
-                    temp = temp.astype('float64')
-                    temp[temp==0] = np.nan
-                    self.ROI_attrs['traces'].append(np.nanmean(temp,axis=(1,2)))
-                    #self.ROI_attrs['mask_arr'].append(temp_mask)
-                    self.Gplt.clear()
-                    self.Gplt.addItem(self.timeLine)
-                    self.Gplt.plot(self.ROI_attrs['traces'][-1])
+                    self.mask[:,:,0] += self.mask[:,:,1]
+                    self.mask[:,:,1] = 0
+                    self.mask[:,:,1] = self.temp_mask.T
+                    #self.mask[:,:,0] += self.temp_mask.T
+                    self.mask[:,:,3] += self.temp_mask.T
+                    self.nROIs += 1
+                    self.roi_idx = self.nROIs - 1
+
                 else:
-                    self.ROI_attrs['traces'].append([0])
-
-                self.vidTimer.start(self.IFI)
-
-                self.mask[:,:,0] += self.mask[:,:,1]
-                self.mask[:,:,1] = 0
-                self.mask[:,:,1] = self.temp_mask.T
-                #self.mask[:,:,0] += self.temp_mask.T
-                self.mask[:,:,3] += self.temp_mask.T
-                self.nROIs += 1
-                self.roi_idx = self.nROIs - 1
-
+                    self.mask[mpossx,mpossy,0] = 0
+                    self.mask[mpossx,mpossy,3] = 0
             else:
-                self.mask[mpossx,mpossy,0] = 0
-                self.mask[mpossx,mpossy,3] = 0
+                print 'Cannot draw ROI, out of bounds.'
             self.temp_mask = np.zeros(self.temp_mask.shape) 
 
 
