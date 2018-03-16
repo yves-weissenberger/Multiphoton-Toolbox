@@ -1,4 +1,5 @@
 #!/home/yves/anaconda2/bin/python
+from __future__ import division
 import h5py
 import sys
 import os
@@ -242,7 +243,13 @@ def MASK_DRAWER_GUI(roi_sets):
 
         def set_roi_images(self):
             for i,rois_ in enumerate(self.roi_sets):
-                self.imgs[i].setImage(rois_[0]['patches'][self.roi_idx][self._show_im[i]],autolevels=1)
+                temp_im = rois_[0]['patches'][self.roi_idx][self._show_im[i]]
+                temp_im /= np.max(temp_im)
+                im_to_set = exposure.equalize_adapthist(temp_im,
+                                                        clip_limit=.005)
+                #im_to_set *= (im_to_set+sobel(im_to_set))
+                #im_to_set = temp_im
+                self.imgs[i].setImage(im_to_set,autolevels=1)
                 #if  'centroid_patches' in rois_[0].keys():
                 #    self.centroid_patches[i].setImage(rois_[0]['centroid_patches'][self.roi_idx],autolevels=1)
                 m_ = rois_[0]['masks'][self.roi_idx]
@@ -293,7 +300,6 @@ def MASK_DRAWER_GUI(roi_sets):
                 for i_ in range(len(self.roi_sets)):
 
                     if  i_== window:
-                        print 'hooo'
                         fr = self.blueframe
                         self.frames[i_].setImage(fr)
                     else:
@@ -405,7 +411,7 @@ def MASK_DRAWER_GUI(roi_sets):
             if modifiers != QtCore.Qt.ShiftModifier:
                 if key==16777234:
                     self.roi_idx = np.clip(self.roi_idx-1,0,1e3).astype('int')
-                    print 'Previous ROI: %s' %self.roi_idx
+                    print 'Previous ROI: %s/ %s' %(self.roi_idx, len(self.roi_sets[self.selected_window][0]['patches']))
 
                     self.selected_window = None
                     self.set_roi_images()

@@ -127,6 +127,9 @@ if __name__=='__main__':
                 should_be = newest
             else:
                 raise "Largest File is not newest, be careful in erasing"
+        else:
+            Idx = lIdx
+            should_be = largest
         #print newest,largest
         ROILoc = f[sessions[Idx]].attrs['ROI_dataLoc']
         print ROILoc

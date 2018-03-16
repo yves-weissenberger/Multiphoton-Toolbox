@@ -94,7 +94,7 @@ def baseline_correct(roiattrs):
     import copy as cp
     """ Correct for drifting baseline"""
     nROIs = len(roiattrs['idxs'])
-    cFrames = roiattrs['traces'].shape[1]
+    cFrames = np.array(roiattrs['traces']).shape[1]
 
     roiattrs['dfF'] = np.zeros([nROIs,cFrames])
     roiattrs['raw_traces'] = cp.deepcopy(roiattrs['traces'])
@@ -102,11 +102,12 @@ def baseline_correct(roiattrs):
         sys.stdout.write('\r Baseline Correcting ROI: %s' %idx)
         sys.stdout.flush()
 
-        roiattrs['traces'][idx] = roiattrs['traces'][idx] - MP.process_data.runkalman(roiattrs['traces'][idx],5000)
+        roiattrs['traces'][idx] = roiattrs['traces'][idx] - MP.process_data.runkalman(roiattrs['traces'][idx],50000)
         baseline = MP.process_data.runkalman(roiattrs['corr_traces'][idx],50000)
         roiattrs['corr_traces'][idx] = roiattrs['corr_traces'][idx] - baseline
         roiattrs['dfF'][idx] = roiattrs2['corr_traces'][idx]/baseline
-        roiattrs['neuropil_traces'][idx] -= MP.process_data.runkalman(roiattrs['neuropil_traces'][idx],5000)
+        if 'neuropil_traces' in roiattrs.keys():
+            roiattrs['neuropil_traces'][idx] -= MP.process_data.runkalman(roiattrs['neuropil_traces'][idx],5000)
 
 
     return roiattrs
@@ -179,6 +180,7 @@ if __name__=='__main__':
                 roiattrs2 = neuropil_correct(areaFile,roiattrs)
             else:
                 roiattrs2 = roiattrs
+                roiattrs2['corr_traces'] = roiattrs['traces']
             print "\n"
             if kf:
                 roiattrs2 = baseline_correct(roiattrs2)

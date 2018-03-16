@@ -148,8 +148,12 @@ def load_pretraining1_self(fPath):
                                 clicks.append(float(t));clicksF.append(float(frameN))
                     else:
                         #print 'here'
-                        t, frameN = re.findall(r'.*click_[0-9]{1,2}.{0,2}_(.*)',row[0])[0].split('_')
-                        vol = re.findall(r'.*click_([0-9]{1,2}.{0,2})_.*',row[0])[0]
+                        try:
+                            t, frameN = re.findall(r'.*click_[0-9]{1,2}.{0,4}_(.*)',row[0])[0].split('_')
+                        except IndexError:
+                            print row[0]
+                            break
+                        vol = re.findall(r'.*click_([0-9]{1,2}.{0,4})_.*',row[0])[0]
                         if float(frameN)>0:
                             vols.append(float(vol))
                             if float(t)<float(t_old):

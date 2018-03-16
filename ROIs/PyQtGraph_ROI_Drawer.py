@@ -24,6 +24,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
     import numpy as np
     from pyqtgraph.Qt import QtGui, QtCore
     from pyqtgraph import Qt
+    from pyqtgraph import mkPen
     import pyqtgraph as pg
     import sys, os, pickle, time
     import copy as cp
@@ -68,7 +69,6 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 self.mean_image = np.mean(areaFile[:3000],axis=0).T
 
 
-
             #if 'max_image' in areaFile.attrs.iterkeys():
             #    self.mean_image = areaFile.attrs['max_image'].T
             #else:
@@ -79,6 +79,12 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             self.mean_image /= np.max(self.mean_image)
 
             self.mean_image = exposure.equalize_adapthist(self.mean_image,clip_limit=.001)
+
+
+            self.mean_image /= np.max(self.mean_image)
+            self.mean_image *= (np.max(areaFile[1],axis=(0,1))-1000)
+            self.mean_image += 1000
+
             print np.min(self.mean_image)
             print np.max(self.mean_image)
 
@@ -104,6 +110,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                                  areaFile.shape[2]])
 
             self.show_mean_image = True
+            self.first_mean = True
             #self.masks = np.zeros(ROI_patches.shape)
             #initialise the main window
             w = QtGui.QWidget()
@@ -116,12 +123,14 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             self.vidTimer.timeout.connect(self.update_video)
             self.vidTimer.start(self.IFI)
 
-            self.img = pg.ImageItem(setAutoDownsample=True)
+            self.img = pg.ImageItem(setAutoDownsample=1)
+
             self.mask_img = pg.ImageItem()
-            print areaFile.shape
-            self.img.setImage(areaFile[self.frame_idx,:,:].T)
+            self.img.setImage(np.float64(areaFile[self.frame_idx,:,:].T))
+
             self.mask_img.setImage(self.mask)
             self.mask_img.setOpacity(self.maskalpha)
+            self.was_mean_im = 1
 
             self.frameTxt = pg.TextItem('Frame Nr: ' + str(self.frame_idx+1) + '/' + str(self.nFrames))
             
@@ -130,7 +139,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 used to control the image """
             self.histLI = pg.HistogramLUTWidget(image=self.img,fillHistogram=False)
             self.histLI.autoHistogramRange=False
-            
+
             self.roi_item = pg.EllipseROI([60, 10], [30, 20], pen=(3,9))
             self.vb = pg.ViewBox()
             self.vb.setAspectLocked(1)
@@ -393,7 +402,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
                 self.Gplt.clear()
                 self.Gplt.addItem(self.timeLine)
-                self.Gplt.plot(self.ROI_attrs['traces'][-1])
+                self.Gplt.plot(self.ROI_attrs['traces'][-1]/np.max(self.ROI_attrs['traces'][-1]))
+                #self.Gplt.plot(self.ROI_attrs['spike_inf'][-1],pen=mkPen(width=3,color=(200, 20, 25)))
+
             except EOFError:
                 print 'Warning old ROI file corrupted!'
 
@@ -438,7 +449,10 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     self.Gplt.addItem(self.timeLine)
 
                     try:
-                        self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx])
+                        self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx]/np.max(self.ROI_attrs['traces'][self.roi_idx]))
+                        #self.Gplt.plot(self.ROI_attrs['spike_inf'][self.roi_idx],
+                        #    pen=mkPen(width=2,color=(200, 20, 25)))
+
                     except IndexError:
                         print 'Trace for roi: %s not extracted yet' %self.roi_idx 
 
@@ -697,8 +711,15 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 #video_image = median_filter(self.video,disk(2))
                 if self.smoothing>0:
                     video_image = gaussian_filter(video_image,self.smoothing)
-                self.img.setImage(video_image,
-                                  autoLevels=False)
+
+                if self.was_mean_im:
+                    self.img.setImage(video_image,
+                                      autoLevels=0)
+                    self.was_mean_im = 0
+                else:
+                    self.img.setImage(video_image,
+                                      autoLevels=0)
+
 
                 if self.frame_idx>=self.nFrames-1:
                     self.frame_idx=self.rolling_average
@@ -706,8 +727,15 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 self.frame_idx += 1
                 self.frameTxt.setText('Frame Nr: ' + str(self.frame_idx+1) + '/' + str(self.nFrames))
                 self.timeLine.setPos(self.frame_idx)
+                self.first_mean = 1
             if (self.show_mean_image and not self.play_video):
-                self.img.setImage(self.mean_image)
+                if self.first_mean:
+                    self.img.setImage(self.mean_image,autoLevels=0)
+                    self.first_mean = 0
+                else:
+                    self.img.setImage(self.mean_image,autoLevels=0)
+
+                self.was_mean_im = 1
 
             self.moving_timeLine = False
                 
