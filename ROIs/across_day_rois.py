@@ -117,7 +117,7 @@ def MASK_DRAWER_GUI(roi_sets):
 
 
 
-            nCols = 7
+            nCols = len(roi_sets)
             nRows = 1
             self.vbs = []
             self.grvs = []

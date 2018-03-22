@@ -38,7 +38,7 @@ if __name__=="__main__":
             else:
                 meanIm2 += hdf2[d]['registered_data'][sess].attrs['mean_image']
 
-        meanIm2 /= i
+        meanIm2 /= (i+1)
         hdf2.close()
         plt.figure(figsize=(12,12))
         plt.imshow(meanIm2,cmap='binary_r',interpolation='None')
