@@ -107,7 +107,7 @@ def baseline_correct(roiattrs):
         roiattrs['corr_traces'][idx] = roiattrs['corr_traces'][idx] - baseline
         roiattrs['dfF'][idx] = roiattrs2['corr_traces'][idx]/baseline
         if 'neuropil_traces' in roiattrs.keys():
-            roiattrs['neuropil_traces'][idx] -= MP.process_data.runkalman(roiattrs['neuropil_traces'][idx],5000)
+            roiattrs['neuropil_traces'][idx] -= MP.process_data.runkalman(roiattrs['neuropil_traces'][idx],50000)
 
 
     return roiattrs

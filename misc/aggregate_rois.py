@@ -164,6 +164,7 @@ def patch_register_roi_locs(meanIm1,meanIm2,roiinfo1,l=32):
     #First register the whole images in rigid fashion to one another
     out = MP.image_registration.Register_Image(meanIm1,meanIm2)
     shift_all = out[0]
+    #below should be meanIm1 instead of meanIm2 and +shift_all instead of -shift_all
     regIm2 =  np.fft.ifftn(fourier_shift(np.fft.fftn(meanIm2), -shift_all)).real
 
 
