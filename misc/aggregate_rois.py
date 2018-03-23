@@ -29,6 +29,7 @@ twoptb_path = findpath()
 sys.path.append(twoptb_path)
 
 import twoptb as MP
+
 #________________ Helper Functions _________________________________
 
 def get_gradsum(im):
@@ -130,7 +131,7 @@ def get_overlap_ids(roi_locs,roiinfo2,thresh=.4):
 
     return estimated_pairs, good_idxs1, good_idxs2, bad_idxs1, bad_idxs2
 
-def patch_register_roi_locs(meanIm1,meanIm2,roiinfo1,l=32):
+def patch_register_roi_locs(meanIm1,meanIm2,roiinfo1,im_path,l=32):
     """ Function that takes as input two mean images and 
         roi coordinates on one of the images and returns 
         the ROI coordinates on a second image
@@ -162,11 +163,16 @@ def patch_register_roi_locs(meanIm1,meanIm2,roiinfo1,l=32):
         nPatch = xsz/float(l)
 
     #First register the whole images in rigid fashion to one another
-    out = MP.image_registration.Register_Image(meanIm1,meanIm2)
+    out = MP.image_registration.Register_Image(meanIm1,meanIm2[128:-128,128:-128],crop=1)
     shift_all = out[0]
-    #below should be meanIm1 instead of meanIm2 and +shift_all instead of -shift_all
-    regIm2 =  np.fft.ifftn(fourier_shift(np.fft.fftn(meanIm2), -shift_all)).real
+    regIm2 =  np.fft.ifftn(fourier_shift(np.fft.fftn(meanIm1), shift_all)).real
 
+    #plt.figure(figsize=(12,12))
+    #plt.imshow(regIm2,cmap='binary_r',interpolation='None')
+
+    #pth = os.path.join(im_path,'reg_img'+str(len(os.listdir(im_path)))+'.jpg')
+    #plt.savefig(pth,dpi=100)
+    #plt.clf()
 
     rois1 = []
     im_pairs = []
@@ -181,7 +187,7 @@ def patch_register_roi_locs(meanIm1,meanIm2,roiinfo1,l=32):
         for j in range(int(nPatch)):
 
             stx = j*l
-            patch = meanIm1[stx:stx+l,sty:sty+l]
+            patch = meanIm2[stx:stx+l,sty:sty+l]
             bigpatch = patch#np.pad(patch,maxShift,mode='median')
             shift,_,_ = register_translation(bigpatch,
                                              regIm2[stx:stx+l,sty:sty+l]
@@ -195,8 +201,8 @@ def patch_register_roi_locs(meanIm1,meanIm2,roiinfo1,l=32):
             for roi in rois_patch:
                 roi = int(roi)
                 if roi not in moved_rois:
-                    roi_locs[roi][0] = roi_locs[roi][0] - 1*int(shift[1]) + 1*int(shift_all[1])
-                    roi_locs[roi][1] = roi_locs[roi][1] - 1*int(shift[0]) + 1*int(shift_all[0])
+                    roi_locs[roi][0] = roi_locs[roi][0] + 1*int(shift[1]) + 1*int(shift_all[1])
+                    roi_locs[roi][1] = roi_locs[roi][1] + 1*int(shift[0]) + 1*int(shift_all[0])
 
             moved_rois = moved_rois + rois_patch
 
@@ -292,7 +298,6 @@ if __name__=="__main__":
     nCells_day = len(all_ROI['idxs'])
 
     all_ROI['sess'] = [hdfPaths[0]]*nCells_day
-
     #duplicate list is a 2 element list. The first entry is what number is it in the global list
     #the second entry is a dict. Fields are referenced by the day
     duplicate_list = []
@@ -313,13 +318,18 @@ if __name__=="__main__":
             try:
                 meanIm2,roiinfo2,mean_ims = load_data(hdfPath)
                 nCells_day = len(roiinfo2['idxs'])
+                print '00'
 
                 roiinfo2['sess'] = [hdfPath]*nCells_day
+
+                im_path = os.path.join(sys.argv[1],'reg_images')
+                if not os.path.isdir(im_path):
+                    os.mkdir(im_path)
 
                 roiinfo_set.append(roiinfo2)
                 #print 'loaded'
                 ## Returns the locations of ROIs of meanIm2 mapped onto globalIM
-                roi_locs, shift_all = patch_register_roi_locs(meanIm2,globalIM,roiinfo2,l=64)
+                roi_locs, shift_all = patch_register_roi_locs(meanIm2,globalIM,roiinfo2,im_path,l=64)
                 #print 'regged'
                 #bad_idxs2 are the rois that are present in meanIm2 that are not present in the global one
                 estimated_pairs, good_idxs1, good_idxs2, bad_idxs1, bad_idxs2 = get_overlap_ids(roi_locs,
@@ -335,9 +345,14 @@ if __name__=="__main__":
                     if glob_day in curr_duplicates:
                         ix_ = np.where(np.array(curr_duplicates)==glob_day)[0]
                         if len(ix_)==1:
-                        #print type(duplicate_list[ix_][1])
+                            if type(ix_)==list:
+                                ix_ = int(ix_[0])
+                            else:
+                                ix_ = int(ix_)
+                            #print type(duplicate_list[ix_])
+                            #print runn_day
                             duplicate_list[ix_][1][hdfPath] = runn_day
-                        elif len(ix_)>0:
+                        elif len(ix_)>1:
                             for ixx_ in ix_:
                                 duplicate_list[ixx_][1][hdfPath] = runn_day
 
@@ -347,9 +362,9 @@ if __name__=="__main__":
                 all_seen += len(roiinfo2['idxs'])
                 print len(bad_idxs1)/float(len(good_idxs1)+len(bad_idxs1))
                 #bad idxs1 should be the rois from roi_locs
+                print '0'
                 for i_,idx in enumerate(bad_idxs1):
 
-                    
                     all_ROI['idxs'].append(roi_locs[idx])
                     all_ROI['centres'].append(np.mean(roi_locs[idx],axis=1))
                     all_ROI['sess'].append(hdfPath)
@@ -366,14 +381,14 @@ if __name__=="__main__":
 
     centroid_mask = np.zeros([512,512,4])
     for n_,idxp in enumerate(all_ROI['idxs']):
-        xpos = np.mean(np.clip(idxp[1].astype('int'),0,511))
-        ypos = np.mean(np.clip(idxp[0].astype('int'),0,511))
+        xpos = int(np.mean(np.clip(idxp[1].astype('int'),0,511)))
+        ypos = int(np.mean(np.clip(idxp[0].astype('int'),0,511)))
 
         centroid_mask[xpos,ypos,2] = 1
         centroid_mask[xpos,ypos,3] = 1
 
-     ### This block of code runs over the other days like this
-     #specifically, for each hdfPath you map all the ROIs over, unless
+    ### This block of code runs over the other days like this
+    #specifically, for each hdfPath you map all the ROIs over, unless
     centroids, patches, masks,centroid_patches = get_patch_mask(all_ROI['idxs'],mean_ims,centroid_mask)
     glob_rois = {'idxs': all_ROI['idxs'],
                   'centres': centroids,
@@ -385,14 +400,12 @@ if __name__=="__main__":
                   'centroid_patches': centroid_patches,
                   'confidence': [1]*len(masks) }
 
-
     Folder = os.path.split(hdfPaths[0])[0]
     fName = os.path.split(hdfPaths[0])[1][:-3] + 'ROIs_glob.p'
     #print os.path.join(self.Folder,fName)
     FLOC = os.path.join(Folder,fName)
     with open(FLOC,'wb') as f:
             pickle.dump(glob_rois,f)
-
 
     ##########################################################################
     ##########################################################################
@@ -420,7 +433,7 @@ if __name__=="__main__":
         ## here, meanIm2 and globalIM are reversed relative to one another
         #Here the roi_locs are the locations of ALL Rois from all images shifted onto
         #the hdfPath image
-        roi_locs, shift_all = patch_register_roi_locs(meanIm2,globalIM,all_ROI,l=32)
+        roi_locs, shift_all = patch_register_roi_locs(globalIM,meanIm2,all_ROI,im_path,l=64)
 
 
         #In this block of code deal with the bad_idx ROIs
@@ -462,20 +475,13 @@ if __name__=="__main__":
 
             maskNew[xpos,ypos,0] = 1
             maskNew[xpos,ypos,3] = 1
-
-        maskNew55 = np.zeros([512,512,4])
-        for n_,idxp in enumerate(roi_locs55):
-            xpos = np.clip(idxp[1].astype('int'),0,511)
-            ypos = np.clip(idxp[0].astype('int'),0,511)
-
-            maskNew55[xpos,ypos,0] = 1
-            maskNew55[xpos,ypos,3] = 1
+        
 
 
         centroid_mask = np.zeros([512,512,4])
         for n_,idxp in enumerate(roi_locs):
-            xpos = np.mean(np.clip(idxp[1].astype('int'),0,511))
-            ypos = np.mean(np.clip(idxp[0].astype('int'),0,511))
+            xpos = int(np.mean(np.clip(idxp[1].astype('int'),0,511)))
+            ypos = int(np.mean(np.clip(idxp[0].astype('int'),0,511)))
 
             centroid_mask[xpos,ypos,2] = 1
             centroid_mask[xpos,ypos,3] = 1
