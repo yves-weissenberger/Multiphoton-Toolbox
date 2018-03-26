@@ -298,9 +298,10 @@ if __name__=="__main__":
     nCells_day = len(all_ROI['idxs'])
 
     all_ROI['sess'] = [hdfPaths[0]]*nCells_day
+
     #duplicate list is a 2 element list. The first entry is what number is it in the global list
     #the second entry is a dict. Fields are referenced by the day
-    duplicate_list = []
+    duplicate_list = [[i,{hdfPaths[0]:i}] for i in range(len(globalROI))]
 
 
     all_seen = 0
@@ -310,15 +311,17 @@ if __name__=="__main__":
     roiinfo_set = [globalROI]
 
 
-    ### This block of code runs this for the first day, getting an overall mask
 
+    drawn_on = [{hdfPaths[0]:[np.nan]}]*(len(globalROI['idxs']))
+
+    ### This block of code runs this for the first day, getting an overall mask
     for hdfPath in hdfPaths[1:]:
         print hdfPath
         if 1:#'29' not in hdfPath:
             try:
                 meanIm2,roiinfo2,mean_ims = load_data(hdfPath)
                 nCells_day = len(roiinfo2['idxs'])
-                print '00'
+                print nCells_day,'00__'
 
                 roiinfo2['sess'] = [hdfPath]*nCells_day
 
@@ -327,42 +330,68 @@ if __name__=="__main__":
                     os.mkdir(im_path)
 
                 roiinfo_set.append(roiinfo2)
-                #print 'loaded'
+
                 ## Returns the locations of ROIs of meanIm2 mapped onto globalIM
                 roi_locs, shift_all = patch_register_roi_locs(meanIm2,globalIM,roiinfo2,im_path,l=64)
-                #print 'regged'
+
                 #bad_idxs2 are the rois that are present in meanIm2 that are not present in the global one
                 estimated_pairs, good_idxs1, good_idxs2, bad_idxs1, bad_idxs2 = get_overlap_ids(roi_locs,
                                                                                                 all_ROI,
                                                                                                 thresh=.3)
 
-
+                print len(estimated_pairs), len(good_idxs1), len(good_idxs2), len(bad_idxs1), len(bad_idxs2) 
                 # Here run day refers to the day that is currently run in the loop
                 #importantly, the curr duplicates are 
+
+                #this is a list where the first entry, i[0], is the roi index from the all_ROI dict
+                #the second entry i[1] would be the index of that ROI on the second day
                 curr_duplicates = [i[0] for i in duplicate_list]
 
+
+                ### THERE IS AN ISSUE HERE, IN THAT ONE CELL CAN BE MAPPED ONTO MULTIPLE OTHER CELLS
+                ### THIS OCCURS IN THE BLOCK BELOW IF len(ix_)>1
+
+                #### THE PROBLEM IS SOMEWHERE IN THIS BLOCK OF CODE ######
+
+                #for each estimated pair, 
+                #duplicate_list contains the indices of some ROI on a given day
+                #as well as the indices on other days
                 for runn_day, glob_day in estimated_pairs:
+                    # it wouldn't be in here if its just on the first day
                     if glob_day in curr_duplicates:
+
+                        ## ix_ is the index (or indices) of the cell on the global day
                         ix_ = np.where(np.array(curr_duplicates)==glob_day)[0]
                         if len(ix_)==1:
                             if type(ix_)==list:
                                 ix_ = int(ix_[0])
                             else:
                                 ix_ = int(ix_)
-                            #print type(duplicate_list[ix_])
-                            #print runn_day
                             duplicate_list[ix_][1][hdfPath] = runn_day
+                            drawn_on[ix_][hdfPath] = runn_day #This is in effect 'appending' to drawn_on
+
+                        #if one cell from the non-ref day maps onto multiple cells on the ref day
                         elif len(ix_)>1:
                             for ixx_ in ix_:
                                 duplicate_list[ixx_][1][hdfPath] = runn_day
+                                #drawn_on[ixx_].append(hdfPath)
+                                drawn_on[ixx_][hdfPath] = runn_day  
 
                     else:
                         duplicate_list.append([glob_day,{hdfPath:runn_day}])
+                        print 'ppp,',
+                        #if hdfPath==hdfPaths[1]:
+                        #    drawn_on.append({hdfPath:  runn_day})   #THIS IS THE LATEST ADDITION NO IDEA WHY??!
+                
+
+
+                #### THE PROBLEM IS SOMEWHERE IN THIS BLOCK OF CODE ######
 
                 all_seen += len(roiinfo2['idxs'])
                 print len(bad_idxs1)/float(len(good_idxs1)+len(bad_idxs1))
                 #bad idxs1 should be the rois from roi_locs
-                print '0'
+
+
                 for i_,idx in enumerate(bad_idxs1):
 
                     all_ROI['idxs'].append(roi_locs[idx])
@@ -372,12 +401,15 @@ if __name__=="__main__":
                     ### MAYBE SHOULD BE bad_idxs2/1??
                     all_ROI['orig_index'].append(bad_idxs1[i_])
                     all_ROI['drawn_onday'].append(0)
+                    drawn_on.append({hdfPath: bad_idxs1[i_]})  
 
 
-                   
+            
             except UnboundLocalError:
                 print "!!!!! WARNING SESSION %s not loaded !!!!!" %hdfPath 
                 pass
+
+        print '####', len(drawn_on), len(all_ROI['idxs']), '#####'
 
     centroid_mask = np.zeros([512,512,4])
     for n_,idxp in enumerate(all_ROI['idxs']):
@@ -417,7 +449,7 @@ if __name__=="__main__":
 
     print '\nRunning over other areas...\n'
     for hdfPath in hdfPaths[1:]:
-        drawn_onday = [0]*len(masks)
+        #drawn_onday = [0]*len(masks)
 
 
 
@@ -437,10 +469,11 @@ if __name__=="__main__":
 
 
         #In this block of code deal with the bad_idx ROIs
-        for i_ in range(len(all_ROI['sess'])):
-            if all_ROI['sess'][i_]==hdfPath:
+        #for i_ in range(len(all_ROI['sess'])):
+        #    if all_ROI['sess'][i_]==hdfPath:
 
-                roi_locs[i_] = roiinfo2['idxs'][all_ROI['orig_index'][i_]]
+        #        roi_locs[i_] = roiinfo2['idxs'][all_ROI['orig_index'][i_]]
+
 
 
 
@@ -448,22 +481,30 @@ if __name__=="__main__":
         #for i in
 
         #POTENTIAL BUG FROM ABOVE IS TWO MAP ON SAME DAY DOES IT OVERWRITE? YES BECAUSE PROBABLY CLOSE TOGETHER
-        dupl_glob = [i[0] for i in duplicate_list]
-        roi_locs55 = cp.deepcopy(roi_locs)
-        # the i_ here is the cells in the glbal ROI that have duplicates
-        for ix1, i_ in enumerate(dupl_glob):
-            if hdfPath in duplicate_list[ix1][1].keys():
-                #ixx_ = np.where(np.array(dupl_glob)==i_)[0]
-                #print type(ixx_)
-                ixx_ = np.array([duplicate_list[ix1][1][hdfPath]]).astype('int')
-                if len(ixx_)>0:
-                    ixx_ = ixx_[0]
-                #print type(duplicate_list[ixx_][1][hdfPath])
-                #if type(ixx_)
-                roi_locs[i_] = roiinfo2['idxs'][ixx_]
-                drawn_onday[i_] = 1
+       # dupl_glob = [i[0] for i in duplicate_list]
 
-            #duplicate_list.append([glob_day,{hdfPath:runn_day}])  #here for refernce
+        # the i_ here is the cells in the glbal ROI that have duplicates
+
+        #so in this for loop, iterate over all index_sets of ROIs that are duplicates
+        #for ix1, i_ in enumerate(dupl_glob):
+
+            # if this day is indexed as having the ROI
+        #    if hdfPath in duplicate_list[ix1][1].keys():
+
+        #        ixx_ = np.array([duplicate_list[ix1][1][hdfPath]]).astype('int')
+        #        if len(ixx_)>0:
+        #            ixx_ = ixx_[0]
+ 
+        #        roi_locs[i_] = roiinfo2['idxs'][ixx_]  #use the indices of the ROI drawn on that day
+                #drawn_onday[i_] = 1  #and set it to have been drawn on that day
+
+
+        drawn_onday = [hdfPath in i.keys() for i in drawn_on]
+        print np.sum(drawn_onday), nCells_day, 'these two sould be same'
+
+        for i,dOn in enumerate(drawn_onday):
+            if dOn==1:
+                roi_locs[i] = roiinfo2['idxs'][drawn_on[i][hdfPath]]
 
         print len(roi_locs)
         plt.figure()
