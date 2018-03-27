@@ -253,6 +253,9 @@ def MASK_DRAWER_GUI(roi_sets):
                 #if  'centroid_patches' in rois_[0].keys():
                 #    self.centroid_patches[i].setImage(rois_[0]['centroid_patches'][self.roi_idx],autolevels=1)
                 m_ = rois_[0]['masks'][self.roi_idx]
+                print np.mean(np.array(np.where(m_)),axis=1)
+                #print m_.shape==(100,100)
+                #print np.all([iii.shape==(100,100) for iii in rois_[0]['masks']]), i
                 m2_ = np.dstack([m_,np.zeros(m_.shape),np.zeros(m_.shape),m_])
                 self.masks[i].setImage(m2_)
                 self.masks[i].setOpacity(.2)

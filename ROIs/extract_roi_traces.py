@@ -102,12 +102,12 @@ def baseline_correct(roiattrs):
         sys.stdout.write('\r Baseline Correcting ROI: %s' %idx)
         sys.stdout.flush()
 
-        roiattrs['traces'][idx] = roiattrs['traces'][idx] - MP.process_data.runkalman(roiattrs['traces'][idx],50000)
-        baseline = MP.process_data.runkalman(roiattrs['corr_traces'][idx],50000)
+        roiattrs['traces'][idx] = roiattrs['traces'][idx] - MP.process_data.runkalman(roiattrs['traces'][idx],50000,5000)
+        baseline = MP.process_data.runkalman(roiattrs['corr_traces'][idx],50000,5000)
         roiattrs['corr_traces'][idx] = roiattrs['corr_traces'][idx] - baseline
         roiattrs['dfF'][idx] = roiattrs2['corr_traces'][idx]/baseline
         if 'neuropil_traces' in roiattrs.keys():
-            roiattrs['neuropil_traces'][idx] -= MP.process_data.runkalman(roiattrs['neuropil_traces'][idx],50000)
+            roiattrs['neuropil_traces'][idx] -= MP.process_data.runkalman(roiattrs['neuropil_traces'][idx],50000,5000)
 
 
     return roiattrs
@@ -167,7 +167,6 @@ if __name__=='__main__':
 
             areaFile = f[fn]
             if 'ROI_dataLoc' in areaFile.attrs.keys():
-
                 FLOC = areaFile.attrs['ROI_dataLoc']
             else:
                 Folder = os.path.split(os.path.abspath(areaFile.file.filename))[0]

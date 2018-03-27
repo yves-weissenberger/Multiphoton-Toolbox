@@ -398,7 +398,7 @@ if __name__=="__main__":
                 #### THE PROBLEM IS SOMEWHERE IN THIS BLOCK OF CODE ######
 
                 all_seen += len(roiinfo2['idxs'])
-                #print len(bad_idxs1)/float(len(good_idxs1)+len(bad_idxs1))
+                print len(bad_idxs1)/float(len(good_idxs1)+len(bad_idxs1))
                 #bad idxs1 should be the rois from roi_locs
 
 
