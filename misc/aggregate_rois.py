@@ -301,7 +301,7 @@ if __name__=="__main__":
 
     #duplicate list is a 2 element list. The first entry is what number is it in the global list
     #the second entry is a dict. Fields are referenced by the day
-    duplicate_list = [[i,{hdfPaths[0]:i}] for i in range(len(globalROI))]
+    duplicate_list = [[i,{hdfPaths[0]:i}] for i in range(len(globalROI['idxs']))]
 
 
     all_seen = 0
@@ -312,8 +312,8 @@ if __name__=="__main__":
 
 
 
-    drawn_on = [{hdfPaths[0]:[np.nan]}]*(len(globalROI['idxs']))
-
+    drawn_on = [{hdfPaths[0]:np.nan} for _ in range(len(globalROI['idxs']))]
+    print '..',drawn_on[0],len(drawn_on),'..'
     ### This block of code runs this for the first day, getting an overall mask
     for hdfPath in hdfPaths[1:]:
         print hdfPath
@@ -337,9 +337,9 @@ if __name__=="__main__":
                 #bad_idxs2 are the rois that are present in meanIm2 that are not present in the global one
                 estimated_pairs, good_idxs1, good_idxs2, bad_idxs1, bad_idxs2 = get_overlap_ids(roi_locs,
                                                                                                 all_ROI,
-                                                                                                thresh=.3)
+                                                                                                thresh=.4)
 
-                print len(estimated_pairs), len(good_idxs1), len(good_idxs2), len(bad_idxs1), len(bad_idxs2) 
+                #print '++++++', len(estimated_pairs) + len(bad_idxs1), len(roiinfo2['idxs']), '++++++'
                 # Here run day refers to the day that is currently run in the loop
                 #importantly, the curr duplicates are 
 
@@ -347,6 +347,8 @@ if __name__=="__main__":
                 #the second entry i[1] would be the index of that ROI on the second day
                 curr_duplicates = [i[0] for i in duplicate_list]
 
+                drawn_onday = [hdfPath in i.keys() for i in drawn_on]
+                #print np.sum(drawn_onday), nCells_day, 'first should be 0'
 
                 ### THERE IS AN ISSUE HERE, IN THAT ONE CELL CAN BE MAPPED ONTO MULTIPLE OTHER CELLS
                 ### THIS OCCURS IN THE BLOCK BELOW IF len(ix_)>1
@@ -356,7 +358,11 @@ if __name__=="__main__":
                 #for each estimated pair, 
                 #duplicate_list contains the indices of some ROI on a given day
                 #as well as the indices on other days
+                #print '~~~~',len(np.unique(np.array([i[0] for i in estimated_pairs]))), len(np.unique(np.array([i[1] for i in estimated_pairs]))),
+                #print len(estimated_pairs), '~~~~~~'
                 for runn_day, glob_day in estimated_pairs:
+                    #print glob_day,'||', drawn_on[glob_day]
+                    drawn_on[glob_day][hdfPath] = runn_day
                     # it wouldn't be in here if its just on the first day
                     if glob_day in curr_duplicates:
 
@@ -368,27 +374,31 @@ if __name__=="__main__":
                             else:
                                 ix_ = int(ix_)
                             duplicate_list[ix_][1][hdfPath] = runn_day
-                            drawn_on[ix_][hdfPath] = runn_day #This is in effect 'appending' to drawn_on
+                            #drawn_on[ix_][hdfPath] = runn_day #This is in effect 'appending' to drawn_on
 
                         #if one cell from the non-ref day maps onto multiple cells on the ref day
                         elif len(ix_)>1:
+                            print 'ppp,',
+
                             for ixx_ in ix_:
                                 duplicate_list[ixx_][1][hdfPath] = runn_day
                                 #drawn_on[ixx_].append(hdfPath)
-                                drawn_on[ixx_][hdfPath] = runn_day  
+                                #drawn_on[ixx_][hdfPath] = runn_day  
 
                     else:
                         duplicate_list.append([glob_day,{hdfPath:runn_day}])
-                        print 'ppp,',
                         #if hdfPath==hdfPaths[1]:
                         #    drawn_on.append({hdfPath:  runn_day})   #THIS IS THE LATEST ADDITION NO IDEA WHY??!
                 
+                drawn_onday = [hdfPath in i.keys() for i in drawn_on]
+                #print '\n', np.where(np.array(drawn_onday))
+                #print '\n', np.sum(drawn_onday), nCells_day, 'these two sould be closer'
 
 
                 #### THE PROBLEM IS SOMEWHERE IN THIS BLOCK OF CODE ######
 
                 all_seen += len(roiinfo2['idxs'])
-                print len(bad_idxs1)/float(len(good_idxs1)+len(bad_idxs1))
+                #print len(bad_idxs1)/float(len(good_idxs1)+len(bad_idxs1))
                 #bad idxs1 should be the rois from roi_locs
 
 
@@ -402,6 +412,10 @@ if __name__=="__main__":
                     all_ROI['orig_index'].append(bad_idxs1[i_])
                     all_ROI['drawn_onday'].append(0)
                     drawn_on.append({hdfPath: bad_idxs1[i_]})  
+
+                drawn_onday = [hdfPath in i.keys() for i in drawn_on]
+                print np.sum(drawn_onday), nCells_day, 'these two sould be same'
+
 
 
             
