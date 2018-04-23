@@ -106,8 +106,8 @@ def neuropil_correct(areaF,roi_attrs):
 
 
 
-        xLims = [np.min(mpossx)-10,np.max(mpossx)+10]
-        yLims = [np.min(mpossy)-10,np.max(mpossy)+10]
+        xLims = [np.clip(np.min(mpossx)-10,0,510),np.clip(np.max(mpossx)+10,0,510)]
+        yLims = [np.clip(np.min(mpossy)-10,0,510),np.clip(np.max(mpossy)+10,0,510)]
 
         temp_mask = np.zeros(areaFile.shape[1:])
         temp_mask[mpossx,mpossy] = 1

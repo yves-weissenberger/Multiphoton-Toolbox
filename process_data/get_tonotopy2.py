@@ -33,12 +33,14 @@ import twoptb as MP
 
 hdf_path = os.path.abspath(sys.argv[1])
 
-if len(sys.argv>2):
+if len(sys.argv)>2:
     objective = sys.argv[2]
     if objective == 16:
         objective_multiplier = 1000./512.
     elif objective==20:
         objective_multiplier =  (1000./512.) * (16./20.)
+else:
+    objective_multiplier = 1000./512.
 
 hdf = h5py.File(hdf_path,'r+',libver='latest') #MP.file_management.load_hdf5(hdf_path,'wb')
 #print hdf.keys()
@@ -226,7 +228,7 @@ def get_tuning_curves(areaF,centre=None):
     #good = ((np.array(good1)>.3 ).astype("int") * (np.array([i[0] for i in gaussians ])>0).astype("int")).astype("bool") #boolean telling us which ROIs to keep (must have positive gaussian with R^2 > 0.3)
     
     tunstrength = []
-    tunstrength = (np.max(resps,axis=1) - np.mean(resps,axis=1))
+    #tunstrength = (np.max(resps,axis=1) - np.mean(resps,axis=1))
     good = tunstrength>0.3
     BFs = np.argmax(resps,axis=1)
     gBFs = BFs[good]

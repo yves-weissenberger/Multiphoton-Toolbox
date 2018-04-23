@@ -3,6 +3,9 @@ from __future__ import division
 import matplotlib.pyplot as plt
 import numpy as np
 import os, re, sys, pickle,time
+import seaborn
+from scipy.optimize import curve_fit
+from scipy.stats import f_oneway
 import h5py
 import seaborn
 import matplotlib
@@ -33,13 +36,14 @@ hdf = h5py.File(hdf_path,'r+',libver='latest') #MP.file_management.load_hdf5(hdf
 tonemap = hdf[u'tonemapping']['registered_data']#hdf['tonemapping']['registered_data']
 areas = tonemap.keys()
 #print areas
-
-if len(sys.argv>2):
-    objective = sys.argv[2]
-    if objective == 16:
-        objective_multiplier = 1000./512.
-    elif objective==20:
-        objective_multiplier =  (1000./512.) * (16./20.)
+objective_multiplier = 1
+zoom_multiplier = 1
+#if len(sys.argv>2):
+#    objective = sys.argv[2]
+#    if objective == 16:
+#        objective_multiplier = 1000./512.
+#    elif objective==20:
+#        objective_multiplier =  (1000./512.) * (16./20.)
 
 
 
@@ -115,6 +119,8 @@ def get_DM(areaF):
     return DM
 
 
+def gauss_function(x,a,x0,sigma):
+    return a*np.exp(-(x-x0)**2/(2*sigma**2))
 
 def ma(interval, window_size):
     window = np.ones(int(window_size))/float(window_size)
@@ -130,8 +136,13 @@ def get_tuning_curves(areaF,centre=None):
     outDat = DM = pickle.load(open(os.path.join(os.path.join(os.path.split(hdf_path)[0],"stims"),os.path.split(areaF.attrs['stimattrs'])[-1])))
 
     #outDat = DM = pickle.load(open(areaF.attrs['stimattrs']))
-    ROI_attrs = pickle.load(open(os.path.join(os.path.split(hdf.filename)[0],areaF.attrs['ROI_dataLoc']))) #this is monkey patch
-    
+    roiLoc = os.path.join(os.path.split(hdf_path)[0],
+                        os.path.split(os.path.split(areaF.attrs['ROI_dataLoc'])[0])[1],
+                        os.path.split(areaF.attrs['ROI_dataLoc'])[1])
+
+    #ROI_attrs = pickle.load(open(os.path.join(os.path.split(hdf.filename)[0],areaF.attrs['ROI_dataLoc']))) #this is monkey patch
+    ROI_attrs = pickle.load(open(roiLoc)) #this is monkey patch
+
     #absolute locations
     if centre==None:
         FOV_centre = np.array(grabI['xyzPosition'][:2])
@@ -145,14 +156,18 @@ def get_tuning_curves(areaF,centre=None):
     roi_centres = np.array(ROI_attrs['centres'])
     xPos = (-roi_centres[:,0]*objective_multiplier/zoom_multiplier) + FOV_centre[0]
     yPos = (roi_centres[:,1]*objective_multiplier/zoom_multiplier) + FOV_centre[1]
-c
+
     absROI_pos = -np.vstack([xPos,yPos])
     
     
     
     n_neurons = len(ROI_attrs['traces'])
     resps = np.zeros([n_neurons,outDat['stim_list'].shape[0]])
-    
+
+    all_resps = np.zeros([n_neurons,
+                          outDat['stim_list'].shape[0],
+                          int(len(outDat['stimOrder'])/float(outDat['stim_list'].shape[0]))])
+    print all_resps.shape
     for neuron in range(n_neurons):
         #print neuron,
         if True:#'df_F' not in ROI_attrs.keys():
@@ -164,22 +179,74 @@ c
 
 
         stimSP = outDat['stim_spacing']
+        #print stimSP
+        stim_counter = np.zeros([len(np.unique(outDat['stim_list']))],dtype='int')
         for idx,stim in enumerate(outDat['stimOrder']):
+            #print stim_counter
             if idx>0:
-                resps[neuron,stim-1] += np.mean(use_trace[(idx*stimSP):10+(idx*stimSP)]) - np.mean(use_trace[(idx*45)-5:(idx*45)-3])
+                resps[neuron,stim-1] += np.mean(use_trace[(idx*stimSP):8+(idx*stimSP)]) - np.mean(use_trace[(idx*stimSP)-5:(idx*stimSP)-1])
+                all_resps[neuron,stim-1,int(stim_counter[stim-1])] = np.mean(use_trace[(idx*stimSP):8+(idx*stimSP)]) - np.mean(use_trace[(idx*stimSP)-5:(idx*stimSP)-1])
             else:
-                resps[neuron,stim-1] += np.mean(use_trace[(idx*stimSP):10+(idx*stimSP)])
+                resps[neuron,stim-1] += np.mean(use_trace[(idx*stimSP):8+(idx*stimSP)])
+                all_resps[neuron,stim-1,int(stim_counter[stim-1])] = np.mean(use_trace[(idx*stimSP):8+(idx*stimSP)])
 
-        resps[neuron,:] = ma(resps[neuron,:],2)
+            stim_counter[stim-1] += 1
+
+        #resps[neuron,:] = ma(resps[neuron,:],2)
         #plt.plot(resps[neuron])
         #plt.show()
+    print stim_counter
 
 
+    tunstrength = []
+    gaussians = []
 
-    good = (np.max(resps,axis=1) - np.mean(resps,axis=1))>.1
+    for n in resps:
+
+        try:
+            popt,_ = curve_fit(gauss_function,np.arange(len(n)),n)
+            tunstrength.append(np.corrcoef(n,gauss_function(np.arange(len(n)),popt[0],popt[1],popt[2]))[0,1])
+            
+        except RuntimeError:
+            tunstrength.append(0)
+            popt = [np.nan]*3
+
+        gaussians.append(popt)
+
+    #seaborn.distplot(np.array(tunstrength)[np.where(np.isfinite(np.array(tunstrength)))[0]],kde=0)
+    #good = np.array(tunstrength)>.3
+    #print resps.shape
+
+
+    good = ((np.max(resps,axis=1) - np.mean(resps,axis=1))/np.mean(resps,axis=1))>3
+
+    good = []
+    for r in all_resps:
+        _,p = f_oneway(*[i for i in r])
+        print p
+        if p<0.01:
+            good.append(1)
+        else:
+            good.append(0)
+
+    good = np.array(good)
     BFs = np.argmax(resps,axis=1)
-    gBFs = BFs[good]
-    gPos = absROI_pos[:,good]
+    gBFs = np.array(BFs)[np.where(good)[0]]
+    gPos = absROI_pos[:,np.where(good)[0]]
+
+    nnI = np.ceil(np.sqrt(n_neurons))
+    plt.figure()
+    for nR in range(n_neurons):
+        plt.subplot(nnI,nnI,nR+1)
+        if good[nR]:
+            plt.plot(resps[nR],color=[.8,.2,.2])
+        else:
+            plt.plot(resps[nR],color=[.1,.2,.6])
+        #plt.ylim(-.5,1.5)
+
+
+    plt.show(block=0)
+    #plt.ylim(-.2,2.5)
     return absROI_pos[:,:n_neurons],BFs,gBFs, gPos, resps[good], (np.max(resps,axis=1) - np.mean(resps,axis=1))
 
 
