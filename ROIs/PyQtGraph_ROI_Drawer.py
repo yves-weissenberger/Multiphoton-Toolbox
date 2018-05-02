@@ -385,9 +385,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
 
 
-                    ROItxt = pg.TextItem(str(roiIdx),color=[00,250,0])
-                    ROItxt.setPos(self.ROI_attrs['centres'][roiIdx][0]-2,self.ROI_attrs['centres'][roiIdx][1]-2)
-                    ROItxt.setParentItem(self.img)
+                    #ROItxt = pg.TextItem(str(roiIdx),color=[00,250,0])
+                    #ROItxt.setPos(self.ROI_attrs['centres'][roiIdx][0]-2,self.ROI_attrs['centres'][roiIdx][1]-2)
+                    #ROItxt.setParentItem(self.img)
                     #print self.ROI_attrs['centres'][roiIdx]
                     #self.vb.addItem(ROItxt)
 

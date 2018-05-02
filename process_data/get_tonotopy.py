@@ -37,7 +37,7 @@ tonemap = hdf[u'tonemapping']['registered_data']#hdf['tonemapping']['registered_
 areas = tonemap.keys()
 #print areas
 objective_multiplier = 1
-zoom_multiplier = 1
+zoom_multiplier = .5
 #if len(sys.argv>2):
 #    objective = sys.argv[2]
 #    if objective == 16:
@@ -154,13 +154,13 @@ def get_tuning_curves(areaF,centre=None):
     ## so centres[0] is the x-coordinate and centres[1] is the y coordinate
 
     roi_centres = np.array(ROI_attrs['centres'])
-    xPos = (-roi_centres[:,0]*objective_multiplier/zoom_multiplier) + FOV_centre[0]
+    xPos = (roi_centres[:,0]*objective_multiplier/zoom_multiplier) + FOV_centre[0]
     yPos = (roi_centres[:,1]*objective_multiplier/zoom_multiplier) + FOV_centre[1]
 
     absROI_pos = -np.vstack([xPos,yPos])
     
     
-    
+    print areaF.attrs['ROI_dataLoc'], FOV_centre
     n_neurons = len(ROI_attrs['traces'])
     resps = np.zeros([n_neurons,outDat['stim_list'].shape[0]])
 
@@ -223,8 +223,8 @@ def get_tuning_curves(areaF,centre=None):
     good = []
     for r in all_resps:
         _,p = f_oneway(*[i for i in r])
-        print p
-        if p<0.01:
+        #print p
+        if p<0.005:
             good.append(1)
         else:
             good.append(0)
