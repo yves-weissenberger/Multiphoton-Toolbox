@@ -162,7 +162,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
             #self.vb.scene().keyPressEvent.connect(self.keypress)
             self.Gplt = pg.PlotWidget(background='w')
-            self.Gplt.setFixedHeight(150)
+            self.Gplt.setFixedHeight(175)
             self.Gplt.setXRange(0,self.nFrames)
             grV1.setFixedWidth(self.fxW)
             grV1.setFixedHeight(self.fxW)
@@ -453,7 +453,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     self.Gplt.addItem(self.timeLine)
 
                     try:
-                        self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx]/np.max(self.ROI_attrs['traces'][self.roi_idx]))
+                        self.Gplt.plot(self.ROI_attrs['traces'][self.roi_idx])
                         #self.Gplt.plot(self.ROI_attrs['spike_inf'][self.roi_idx],
                         #    pen=mkPen(width=2,color=(200, 20, 25)))
 
