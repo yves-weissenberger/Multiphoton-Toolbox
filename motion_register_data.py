@@ -33,7 +33,15 @@ absPath = os.path.split(os.path.abspath(fpath))[0]
 fName = os.path.split(os.path.abspath(fpath))[1]
 print fName
 common_ref = sys.argv[2]=='common'
-print "using common reference %s" %common_ref
+
+if len(sys.argv)>3:
+  srm = int(sys.argv[3])
+else:
+  srm=0
+print "Using common reference %s" %common_ref
+
+if srm==True:
+  print 'Showing common refernce'
 #print os.path.split(absPath)[0]
 ############## Load the HDF File
 
@@ -68,7 +76,8 @@ HDF_File = MP.image_registration.register_dayData(HDF_File=HDF_File,
                                                   inRAM=False,
                                                   poolSize=16,
                                                   abs_loc=absPath,
-                                                  common_ref=common_ref)
+                                                  common_ref=common_ref,
+                                                  show_ref_mean=srm)
 print time.time() - st
 
 print 'Data Registered successfully: %s' %(all([i in (HDF_File[session_ID]['raw_data'].keys()) for i in HDF_File[session_ID]['registered_data'].keys()]))

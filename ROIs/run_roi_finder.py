@@ -38,7 +38,7 @@ if __name__ =="__main__":
     #ded = [5,4,5] #for zoom 2
     bhdf11 =  hdfF11[hdfF11.keys()[0]][ u'registered_data']
     areas =bhdf11.keys()
-    meanIm11 = bhdf11[areas[1]].attrs['mean_image']
+    meanIm11 = bhdf11[areas[-1]].attrs['mean_image']
     meanIm12 = bhdf11[areas[1]].attrs['mean_image']
 
     meanIm11 = equalize_adapthist(meanIm11/np.max(meanIm11),clip_limit=0.005)
@@ -60,7 +60,7 @@ if __name__ =="__main__":
             ixs_sets.append([i,j])
 
 
-    labels_pred = rfC_fit.predict_proba(np.array([i.flatten() for i in ims]))>.9
+    labels_pred = rfC_fit.predict_proba(np.array([i.flatten() for i in ims]))>.925
     bouton_pred_ixs = np.where(labels_pred==1)[0]
 
     mask = np.zeros([512,512])

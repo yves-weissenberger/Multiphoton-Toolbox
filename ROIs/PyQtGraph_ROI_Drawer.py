@@ -149,7 +149,10 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             #self.vb.addItem(self.img_ROI)      
             #self.vb.addItem(self.tx)
             self.vb.addItem(self.frameTxt)
-            self.vb.setFixedWidth(512)
+            self.fxW = 750
+            self.vb.setFixedWidth(self.fxW)
+            self.vb.setFixedHeight(self.fxW)
+
             grV1 = pg.GraphicsView(useOpenGL=False)
             grV1.setCentralItem(self.vb)
             #self.vb.scene().sigMouseMoved.connect(self.mouseMoved)
@@ -159,9 +162,10 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
             #self.vb.scene().keyPressEvent.connect(self.keypress)
             self.Gplt = pg.PlotWidget(background='w')
-            self.Gplt.setFixedHeight(200)
+            self.Gplt.setFixedHeight(150)
             self.Gplt.setXRange(0,self.nFrames)
-            grV1.setFixedWidth(512)
+            grV1.setFixedWidth(self.fxW)
+            grV1.setFixedHeight(self.fxW)
 
             self.timeLine = pg.InfiniteLine(pos=self.frame_idx,angle=90,movable=True)
             self.Gplt.addItem(self.timeLine)
@@ -269,7 +273,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
             layout.addWidget(grV1,0,0,7,8)
             self.histLI.setFixedWidth(120)
-            layout.addWidget(self.histLI,0,4,7,3)
+            layout.addWidget(self.histLI,0,7,7,3)
 
             layout.addWidget(btn1,9,1,1,1)
             layout.addWidget(btn2,9,0,1,1)
@@ -283,8 +287,8 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             layout.addWidget(btn10,10,6,1,1)
             layout.addWidget(btn11,10,1,1,1)
             layout.addWidget(btn12,10,0,1,1)
-            layout.addWidget(btn13,8,6,1,1)
-            layout.addWidget(self.Gplt,11,0,3,7)
+            layout.addWidget(btn13,10,7,1,1)
+            layout.addWidget(self.Gplt,11,0,3,8)
             
 
             #layout.addWidget(grV2,0,6,1,1)

@@ -32,7 +32,7 @@ from twoptb.util import progress_bar
 
 
 
-def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',common_ref=False):
+def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',common_ref=False,show_ref_mean=1):
     print abs_loc
     hdfPath = HDF_File.filename
     hdfDir = os.path.split(hdfPath)[0]
@@ -124,6 +124,9 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
 
                 #sel_ref = int(raw_input("selected mean: "))
                 refIm_glob = refss[ord_grads[-1]]
+                if show_ref_mean:
+                    plt.imshow(refIm_glob,cmap='binary_r')
+                    plt.show()
                 #np.mean(raw_file[:5000],axis=0)#raw_file[ord_[-100]].astype('float')
                 #for i in ord_[-99:]:
 
