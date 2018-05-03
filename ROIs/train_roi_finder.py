@@ -7,6 +7,7 @@ import h5py
 from IPython import display
 import os
 import pickle
+import skimage
 import sys
 from skimage.exposure import equalize_adapthist
 from sklearn.ensemble import RandomForestClassifier
@@ -130,7 +131,9 @@ def get_training_sets(roi_mIm_sets,rad=7):
 
                 RN = np.random.randint(0,10)
                 if RN<2:
-                    xcR,ycR = np.array([xc,yc]) + np.array([np.random.randint(6,14),np.random.randint(6,14)])
+
+                    #xcR,ycR = np.array([xc,yc]) + np.array([np.random.randint(6,14),np.random.randint(6,14)]) #for zoom 2
+                    xcR,ycR = np.array([xc,yc]) + np.array([np.random.randint(3,7),np.random.randint(3,7)]) #for zoom 1
                     tR_ = (mIm[ycR-rad:ycR+rad,xcR-rad:xcR+rad]).flatten()
 
                     if np.logical_or.reduce([np.max(tR_)==0,xcR<(rad+5),ycR<(rad+5),xcR>(510-rad),ycR>(510-rad)]):
@@ -165,13 +168,13 @@ if __name__=="__main__":
 
 
     #Load and setup data to train classifier with
-    pairs = get_roi_paths(['/media/yves/imaging_yves/attention_data/earl_attention_curated/',
-                            '/media/yves/imaging_yves/attention_data/tupac_attention_curated/'])
+    pairs = get_roi_paths(['/media/yves/imaging_yves/Betty/',
+                            '/media/yves/imaging_yves/Trudy/20180429/'])
 
     sets = get_mean_im_roi_centroids(pairs)
     boutons,non_boutons = get_training_sets(sets,rad)
-    print type(boutons), type(non_boutons)
-    print boutons.shape, non_boutons.shape
+    #print type(boutons), type(non_boutons)
+    #print boutons.shape, non_boutons.shape
     train_set = np.vstack([np.array(boutons),np.array(non_boutons)])
     labels = np.concatenate([np.ones(boutons.shape[0]),np.zeros(non_boutons.shape[0])])
 
