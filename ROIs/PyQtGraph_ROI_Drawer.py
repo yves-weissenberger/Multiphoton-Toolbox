@@ -406,7 +406,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
                 self.Gplt.clear()
                 self.Gplt.addItem(self.timeLine)
-                self.Gplt.plot(self.ROI_attrs['traces'][-1]/np.max(self.ROI_attrs['traces'][-1]))
+                self.Gplt.plot(self.ROI_attrs['traces'][-1])
                 #self.Gplt.plot(self.ROI_attrs['spike_inf'][-1],pen=mkPen(width=3,color=(200, 20, 25)))
 
             except EOFError:
