@@ -190,8 +190,8 @@ def get_triggers(matFilePth,**kwargs):
         stimattrs = pt1_self_loader.load_pretraining1_self(matFilePth)
         #import_imaging_behaviour(matFilePth,pretraining_type='1')
         
-else:
-    stimattrs = None
+    else:
+        stimattrs = None
 
 
 

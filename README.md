@@ -31,10 +31,10 @@
     selected by generating 100 (?) reference images based on random frames and selecting the sharpest (proxy for sharp-
     ness here is np.sum(np.abs(np.grad(reference_image)),axis=(0,1))
 
-## 3. Draw ROIs using either
+## 3. Drawing ROIs
 
 ### 3.1. PyQtGraph_ROI_Drawer.py
-    #### This is a GUI that enables manual drawing of ROIs
+    This is a GUI that enables manual drawing of ROIs
 
     Using this ROI drawer, ROIs are drawn on individual sessions that are grouped together in the hdf5 file.
     If multiple sessions share a common reference, the ROIs are typically be shared across acquisition runs
@@ -46,9 +46,8 @@
     all other WILL BE OVERWRITTEN. 
 
 ### 3.2. run_roi_finder.py
-    #### After having drawn ROIs on 'training' datasets, this
-         automatic roi-drawing tool may be used by initially 
-         training an ROI drawer using train_roi_finder.py
+    After having drawn ROIs on 'training' datasets, this automatic roi-drawing tool may be used by initially 
+    training an ROI drawer using train_roi_finder.py
     
 
     Using this ROI drawer, ROIs are drawn on individual sessions that are grouped together in the hdf5 file.
