@@ -16,18 +16,22 @@
 
 # How to run 
 
-## 1. run convert_to_hdf5.py
+## 1. Convert Raw Data to HDF5 
+
+    run convert_to_hdf5.py
 
     Converts all data from .tif and .mat to hdf5 format for further processing. See script 
     for details of required directory structure.
 
-## 2. run motion_register_data.py
+## 2. Motion Register Data
+
+    run motion_register_data.py
     
     Motion registration is based on the efficient subpixel registration routine. The reference image is automatically
     selected by generating 100 (?) reference images based on random frames and selecting the sharpest (proxy for sharp-
     ness here is np.sum(np.abs(np.grad(reference_image)),axis=(0,1))
 
-## 3. draw ROIs using either
+## 3. Draw ROIs using either
 
 ### 3.1. PyQtGraph_ROI_Drawer.py
     #### This is a GUI that enables manual drawing of ROIs
