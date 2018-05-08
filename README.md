@@ -18,7 +18,14 @@
 
 ## 1. run convert_to_hdf5.py
 
+    Converts all data from .tif and .mat to hdf5 format for further processing. See script 
+    for details of required directory structure.
+
 ## 2. run motion_register_data.py
+    
+    Motion registration is based on the efficient subpixel registration routine. The reference image is automatically
+    selected by generating 100 (?) reference images based on random frames and selecting the sharpest (proxy for sharp-
+    ness here is np.sum(np.abs(np.grad(reference_image)),axis=(0,1))
 
 ## 3. draw ROIs using either
 
@@ -44,7 +51,15 @@
     If multiple sessions share a common reference, the ROIs are typically be shared across acquisition runs
     to do this run 
 
-    twoptb/ROIs/share_roiinfo.py /path/to/my_hdf5.py
+    python twoptb/ROIs/share_roiinfo.py /path/to/my_hdf5.py
 
     and the ROIs will be copied across acquitions. Importantly, only one session can serve as a seed to copy from,
     all other WILL BE OVERWRITTEN. 
+
+
+## 4. Extract ROI Traces
+
+    In this part of the pipeline we will extract traces, run neuropil correction, spike inference (c2s) etc
+    To run this, simply run
+
+    python twoptb/ROIs/extract_roi_traces.py /path/to/my_hdf5.py
