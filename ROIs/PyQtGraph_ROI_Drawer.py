@@ -406,6 +406,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
                 self.Gplt.clear()
                 self.Gplt.addItem(self.timeLine)
+
                 self.Gplt.plot(self.ROI_attrs['traces'][-1])
                 #self.Gplt.plot(self.ROI_attrs['spike_inf'][-1],pen=mkPen(width=3,color=(200, 20, 25)))
 
@@ -666,8 +667,8 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 for i in range(self.nROIs):
                     print type(self.ROI_attrs['centres'][i])
                     if type(self.ROI_attrs['centres'][i])!=type(None):
-                        print 'extracting trace %s' %i
                         self._extract_trace(i)
+
                 self.ROI_attrs['traces'] = self.ROI_attrs['traces'].tolist()
 
                 self.vidTimer.start(self.IFI)
@@ -697,6 +698,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             temp[temp==0] = np.nan
                                                                 
             self.ROI_attrs['traces'][idx] = np.nanmean(temp,  axis=(1,2))
+            print np.nanmean(np.nanmean(temp,  axis=(1,2)))
             #self.ROI_attrs['traces'][idx] = (np.mean(
             #                                areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *
             #                                self.ROI_attrs['masks'][idx],

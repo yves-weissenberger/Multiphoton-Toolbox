@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import twoptb
 import time
 from skimage import morphology
 import h5py
