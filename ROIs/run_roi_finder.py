@@ -133,7 +133,7 @@ if __name__ =="__main__":
     #            np.array([i[0] for i in ixs_sets])[bouton_pred_ixs],s=8)
     plt.show()
 
-    yn = raw_input("save these ROIs: (y/n)")
+    yn = raw_input("save these ROIs?: (y/n)\nWarning will overwrite any you have drawn manually...")
 
     if yn=='y':
 
