@@ -8,6 +8,28 @@ import matplotlib.pyplot as plt
 import sys
 import os
 
+"""
+
+Motion register data that has been converted to HDF5 format
+
+To run this script, point to the hdf5 file that was created by running convery_to_hdf5.py
+
+requires additional arguments:
+
+The first additional argument is whether all acquisition runs should be registered to a common reference image
+If so the second argument (the first [main] argument being the path to the hdf) should be 'common' otherwise '0'
+
+The second additional argument is whether you would like to see the automatically selected reference image to
+be used to register the data to.
+
+
+"""
+
+
+
+
+
+
 def findpath():
     cDir = os.path.dirname(os.path.realpath(__file__))
 

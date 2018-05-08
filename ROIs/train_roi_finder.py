@@ -13,6 +13,32 @@ from sklearn.ensemble import RandomForestClassifier
 import re
 
 
+""" 
+Train a classifier to find the centroids of ROIs based on mean images
+
+Arguments:
+===================================
+
+
+    rad:    int
+    
+            integer specifying (in pixels) the radius of the 
+            patch used to train the classifier
+
+    name:   str
+
+            name of the classifier (as it is to be saved in 
+            /path/to/twoptb/classifiers/)
+
+    paths:  str(s)
+
+            path to directories containing hdf5 files with ROIs drawn
+            directories. If directory contains multiple hdf-files they
+            will be recursively discovered.
+
+
+ """
+
 
 def findpath():
     cDir = os.path.dirname(os.path.realpath(__file__))
@@ -167,8 +193,7 @@ if __name__=="__main__":
 
 
     #Load and setup data to train classifier with
-    pairs = get_roi_paths(['/media/yves/imaging_yves/Betty/',
-                            '/media/yves/imaging_yves/Trudy/20180429/'])
+    pairs = get_roi_paths(paths)
 
     sets = get_mean_im_roi_centroids(pairs)
     boutons,non_boutons = get_training_sets(sets,rad)

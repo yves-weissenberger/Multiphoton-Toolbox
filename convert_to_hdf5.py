@@ -15,6 +15,47 @@ import h5py
 import matplotlib.pyplot as plt
 
 
+""" 
+First script to run 
+
+Converts files from tif e
+
+    
+Expects certain folder structure e.g.
+/home
+    /AIAK_27.5
+        /29082017
+            /Area01
+                /Acq1.tif
+                GRABinfo.mat
+                outDat.mat
+                ...
+
+            /Area02
+                /Acq1.tif
+                GRABinfo.mat
+                outDat.mat
+                ...
+
+            /Area03
+                /Acq1.tif
+                GRABinfo.mat
+                outDat.mat
+                ...
+
+in this case you should run this script pointing to 29082017.
+
+so in terminal e.g. run:
+
+python /path/to/twoptb/convert_to_hdf5.py /home/AIAK_27.5/29082017/
+
+This script works if all acquisitions are the same area or none of them are. Does not support 
+mixtures of these two cases.
+
+
+
+"""
+
 def findpath():
     cDir = os.path.dirname(os.path.realpath(__file__))
 

@@ -3,6 +3,12 @@ import h5py
 import sys
 import os
 
+""" 
+    Third function to be run 
+    Simply point to the hdf5 file and follow instructions. Should be self explanatory
+"""
+
+
 def findpath():
     cDir = os.path.dirname(os.path.realpath(__file__))
 
