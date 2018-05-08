@@ -671,7 +671,8 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 self.ROI_attrs['traces'] = np.zeros([self.nROIs,self.nFrames])
 
                 for i in range(self.nROIs):
-                    print type(self.ROI_attrs['centres'][i])
+                    sys.stdout.write("\rextacting trace %s/%s" %(i+1,self.nROIs))
+                    sys.stdout.flush()
                     if type(self.ROI_attrs['centres'][i])!=type(None):
                         self._extract_trace(i)
 
@@ -704,7 +705,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             temp[temp==0] = np.nan
                                                                 
             self.ROI_attrs['traces'][idx] = np.nanmean(temp,  axis=(1,2))
-            print np.nanmean(np.nanmean(temp,  axis=(1,2)))
+            #print np.nanmean(np.nanmean(temp,  axis=(1,2)))
             #self.ROI_attrs['traces'][idx] = (np.mean(
             #                                areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *
             #                                self.ROI_attrs['masks'][idx],

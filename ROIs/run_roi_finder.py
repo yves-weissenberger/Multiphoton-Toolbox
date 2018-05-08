@@ -59,7 +59,7 @@ if __name__ =="__main__":
             ixs_sets.append([i,j])
 
 
-    labels_pred = rfC_fit.predict_proba(np.array([i.flatten() for i in ims]))>.925
+    labels_pred = rfC_fit.predict_proba(np.array([i.flatten() for i in ims]))>.975
     bouton_pred_ixs = np.where(labels_pred==1)[0]
 
     mask = np.zeros([512,512])
@@ -101,9 +101,14 @@ if __name__ =="__main__":
         nIxs2 = np.where(mask_temp>0)
 
         ROI_attrs['idxs'].append([nIxs2[1],nIxs2[0]])
-        ROI_attrs['centres'].append(np.mean(np.array(nIxs2),axis=1))
+        ROI_attrs['centres'].append(np.flipud(np.mean(np.array(nIxs2),axis=1)))
         ROI_attrs['patches'].append(np.nan)
-        ROI_attrs['masks'].append(np.nan)
+
+        #PRETTY SURE THESE TWO ARE THE CORRECT WAY AROUND BUT NOT 100%...
+        xLims = [np.min(nIxs2[1])-10,np.max(nIxs2[1])+10]
+        yLims = [np.min(nIxs2[0])-10,np.max(nIxs2[0])+10]
+
+        ROI_attrs['masks'].append(mask_temp[yLims[0]:yLims[1],xLims[0]:xLims[1]])
         ROI_attrs['traces'].append([0])
 
 
