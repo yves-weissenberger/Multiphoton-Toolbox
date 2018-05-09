@@ -2,7 +2,7 @@
 import h5py
 import sys
 import os
-
+import argparse
 """ 
     Third function to be run 
     Simply point to the hdf5 file and follow instructions. Should be self explanatory
@@ -851,26 +851,24 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 if __name__=="__main__":
 
 
-    if len(sys.argv)==1:
-        raise ValueError('first argument needs to be absolute or relative path to HDF file')  #wrong error type but cba
-    else:
-        hdfPath = sys.argv[1]
+    parser = argparse.ArgumentParser(description="Open a GUI to view registered data and draw ROIs")
 
-    if len(sys.argv)>2:
-        print sys.argv[2]
-        online_trace_extract = bool(int(sys.argv[2]))
-        
-        print "%s extracting traces online" %('not' if online_trace_extract==False else '')
-    else:
-        online_trace_extract = 1
-        print 'extracting traces online; may lead to performance issues. Set second argument to 0 to prevent'
-    if len(sys.argv)>3:
-        restart = sys.argv[3]
-        print sys.argv[3]
-        if restart:
-            restart = int(raw_input('Are you sure you want to restart? All work on this area will be deleted (0/1): '))
-    else:
-        restart = 0
+    parser.add_argument("hdfPath", type=str,
+                    help="Specify path to HDF5 file to open")
+    parser.add_argument("-online" "-o", action='store_true',default=False,dest='online',
+                    help="Extract Traces online? \ne.g. ROI_Drawer.py -o path to extract online")
+    
+    parser.add_argument("-restart" , action='store_true',dest='restart',
+                    help="Overwrite previously drawn ROIs and restart from scratch? NOT recommended!")
+    args = parser.parse_args()
+
+
+    hdfPath = args.hdfPath
+    online_trace_extract = args.online
+
+    if online_trace_extract:
+        print "extracting traces online!"
+
 
 
     with h5py.File(hdfPath, 'a', libver='latest') as HDF_File:
