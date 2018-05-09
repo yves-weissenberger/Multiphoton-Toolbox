@@ -38,16 +38,16 @@ def extract_traces(areaFile,roiattrs):
     for idx in range(nROIs):
         sys.stdout.write('\r Extracting_Trace_from roi: %s' %idx)
         sys.stdout.flush()
-        mpossx= roiattrs['idxs'][idx][0]
-        mpossy = roiattrs['idxs'][idx][1]
-        xLims = [np.min(mpossx)-10,np.max(mpossx)+10]
-        yLims = [np.min(mpossy)-10,np.max(mpossy)+10]
+        #mpossx= roiattrs['idxs'][idx][0]
+        #mpossy = roiattrs['idxs'][idx][1]
+        #xLims = [np.min(mpossx)-10,np.max(mpossx)+10]
+        #yLims = [np.min(mpossy)-10,np.max(mpossy)+10]
 
-        temp = areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *roiattrs['masks'][idx]
-        temp = temp.astype('float64')
-        temp[temp==0] = np.nan
+        #temp = areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *roiattrs['masks'][idx]
+        #temp = temp.astype('float64')
+        #temp[temp==0] = np.nan
                                                             
-        roiattrs['traces'][idx] = np.nanmean(temp,  axis=(1,2))
+        roiattrs['traces'][idx] = [0]
     return roiattrs
 
 
