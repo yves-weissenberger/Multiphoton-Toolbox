@@ -13,48 +13,46 @@ import time
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
+import argparse
 
+helpm = """ 
+            
+            Required directory structure
+                
+            Expects certain folder structure e.g. \n
+            /home\n
+                /AIAK_27.5\n
+                    /29082017\n
+                        /Area01
+                            /Acq1.tif
+                            GRABinfo.mat
+                            outDat.mat
+                            ...
 
-""" 
-First script to run 
+                        /Area02
+                            /Acq1.tif
+                            GRABinfo.mat
+                            outDat.mat
+                            ...
 
-Converts files from tif e
+                        /Area03
+                            /Acq1.tif
+                            GRABinfo.mat
+                            outDat.mat
+                            ...
 
-    
-Expects certain folder structure e.g.
-/home
-    /AIAK_27.5
-        /29082017
-            /Area01
-                /Acq1.tif
-                GRABinfo.mat
-                outDat.mat
-                ...
+            in this case you should run this script pointing to 29082017.
 
-            /Area02
-                /Acq1.tif
-                GRABinfo.mat
-                outDat.mat
-                ...
+            so in terminal e.g. run:
 
-            /Area03
-                /Acq1.tif
-                GRABinfo.mat
-                outDat.mat
-                ...
+            python /path/to/twoptb/convert_to_hdf5.py /home/AIAK_27.5/29082017/
 
-in this case you should run this script pointing to 29082017.
-
-so in terminal e.g. run:
-
-python /path/to/twoptb/convert_to_hdf5.py /home/AIAK_27.5/29082017/
-
-This script works if all acquisitions are the same area or none of them are. Does not support 
-mixtures of these two cases.
+            This script works if all acquisitions are the same area or none of them are. Does not support 
+            mixtures of these two cases.
 
 
 
-"""
+            """
 
 def findpath():
     cDir = os.path.dirname(os.path.realpath(__file__))
@@ -154,15 +152,21 @@ def convert_day_data_to_hdf5(base_path):
 
 if __name__ == "__main__":
 
+    parser = argparse.ArgumentParser(description="Convert folders containing tifs to HDF5 for further processing")
+    parser.add_argument("dir", type=str,
+                    help="Specify a folder containing data to convert to hdf5 (see script for example of required folder structure)")
+    #parser.add_argument("-h",'--help','--h',required=False,help=helpm)
+    args = parser.parse_args()
 
-    if sys.argv[1]=='-help':
-        print 'first argument specifies what folders to exclude'
-    elif sys.argv[1]==None:
-        base_path = os.path.abspath('.')
-        print 'No explicit directory to load specified, using currenct directory \n %s' %base_path
-    else:
-        base_path = os.path.abspath(sys.argv[1])
-        print  'converting data from \n %s \n to hdf5' %base_path
+    #print "hoooo", os.path.abspath(args.dir)
+    #if sys.argv[1]=='-help':
+    #    print 'first argument specifies what folders to exclude'
+    #elif sys.argv[1]==None:
+    base_path = os.path.abspath(args.dir)
+    #print 'No explicit directory to load specified, using currenct directory \n %s' %base_path
+    #else:
+    #    base_path = os.path.abspath(sys.argv[1])
+    print  'converting data from \n %s \n to hdf5' %base_path
 
 
     convert_day_data_to_hdf5(base_path)

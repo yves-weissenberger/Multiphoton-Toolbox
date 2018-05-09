@@ -108,7 +108,7 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
                 for ii in range(200):
                     #kix = np.random.randint(len(hdf_keys))
                     ixs = np.random.permutation(np.arange(HDF_File[session_ID]['raw_data'][kix_].shape[0]))[:500]
-
+                    
                     a_ = np.mean(temp[np.array(sorted(ixs)),:,:],axis=0)
                     refss.append(a_)
                     im_grads.append(np.sum(np.abs(np.gradient(refss[-1]))))
