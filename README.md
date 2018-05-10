@@ -1,5 +1,8 @@
 #A toolbox (under development) for processing two-photon imaging data in python2.7
 
+More complete documentation can (soon) be found <a href=``https://yves-weissenberger.github.io/twoptb/``>here </a>
+
+
 <h2> Includes complete pre-processing pipeline image registration GUIs for ROI extraction and mask drawing</h2>
 
 
