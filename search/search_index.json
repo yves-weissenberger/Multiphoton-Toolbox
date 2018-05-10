@@ -57,8 +57,13 @@
         }, 
         {
             "location": "/user_guide/across_days/", 
-            "text": "", 
+            "text": "Matching ROIs across days", 
             "title": "Across Day Analysis"
+        }, 
+        {
+            "location": "/user_guide/across_days/#matching-rois-across-days", 
+            "text": "", 
+            "title": "Matching ROIs across days"
         }
     ]
 }
