@@ -2,22 +2,22 @@
 
 More complete documentation can (soon) be found <a href="https://yves-weissenberger.github.io/twoptb/">here </a>
 
+# Installation
 
-<h2> Includes complete pre-processing pipeline image registration GUIs for ROI extraction and mask drawing</h2>
+The package has many dependencies so by far the easiest way to install the package is to download <a href="https://www.anaconda.com/download/"> Anaconda 2.7. </a>. Thereafter only two additional packages need to be installed. These are:
 
+<li> tifffile </li>
+<li> pyqtgraph </li>
 
-<h3>Dependencies</h3>
+For windows the former is easily installed from <a href="https://www.lfd.uci.edu/~gohlke/pythonlibs/#tifffile"> here <\a>, the latter from <a href="http://www.pyqtgraph.org/"> here </a>.
 
-<li>numpy</li>
-<li>scipy</li>
-<li>scikit-image</li>
-* tifffile
-* pyqt
-* pyqtgraph (optional)
+Thereafter simply download the repository and install it by running
 
+    python setup.py install 
 
+in the relevant directory
 
-# How to run 
+# Quickstart
 
 ## 1. Convert Raw Data to HDF5 
 
@@ -69,3 +69,15 @@ More complete documentation can (soon) be found <a href="https://yves-weissenber
     To run this, simply run
 
     python twoptb/ROIs/extract_roi_traces.py /path/to/my_hdf5.py
+
+
+<h3>Dependencies</h3>
+
+<li>numpy </li>
+<li>scipy </li>
+<li>scikit-image </li>
+<li> tifffile </li>
+<li> pyqt </li>
+<li> pyqtgraph </li>
+<li> cv2/opencv </li>
+<li> skimage</li>

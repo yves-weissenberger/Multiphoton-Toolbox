@@ -4,4 +4,4 @@ import ROIs
 import process_data
 import util
 import imports
-import pupil
+#import pupil
