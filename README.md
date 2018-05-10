@@ -4,12 +4,12 @@ More complete documentation can (soon) be found <a href="https://yves-weissenber
 
 # Installation
 
-The package has many dependencies so by far the easiest way to install the package is to download <a href="https://www.anaconda.com/download/"> Anaconda 2.7. </a>. Thereafter only two additional packages need to be installed. These are:
+The package has many dependencies so by far the easiest way to install the package is to download <a href="https://www.anaconda.com/download/"> Anaconda 2.7</a>. Thereafter only two additional packages need to be installed. These are:
 
 <li> tifffile </li>
 <li> pyqtgraph </li>
 
-For windows the former is easily installed from <a href="https://www.lfd.uci.edu/~gohlke/pythonlibs/#tifffile"> here <\a>, the latter from <a href="http://www.pyqtgraph.org/"> here </a>.
+For windows the former is easily installed from <a href="https://www.lfd.uci.edu/~gohlke/pythonlibs/#tifffile"> here </a>, the latter from <a href="http://www.pyqtgraph.org/"> here </a>.
 
 Thereafter simply download the repository and install it by running
 
