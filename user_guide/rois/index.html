@@ -54,6 +54,11 @@
           
             <li class="toctree-l1">
 		
+    <a class="" href="../../install/">Installation</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
     <span class="caption-text">User Guide</span>
     <ul class="subnav">
                 <li class="">
@@ -131,6 +136,11 @@
               
                 <h1 id="roi-definition-methods">ROI Definition Methods</h1>
 <h2 id="automatic-approach">Automatic approach</h2>
+<h3 id="training-an-roi-classifer">Training an ROI classifer</h3>
+<h3 id="using-a-pre-trained-roi-classifier">Using a pre-trained ROI classifier</h3>
+<p>We have developed a simple algorithm for automatic roi definition. To run this algorithm, run:</p>
+<pre><code>python /path/to/twoptb/twoptb/ROIs/run_roi_finder.py -sess -1 -ded 3 2 2 -thresh 0.96 /path/to/hdf5.h5 /path/to/twoptb/twoptb/classifiers/zoom1_GTMK.p
+</code></pre>
 <p><img alt="Screenshot" src="../ims/auto_roi.png" /></p>
 <h2 id="manual-curation">Manual curation</h2>
 <h3 id="image-of-the-gui-used-for-roi-and-data-curation">Image of the GUI used for ROI and data curation</h3>
