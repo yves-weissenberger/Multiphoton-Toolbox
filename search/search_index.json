@@ -47,7 +47,7 @@
         }, 
         {
             "location": "/user_guide/rois/", 
-            "text": "ROI Definition Methods\n\n\nAutomatic approach\n\n\nManual curation", 
+            "text": "ROI Definition Methods\n\n\nAutomatic approach\n\n\n\n\nManual curation\n\n\nImage of the GUI used for ROI and data curation", 
             "title": "ROI Definition"
         }, 
         {
@@ -66,19 +66,34 @@
             "title": "Manual curation"
         }, 
         {
+            "location": "/user_guide/rois/#image-of-the-gui-used-for-roi-and-data-curation", 
+            "text": "", 
+            "title": "Image of the GUI used for ROI and data curation"
+        }, 
+        {
             "location": "/user_guide/trace_extraction/", 
             "text": "", 
             "title": "Trace Extraction"
         }, 
         {
             "location": "/user_guide/across_days/", 
-            "text": "Matching ROIs across days", 
+            "text": "Matching ROIs across days\n\n\nIn our hands, \n\n\nAlgorithmic Approach\n\n\nGUI for curation", 
             "title": "Across Day Analysis"
         }, 
         {
             "location": "/user_guide/across_days/#matching-rois-across-days", 
-            "text": "", 
+            "text": "In our hands,", 
             "title": "Matching ROIs across days"
+        }, 
+        {
+            "location": "/user_guide/across_days/#algorithmic-approach", 
+            "text": "", 
+            "title": "Algorithmic Approach"
+        }, 
+        {
+            "location": "/user_guide/across_days/#gui-for-curation", 
+            "text": "", 
+            "title": "GUI for curation"
         }
     ]
 }
