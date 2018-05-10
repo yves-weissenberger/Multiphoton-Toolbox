@@ -59,7 +59,7 @@ if __name__=="__main__":
 
             trace, corrected_trace, _ = neuropil_correct(areaF,roiInfo,neuron_idx)
 
-            ffilt = runkalman(corrected_trace,meanwindow=100,RQratio=2000)
+            ffilt = runkalman(corrected_trace,meanwindow=100,RQratio=50000)
             df_F.append((corrected_trace - ffilt)/ffilt)
             raw_traces.append(trace)
             corr_traces.append(corrected_trace)
