@@ -1,4 +1,4 @@
-#A toolbox (under development) for processing two-photon imaging data in python2.7
+# A toolbox (under development) for processing two-photon imaging data in python2.7
 
 More complete documentation can (soon) be found <a href="https://yves-weissenberger.github.io/twoptb/">here </a>
 
