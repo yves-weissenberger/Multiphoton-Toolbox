@@ -47,8 +47,23 @@
         }, 
         {
             "location": "/user_guide/rois/", 
-            "text": "", 
+            "text": "ROI Definition Methods\n\n\nAutomatic approach\n\n\nManual curation", 
             "title": "ROI Definition"
+        }, 
+        {
+            "location": "/user_guide/rois/#roi-definition-methods", 
+            "text": "", 
+            "title": "ROI Definition Methods"
+        }, 
+        {
+            "location": "/user_guide/rois/#automatic-approach", 
+            "text": "", 
+            "title": "Automatic approach"
+        }, 
+        {
+            "location": "/user_guide/rois/#manual-curation", 
+            "text": "", 
+            "title": "Manual curation"
         }, 
         {
             "location": "/user_guide/trace_extraction/", 
