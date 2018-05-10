@@ -1,0 +1,69 @@
+{
+    "docs": [
+        {
+            "location": "/", 
+            "text": "twoptb - Two photon tool-box\n\n\nThis is a toolbox for the analysis of two-photon imaging data. It is optimised for the analysis of two-photon calcium imaging data. \n\n\nThe toolbox is centred around efficient data handling via linking of data to hdf5 files. This enables access to diverse aspects of the data and underlies in large part the extensibility of the toolbox. \n\n\nThe main strength of this toolbox, as compared to the many that already exist, are several powerful tools for data visualisation.\n\n\nProject layout\n\n\nmkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.", 
+            "title": "Home"
+        }, 
+        {
+            "location": "/#twoptb-two-photon-tool-box", 
+            "text": "This is a toolbox for the analysis of two-photon imaging data. It is optimised for the analysis of two-photon calcium imaging data.   The toolbox is centred around efficient data handling via linking of data to hdf5 files. This enables access to diverse aspects of the data and underlies in large part the extensibility of the toolbox.   The main strength of this toolbox, as compared to the many that already exist, are several powerful tools for data visualisation.", 
+            "title": "twoptb - Two photon tool-box"
+        }, 
+        {
+            "location": "/#project-layout", 
+            "text": "mkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.", 
+            "title": "Project layout"
+        }, 
+        {
+            "location": "/user_guide/data_conversion/", 
+            "text": "Data conversion\n\n\nThe code expects a certain directory structure when it comes to the storage of data. Firstly, it assumes that data are stored in the form of .tif files with the metadata required for reading them.  \n\n\nExpects certain folder structure e.g.\n/home\n/AIAK_27.5\n    /29082017\n    /Area01\n        /Acq1.tif\n        GRABinfo.mat\n        outDat.mat\n        ...\n\n    /Area02\n        /Acq1.tif\n        GRABinfo.mat\n        outDat.mat\n        ...\n\n    /Area03\n        /Acq1.tif\n        GRABinfo.mat\n        outDat.mat\n        ...\n\n\n\nLinking stimulus scripts\n\n\nAs stated in the introduction a core feature of the toolbox is the centrality of the hdf5 file as a link for th emultivariate data com", 
+            "title": "Data Conversion"
+        }, 
+        {
+            "location": "/user_guide/data_conversion/#data-conversion", 
+            "text": "The code expects a certain directory structure when it comes to the storage of data. Firstly, it assumes that data are stored in the form of .tif files with the metadata required for reading them.    Expects certain folder structure e.g.\n/home\n/AIAK_27.5\n    /29082017\n    /Area01\n        /Acq1.tif\n        GRABinfo.mat\n        outDat.mat\n        ...\n\n    /Area02\n        /Acq1.tif\n        GRABinfo.mat\n        outDat.mat\n        ...\n\n    /Area03\n        /Acq1.tif\n        GRABinfo.mat\n        outDat.mat\n        ...", 
+            "title": "Data conversion"
+        }, 
+        {
+            "location": "/user_guide/data_conversion/#linking-stimulus-scripts", 
+            "text": "As stated in the introduction a core feature of the toolbox is the centrality of the hdf5 file as a link for th emultivariate data com", 
+            "title": "Linking stimulus scripts"
+        }, 
+        {
+            "location": "/user_guide/motionreg/", 
+            "text": "Motion registration\n\n\nMotion Registration Algorithm\n\n\nMotion registration is implemented using the efficient subpixel registration algorithm provided by Guizmar. \n\n\nMean image selection\n\n\nMean images are computed by", 
+            "title": "Motion Registration"
+        }, 
+        {
+            "location": "/user_guide/motionreg/#motion-registration", 
+            "text": "", 
+            "title": "Motion registration"
+        }, 
+        {
+            "location": "/user_guide/motionreg/#motion-registration-algorithm", 
+            "text": "Motion registration is implemented using the efficient subpixel registration algorithm provided by Guizmar.", 
+            "title": "Motion Registration Algorithm"
+        }, 
+        {
+            "location": "/user_guide/motionreg/#mean-image-selection", 
+            "text": "Mean images are computed by", 
+            "title": "Mean image selection"
+        }, 
+        {
+            "location": "/user_guide/rois/", 
+            "text": "", 
+            "title": "ROI Definition"
+        }, 
+        {
+            "location": "/user_guide/trace_extraction/", 
+            "text": "", 
+            "title": "Trace Extraction"
+        }, 
+        {
+            "location": "/user_guide/across_days/", 
+            "text": "", 
+            "title": "Across Day Analysis"
+        }
+    ]
+}
