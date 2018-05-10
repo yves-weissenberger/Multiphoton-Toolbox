@@ -83,7 +83,7 @@ Optional arguments, i.e. those with a hyphen preceding may be omitted note that 
     if zoom==2:
         ded = [5,4,5]
     elif zoom==1:
-        ded = [3,2,3]
+        ded = [3,2,2]
     else:
         ded = args.ded
     meanIm11 = equalize_adapthist(meanIm11/np.max(meanIm11),clip_limit=0.005)

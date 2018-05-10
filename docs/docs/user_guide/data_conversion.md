@@ -4,27 +4,27 @@ The code expects a certain directory structure when it comes to the storage of d
 	
     Expects certain folder structure e.g.
     /home
-	/AIAK_27.5
+	/AIAK_2
 	    /29082017
-		/Area01
-		    /Acq1.tif
-		    GRABinfo.mat
-		    outDat.mat
-		    ...
+			/Area01
+			    /Acq1.tif
+			    GRABinfo.mat
+			    outDat.mat
+			    ...
 
-		/Area02
-		    /Acq1.tif
-		    GRABinfo.mat
-		    outDat.mat
-		    ...
+			/Area02
+			    /Acq1.tif
+			    GRABinfo.mat
+			    outDat.mat
+			    ...
 
-		/Area03
-		    /Acq1.tif
-		    GRABinfo.mat
-		    outDat.mat
-		    ...
+			/Area03
+			    /Acq1.tif
+			    GRABinfo.mat
+			    outDat.mat
+			    ...
 
 
 ## Linking stimulus scripts
 
-As stated in the introduction a core feature of the toolbox is the centrality of the hdf5 file as a link for th emultivariate data com
+As stated in the introduction a core feature of the toolbox is the centrality of the hdf5 file as a link for the multimodal data com

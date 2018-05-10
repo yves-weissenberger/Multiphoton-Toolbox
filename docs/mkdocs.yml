@@ -1,6 +1,7 @@
 site_name: twoptb
 pages:
         - Home: index.md
+        - Installation: install.md
         - User Guide:
                 - Data Conversion: 'user_guide/data_conversion.md'
                 - Motion Registration: 'user_guide/motionreg.md'
