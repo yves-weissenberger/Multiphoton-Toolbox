@@ -6,10 +6,3 @@ The toolbox is centred around efficient data handling via linking of data to hdf
 
 The main strength of this toolbox, as compared to the many that already exist, are several powerful tools for data visualisation.
 
-
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
