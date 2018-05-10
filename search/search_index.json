@@ -2,18 +2,13 @@
     "docs": [
         {
             "location": "/", 
-            "text": "twoptb - Two photon tool-box\n\n\nThis is a toolbox for the analysis of two-photon imaging data. It is optimised for the analysis of two-photon calcium imaging data. \n\n\nThe toolbox is centred around efficient data handling via linking of data to hdf5 files. This enables access to diverse aspects of the data and underlies in large part the extensibility of the toolbox. \n\n\nThe main strength of this toolbox, as compared to the many that already exist, are several powerful tools for data visualisation.\n\n\nProject layout\n\n\nmkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.", 
+            "text": "twoptb - Two photon tool-box\n\n\nThis is a toolbox for the analysis of two-photon imaging data. It is optimised for the analysis of two-photon calcium imaging data. \n\n\nThe toolbox is centred around efficient data handling via linking of data to hdf5 files. This enables access to diverse aspects of the data and underlies in large part the extensibility of the toolbox. \n\n\nThe main strength of this toolbox, as compared to the many that already exist, are several powerful tools for data visualisation.", 
             "title": "Home"
         }, 
         {
             "location": "/#twoptb-two-photon-tool-box", 
             "text": "This is a toolbox for the analysis of two-photon imaging data. It is optimised for the analysis of two-photon calcium imaging data.   The toolbox is centred around efficient data handling via linking of data to hdf5 files. This enables access to diverse aspects of the data and underlies in large part the extensibility of the toolbox.   The main strength of this toolbox, as compared to the many that already exist, are several powerful tools for data visualisation.", 
             "title": "twoptb - Two photon tool-box"
-        }, 
-        {
-            "location": "/#project-layout", 
-            "text": "mkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.", 
-            "title": "Project layout"
         }, 
         {
             "location": "/user_guide/data_conversion/", 
