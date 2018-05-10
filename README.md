@@ -1,4 +1,4 @@
-# A toolbox (under development) for processing two-photon imaging data in python2.7
+# A toolbox for processing two-photon imaging data
 
 More complete documentation can (soon) be found <a href="https://yves-weissenberger.github.io/twoptb/">here </a>
 
@@ -13,9 +13,9 @@ For windows the former is easily installed from <a href="https://www.lfd.uci.edu
 
 Thereafter simply download the repository and install it by running
 
-    python setup.py install 
+    pip install . 
 
-in the relevant directory
+in the first twoptb directory (i.e. the one containing setup.py).
 
 # Quickstart
 
