@@ -13,7 +13,10 @@ The automatic approach to ROI definition is a two-step process. In the first ste
 
 We have developed a simple algorithm for automatic roi definition. To run this algorithm, run:
 
-    run_roi_finder.py -sess -1 -ded 3 2 2 -thresh 0.96 /path/to/hdf5.h5 /path/to/twoptb/twoptb/classifiers/zoom1_GTMK.p
+    run_roi_finder.py -sess -1 -ded 3 2 2 -thresh 0.96 roi_finder_name /path/to/hdf5.h5 
+
+where roi_finder name is an automatic roi finder derived from training. 
+
 
 
 ![Screenshot](ims/auto_roi.png)

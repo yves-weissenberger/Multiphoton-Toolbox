@@ -20,7 +20,7 @@ Then draw ROIs either manually
 
 or automatically
 
-	run_roi_finder.py path/to/hdf5.h5
+	run_roi_finder.py finder_name path/to/hdf5.h5
 
 followed by manul curation using the "ROI_Drawer"
 
