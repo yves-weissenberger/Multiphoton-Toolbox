@@ -1,10 +1,5 @@
 # Motion registration
 
-To run motion registration on a dataset that has been converted to hdf5, simply run
-
-	/path/to/twoptb/scripts/motion_register_data.py path/to/hdf_file.h5
-
-
 ## Motion Registration Algorithm
 Motion registration is implemented using the efficient subpixel registration algorithm provided by Guizmar. 
 

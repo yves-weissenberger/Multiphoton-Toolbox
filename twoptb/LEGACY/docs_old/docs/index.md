@@ -6,6 +6,3 @@ The toolbox is centred around efficient data handling via linking of data to hdf
 
 The main strength of this toolbox, as compared to the many that already exist, are several powerful tools for data visualisation.
 
-
-A link to the repository may be found <a href="https://github.com/yves-weissenberger/twoptb"> here </a>
-

@@ -1,0 +1,124 @@
+{
+    "docs": [
+        {
+            "location": "/", 
+            "text": "twoptb - Two photon tool-box\n\n\nThis is a toolbox for the analysis of two-photon imaging data. It is optimised for the analysis of two-photon calcium imaging data. \n\n\nThe toolbox is centred around efficient data handling via linking of data to hdf5 files. This enables access to diverse aspects of the data and underlies in large part the extensibility of the toolbox. \n\n\nThe main strength of this toolbox, as compared to the many that already exist, are several powerful tools for data visualisation.", 
+            "title": "Home"
+        }, 
+        {
+            "location": "/#twoptb-two-photon-tool-box", 
+            "text": "This is a toolbox for the analysis of two-photon imaging data. It is optimised for the analysis of two-photon calcium imaging data.   The toolbox is centred around efficient data handling via linking of data to hdf5 files. This enables access to diverse aspects of the data and underlies in large part the extensibility of the toolbox.   The main strength of this toolbox, as compared to the many that already exist, are several powerful tools for data visualisation.", 
+            "title": "twoptb - Two photon tool-box"
+        }, 
+        {
+            "location": "/install/", 
+            "text": "Installation\n\n\nThe package has many dependencies so by far the easiest way to install the package is to download \n Anaconda 2.7\n. Thereafter only two additional packages need to be installed. These are:\n\n\n tifffile \n\n\n\n pyqtgraph \n\n\n\nFor windows the former is easily installed from \n here \n, the latter from \n here \n.\n\n\nThereafter simply download the repository and install it by running\n\n\npip install .\n\n\n\nin the first twoptb directory (i.e. the one containing setup.py).\n\n\nWindows\n\n\nThe package has many dependencies so by far the easiest way to install the package is to download Anaconda 2.7. Thereafter only two additional packages need to be installed. These are:\n\n\ntifffile\npyqtgraph\nFor windows the former is easily installed from here , the latter from here .\n\n\nThereafter simply download the repository and install it by running\n\n\npip install . \nin the first twoptb directory (i.e. the one containing setup.py).", 
+            "title": "Installation"
+        }, 
+        {
+            "location": "/install/#installation", 
+            "text": "The package has many dependencies so by far the easiest way to install the package is to download   Anaconda 2.7 . Thereafter only two additional packages need to be installed. These are:   tifffile    pyqtgraph   For windows the former is easily installed from   here  , the latter from   here  .  Thereafter simply download the repository and install it by running  pip install .  in the first twoptb directory (i.e. the one containing setup.py).", 
+            "title": "Installation"
+        }, 
+        {
+            "location": "/install/#windows", 
+            "text": "The package has many dependencies so by far the easiest way to install the package is to download Anaconda 2.7. Thereafter only two additional packages need to be installed. These are:  tifffile\npyqtgraph\nFor windows the former is easily installed from here , the latter from here .  Thereafter simply download the repository and install it by running  pip install . \nin the first twoptb directory (i.e. the one containing setup.py).", 
+            "title": "Windows"
+        }, 
+        {
+            "location": "/user_guide/data_conversion/", 
+            "text": "Data conversion\n\n\nThe code expects a certain directory structure when it comes to the storage of data. Firstly, it assumes that data are stored in the form of .tif files with the metadata required for reading them.  \n\n\nExpects certain folder structure e.g.\n/home\n/AIAK_2\n    /29082017\n        /Area01\n            /Acq1.tif\n            GRABinfo.mat\n            outDat.mat\n            ...\n\n        /Area02\n            /Acq1.tif\n            GRABinfo.mat\n            outDat.mat\n            ...\n\n        /Area03\n            /Acq1.tif\n            GRABinfo.mat\n            outDat.mat\n            ...\n\n\n\nLinking stimulus scripts\n\n\nAs stated in the introduction a core feature of the toolbox is the centrality of the hdf5 file as a link for the multimodal data com", 
+            "title": "Data Conversion"
+        }, 
+        {
+            "location": "/user_guide/data_conversion/#data-conversion", 
+            "text": "The code expects a certain directory structure when it comes to the storage of data. Firstly, it assumes that data are stored in the form of .tif files with the metadata required for reading them.    Expects certain folder structure e.g.\n/home\n/AIAK_2\n    /29082017\n        /Area01\n            /Acq1.tif\n            GRABinfo.mat\n            outDat.mat\n            ...\n\n        /Area02\n            /Acq1.tif\n            GRABinfo.mat\n            outDat.mat\n            ...\n\n        /Area03\n            /Acq1.tif\n            GRABinfo.mat\n            outDat.mat\n            ...", 
+            "title": "Data conversion"
+        }, 
+        {
+            "location": "/user_guide/data_conversion/#linking-stimulus-scripts", 
+            "text": "As stated in the introduction a core feature of the toolbox is the centrality of the hdf5 file as a link for the multimodal data com", 
+            "title": "Linking stimulus scripts"
+        }, 
+        {
+            "location": "/user_guide/motionreg/", 
+            "text": "Motion registration\n\n\nMotion Registration Algorithm\n\n\nMotion registration is implemented using the efficient subpixel registration algorithm provided by Guizmar. \n\n\nMean image selection\n\n\nMean images are computed by", 
+            "title": "Motion Registration"
+        }, 
+        {
+            "location": "/user_guide/motionreg/#motion-registration", 
+            "text": "", 
+            "title": "Motion registration"
+        }, 
+        {
+            "location": "/user_guide/motionreg/#motion-registration-algorithm", 
+            "text": "Motion registration is implemented using the efficient subpixel registration algorithm provided by Guizmar.", 
+            "title": "Motion Registration Algorithm"
+        }, 
+        {
+            "location": "/user_guide/motionreg/#mean-image-selection", 
+            "text": "Mean images are computed by", 
+            "title": "Mean image selection"
+        }, 
+        {
+            "location": "/user_guide/rois/", 
+            "text": "ROI Definition Methods\n\n\nAutomatic approach\n\n\nTraining an ROI classifer\n\n\nUsing a pre-trained ROI classifier\n\n\nWe have developed a simple algorithm for automatic roi definition. To run this algorithm, run:\n\n\npython /path/to/twoptb/twoptb/ROIs/run_roi_finder.py -sess -1 -ded 3 2 2 -thresh 0.96 /path/to/hdf5.h5 /path/to/twoptb/twoptb/classifiers/zoom1_GTMK.p\n\n\n\n\n\nManual curation\n\n\nImage of the GUI used for ROI and data curation", 
+            "title": "ROI Definition"
+        }, 
+        {
+            "location": "/user_guide/rois/#roi-definition-methods", 
+            "text": "", 
+            "title": "ROI Definition Methods"
+        }, 
+        {
+            "location": "/user_guide/rois/#automatic-approach", 
+            "text": "", 
+            "title": "Automatic approach"
+        }, 
+        {
+            "location": "/user_guide/rois/#training-an-roi-classifer", 
+            "text": "", 
+            "title": "Training an ROI classifer"
+        }, 
+        {
+            "location": "/user_guide/rois/#using-a-pre-trained-roi-classifier", 
+            "text": "We have developed a simple algorithm for automatic roi definition. To run this algorithm, run:  python /path/to/twoptb/twoptb/ROIs/run_roi_finder.py -sess -1 -ded 3 2 2 -thresh 0.96 /path/to/hdf5.h5 /path/to/twoptb/twoptb/classifiers/zoom1_GTMK.p", 
+            "title": "Using a pre-trained ROI classifier"
+        }, 
+        {
+            "location": "/user_guide/rois/#manual-curation", 
+            "text": "", 
+            "title": "Manual curation"
+        }, 
+        {
+            "location": "/user_guide/rois/#image-of-the-gui-used-for-roi-and-data-curation", 
+            "text": "", 
+            "title": "Image of the GUI used for ROI and data curation"
+        }, 
+        {
+            "location": "/user_guide/trace_extraction/", 
+            "text": "", 
+            "title": "Trace Extraction"
+        }, 
+        {
+            "location": "/user_guide/across_days/", 
+            "text": "Matching ROIs across days\n\n\nIf the same group of cells is repeatedly imaged across days, many experiments require matching cells across days. To enable this, \n\n\nAlgorithmic Approach\n\n\nGUI for curation", 
+            "title": "Across Day Analysis"
+        }, 
+        {
+            "location": "/user_guide/across_days/#matching-rois-across-days", 
+            "text": "If the same group of cells is repeatedly imaged across days, many experiments require matching cells across days. To enable this,", 
+            "title": "Matching ROIs across days"
+        }, 
+        {
+            "location": "/user_guide/across_days/#algorithmic-approach", 
+            "text": "", 
+            "title": "Algorithmic Approach"
+        }, 
+        {
+            "location": "/user_guide/across_days/#gui-for-curation", 
+            "text": "", 
+            "title": "GUI for curation"
+        }
+    ]
+}

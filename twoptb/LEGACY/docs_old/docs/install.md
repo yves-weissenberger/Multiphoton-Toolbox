@@ -7,7 +7,7 @@ The package has many dependencies so by far the easiest way to install the packa
 
 For windows the former is easily installed from <a href="https://www.lfd.uci.edu/~gohlke/pythonlibs/#tifffile"> here </a>, the latter from <a href="http://www.pyqtgraph.org/"> here </a>.
 
-Thereafter simply download the repository from <a href="https://github.com/yves-weissenberger/twoptb"> here </a> and install it by running
+Thereafter simply download the repository and install it by running
 
     pip install . 
 
