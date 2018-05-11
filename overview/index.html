@@ -140,23 +140,23 @@
 <h2 id="typical-set-of-function-calls-to-preprocess-data">Typical Set of function calls to preprocess data</h2>
 <p>Most important functions have (will soon have) help. To view the help run the function simply as:</p>
 <p>First format data by calling </p>
-<pre><code>python /path/to/twoptb/twoptb/scripts/convert_to_hdf5.py
+<pre><code>convert_to_hdf5.py
 </code></pre>
 <p>Next motion register data</p>
-<pre><code>python /path/to/twoptb/twoptb/scripts/motion_register_data.py
+<pre><code>motion_register_data.py
 </code></pre>
 <p>Then draw ROIs either manually</p>
-<pre><code>python /path/to/twoptb/twoptb/ROIs/ROI_Drawer.py
+<pre><code>ROI_Drawer.py
 </code></pre>
 <p>or automatically</p>
-<pre><code>/path/to/twoptb/twoptb/ROIs/run_roi_finder.py
+<pre><code>run_roi_finder.py
 </code></pre>
 <p>followed by manul curation using the "ROI_Drawer"</p>
 <p>Then, if the data contains several separate acquisition runs involving the same cells</p>
-<pre><code>/path/to/twoptb/twoptb/ROIs/share_roiinfo.py
+<pre><code>share_roiinfo.py
 </code></pre>
 <p>Finally extract traces from the cells:</p>
-<pre><code>/path/to/twoptb/twoptb/ROIs/extract_roi_traces.py
+<pre><code>extract_roi_traces.py
 </code></pre>
 <h2 id="general-advice">General Advice</h2>
 <p>If you know how to, I would strongly recommend adding the twoptb scripts and ROI paths to you python path as it will make calling scripts much quicker.</p>
