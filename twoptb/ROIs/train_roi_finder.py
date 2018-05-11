@@ -1,3 +1,7 @@
+#!/home/yves/anaconda2/bin/python
+
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -40,7 +44,7 @@ Arguments:
  """
 
 
-def findpath():
+"""def findpath():
     cDir = os.path.dirname(os.path.realpath(__file__))
 
     found = False
@@ -55,7 +59,7 @@ def findpath():
 
 twoptb_path = findpath()
 sys.path.append(twoptb_path)
-#sys.path.append(os.path.abspath())
+#sys.path.append(os.path.abspath())"""
 import twoptb as MP
 
 
@@ -131,7 +135,7 @@ def get_mean_im_roi_centroids(pairs):
     return roi_mIm_sets
 
 
-def get_training_sets(roi_mIm_sets,rad=7):
+def get_training_sets(roi_mIm_sets,rad=7,shifts=[3,7]):
     
     
 
@@ -184,6 +188,36 @@ def get_training_sets(roi_mIm_sets,rad=7):
 
 if __name__=="__main__":
 
+    parser = argparse.ArgumentParser(description="""Train an automatic algorithm to identify ROIs based on previously drawn ROIs example usage is:
+
+python train_roi_finder.py -sess 0 -ded 3 2 3 /path/to/hdf5.py /path/to/classifier
+
+Optional arguments, i.e. those with a hyphen preceding may be omitted note that here
+0 refers to sess and 3 2 3 refers to ded
+=============================================================================""",
+                                                    formatter_class=argparse.RawTextHelpFormatter)
+
+
+    parser.add_argument("classifier", type=str,
+                    help="Desired name of the classifier that will be trained")
+
+    parser.add_argument("datapath", type=str,nargs='*',
+                    help="Path in which hdf5s for which rois have been drawn are stored. Can optionally be multiple paths")
+    
+    parser.add_argument("-rad",type=int,dest='rad',default=7,
+                    help="radius of image patches to use for training; zoom 2 - 15 pixesl; zoom 1 - 7 pixels")
+
+    parser.add_argument("-shifts" ,type=int,nargs=3,dest='shift',default=[3,7]
+                help="radius to shift mean patches of rois around by in order to generate negative examples; zoom 2 - [6,14]; zoom 1 [3,7]")
+
+
+    parser.add_argument("-thresh", type=float, dest='thresh', default=.925, help="Threshold recommended range 0.8-.98 the higher the threshold the harder the inlcusion threshold")
+
+
+    args = parser.parse_args()
+
+    eg_shift = args.shift
+    rad = args.rad
     if len(sys.argv)<2:
         print "Missing required arguments: first argument is radius to draw patches"
         raise

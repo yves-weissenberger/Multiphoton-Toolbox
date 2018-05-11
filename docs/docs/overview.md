@@ -8,30 +8,29 @@ Most important functions have (will soon have) help. To view the help run the fu
 
 First format data by calling 
 	
-	python /path/to/twoptb/twoptb/scripts/convert_to_hdf5.py 
+	convert_to_hdf5.py path/to/datafolder/
 
 Next motion register data
 
-	python /path/to/twoptb/twoptb/scripts/motion_register_data.py 
+	motion_register_data.py path/to/hdf5.h5
 
 Then draw ROIs either manually
 
-	python /path/to/twoptb/twoptb/ROIs/ROI_Drawer.py 
+	ROI_Drawer.py path/to/hdf5.h5
 
 or automatically
 
-	/path/to/twoptb/twoptb/ROIs/run_roi_finder.py
+	run_roi_finder.py path/to/hdf5.h5
 
 followed by manul curation using the "ROI_Drawer"
 
 Then, if the data contains several separate acquisition runs involving the same cells
 
-	/path/to/twoptb/twoptb/ROIs/share_roiinfo.py
+	share_roiinfo.py path/to/hdf5.h5
 
 Finally extract traces from the cells:
 
-	/path/to/twoptb/twoptb/ROIs/extract_roi_traces.py 
-
+	extract_roi_traces.py path/to/hdf5.h5
 
 ## General Advice
 

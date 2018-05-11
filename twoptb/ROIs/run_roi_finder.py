@@ -16,7 +16,7 @@ from skimage.exposure import equalize_adapthist
 import skimage
 import argparse
 
-def findpath():
+"""def findpath():
     cDir = os.path.dirname(os.path.realpath(__file__))
 
     found = False
@@ -31,7 +31,7 @@ def findpath():
 
 twoptb_path = findpath()
 sys.path.append(twoptb_path)
-#sys.path.append(os.path.abspath())
+#sys.path.append(os.path.abspath())"""
 import twoptb as MP
 
 

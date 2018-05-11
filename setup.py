@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='twoptb',
       version='0.1',
@@ -17,5 +17,5 @@ setup(name='twoptb',
       		   'twoptb/across_days/aggregate_rois.py',
       		   'twoptb/across_days/across_day_traces.py',
       		   ],
-      packages=['twoptb'],
+      packages=find_packages(),
       zip_safe=False)

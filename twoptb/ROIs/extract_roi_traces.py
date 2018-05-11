@@ -1,3 +1,7 @@
+#!/home/yves/anaconda2/bin/python
+
+
+
 from __future__ import division
 import h5py
 import pickle
@@ -6,7 +10,7 @@ import numpy as np
 import sys
 import os
 
-def findpath():
+"""def findpath():
     cDir = os.path.dirname(os.path.realpath(__file__))
 
     found = False
@@ -21,7 +25,7 @@ def findpath():
 
 twoptb_path = findpath()
 sys.path.append(twoptb_path)
-#sys.path.append(os.path.abspath())
+#sys.path.append(os.path.abspath())"""
 import twoptb as MP
 
 

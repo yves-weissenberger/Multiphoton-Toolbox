@@ -1,3 +1,7 @@
+#!/home/yves/anaconda2/bin/python
+
+
+
 import h5py
 import sys
 import pickle
@@ -9,7 +13,7 @@ import numpy as np
 import sys
 import os
 
-def findpath():
+"""def findpath():
     cDir = os.path.dirname(os.path.realpath(__file__))
 
     found = False
@@ -25,7 +29,7 @@ def findpath():
 twoptb_path = findpath()
 sys.path.append(twoptb_path)
 
-
+"""
 
 def extract_traces(areaFile,roiattrs):
         

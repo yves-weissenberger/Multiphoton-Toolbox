@@ -1,3 +1,4 @@
+#!/home/yves/anaconda2/bin/python
 
 """ This script simply takes as input some folders with hdf5 datasets and 
     outputs the mean images as .jpg files. Can do multiple directions """

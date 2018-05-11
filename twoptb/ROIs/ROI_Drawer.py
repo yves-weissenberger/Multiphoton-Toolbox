@@ -9,7 +9,7 @@ import argparse
 """
 
 
-def findpath():
+"""def findpath():
     cDir = os.path.dirname(os.path.realpath(__file__))
 
     found = False
@@ -23,7 +23,7 @@ def findpath():
     return twoptb_path
 
 twoptb_path = findpath()
-sys.path.append(twoptb_path)
+sys.path.append(twoptb_path)"""
 
 
 def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):

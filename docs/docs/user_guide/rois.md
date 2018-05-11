@@ -1,8 +1,10 @@
 # ROI Definition Methods
 
-## Automatic approach
+There are two approaches to ROI definition that can be used in the context of this toolbox and they are by and large complementary. The first is an [automatic algorithm](rois.md#auto); the second is a [Manual Curation GUI](rois.md#manual)
 
+<h2 id="auto">Automatic Approach</h2>
 
+The automatic approach to ROI definition is a two-step process. In the first step, putative centroids of ROIs are identified. This is done by moving a sliding window 
 
 ### Training an ROI classifer
 
@@ -11,14 +13,12 @@
 
 We have developed a simple algorithm for automatic roi definition. To run this algorithm, run:
 
-    python /path/to/twoptb/twoptb/ROIs/run_roi_finder.py -sess -1 -ded 3 2 2 -thresh 0.96 /path/to/hdf5.h5 /path/to/twoptb/twoptb/classifiers/zoom1_GTMK.p
+    run_roi_finder.py -sess -1 -ded 3 2 2 -thresh 0.96 /path/to/hdf5.h5 /path/to/twoptb/twoptb/classifiers/zoom1_GTMK.p
 
 
 ![Screenshot](ims/auto_roi.png)
 
-
-## Manual curation
-
+<h2 id="manual">Manual Curation</h2>
 
 ### Image of the GUI used for ROI and data curation
 
