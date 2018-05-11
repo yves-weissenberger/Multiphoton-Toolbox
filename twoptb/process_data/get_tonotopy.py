@@ -154,8 +154,8 @@ def get_tuning_curves(areaF,centre=None):
     ## so centres[0] is the x-coordinate and centres[1] is the y coordinate
 
     roi_centres = np.array(ROI_attrs['centres'])
-    xPos = (roi_centres[:,0]*objective_multiplier/zoom_multiplier) + FOV_centre[0]
-    yPos = (roi_centres[:,1]*objective_multiplier/zoom_multiplier) + FOV_centre[1]
+    xPos = (roi_centres[:,1]*objective_multiplier/zoom_multiplier) + FOV_centre[0]
+    yPos = (-roi_centres[:,0]*objective_multiplier/zoom_multiplier) + FOV_centre[1]
 
     absROI_pos = -np.vstack([xPos,yPos])
     

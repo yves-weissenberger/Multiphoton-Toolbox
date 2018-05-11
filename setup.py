@@ -16,6 +16,7 @@ setup(name='twoptb',
       		   'twoptb/ROIs/extract_roi_traces.py',
       		   'twoptb/across_days/aggregate_rois.py',
       		   'twoptb/across_days/across_day_traces.py',
+                     'twoptb/across_days/across_day_rois.py',
       		   ],
       packages=find_packages(),
       zip_safe=False)

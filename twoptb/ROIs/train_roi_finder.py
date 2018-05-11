@@ -15,6 +15,8 @@ import sys
 from skimage.exposure import equalize_adapthist
 from sklearn.ensemble import RandomForestClassifier
 import re
+import argparse
+import twoptb as MP
 
 
 """ 
@@ -44,23 +46,6 @@ Arguments:
  """
 
 
-"""def findpath():
-    cDir = os.path.dirname(os.path.realpath(__file__))
-
-    found = False
-    while not found:
-        cDir,ext = os.path.split(cDir) 
-        if ext=='twoptb':
-            found = False
-            twoptb_path = cDir
-            print 
-            break
-    return twoptb_path
-
-twoptb_path = findpath()
-sys.path.append(twoptb_path)
-#sys.path.append(os.path.abspath())"""
-import twoptb as MP
 
 
 def get_roi_paths(in_args):
@@ -190,12 +175,12 @@ if __name__=="__main__":
 
     parser = argparse.ArgumentParser(description="""Train an automatic algorithm to identify ROIs based on previously drawn ROIs example usage is:
 
-python train_roi_finder.py -sess 0 -ded 3 2 3 /path/to/hdf5.py /path/to/classifier
+    python train_roi_finder.py -sess 0 -ded 3 2 3 /path/to/hdf5.py /path/to/classifier
 
-Optional arguments, i.e. those with a hyphen preceding may be omitted note that here
-0 refers to sess and 3 2 3 refers to ded
-=============================================================================""",
-                                                    formatter_class=argparse.RawTextHelpFormatter)
+    Optional arguments, i.e. those with a hyphen preceding may be omitted note that here
+    0 refers to sess and 3 2 3 refers to ded
+    =============================================================================""",
+                                                        formatter_class=argparse.RawTextHelpFormatter)
 
 
     parser.add_argument("classifier", type=str,
@@ -207,7 +192,7 @@ Optional arguments, i.e. those with a hyphen preceding may be omitted note that 
     parser.add_argument("-rad",type=int,dest='rad',default=7,
                     help="radius of image patches to use for training; zoom 2 - 15 pixesl; zoom 1 - 7 pixels")
 
-    parser.add_argument("-shifts" ,type=int,nargs=3,dest='shift',default=[3,7]
+    parser.add_argument("-shifts" ,type=int,nargs=3,dest='shift',default=[3,7],
                 help="radius to shift mean patches of rois around by in order to generate negative examples; zoom 2 - [6,14]; zoom 1 [3,7]")
 
 
