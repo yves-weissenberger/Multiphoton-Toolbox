@@ -16,7 +16,7 @@ from skimage.exposure import equalize_adapthist
 from sklearn.ensemble import RandomForestClassifier
 import re
 import argparse
-import twoptb as MP
+import twoptb
 
 
 """ 
@@ -127,7 +127,6 @@ def get_training_sets(roi_mIm_sets,rad=7,shifts=[3,7]):
     boutons = []
 
     non_boutons = []
-    print 'one'
     rIMS = []
     for mIm,roiB in roi_mIm_sets:
         for c in roiB['centres']:
@@ -166,9 +165,8 @@ def get_training_sets(roi_mIm_sets,rad=7,shifts=[3,7]):
 
     boutons = np.array(boutons)
     non_boutons = np.array(non_boutons)
-    print 'here'
     plt.imshow(np.mean(np.array(rIMS),axis=0),cmap='binary_r')
-    plt.show()
+    plt.show(block=False)
     return boutons,np.array(non_boutons)
 
 if __name__=="__main__":
@@ -192,30 +190,31 @@ if __name__=="__main__":
     parser.add_argument("-rad",type=int,dest='rad',default=7,
                     help="radius of image patches to use for training; zoom 2 - 15 pixesl; zoom 1 - 7 pixels")
 
-    parser.add_argument("-shifts" ,type=int,nargs=3,dest='shift',default=[3,7],
+    parser.add_argument("-shifts" ,type=int,nargs=2,dest='shift',default=[3,7],
                 help="radius to shift mean patches of rois around by in order to generate negative examples; zoom 2 - [6,14]; zoom 1 [3,7]")
-
-
-    parser.add_argument("-thresh", type=float, dest='thresh', default=.925, help="Threshold recommended range 0.8-.98 the higher the threshold the harder the inlcusion threshold")
 
 
     args = parser.parse_args()
 
     eg_shift = args.shift
     rad = args.rad
-    if len(sys.argv)<2:
-        print "Missing required arguments: first argument is radius to draw patches"
-        raise
-    rad = int(sys.argv[1])
-    classifier_name = sys.argv[2]
-    paths = sys.argv[3:]
+    paths = args.datapath
+    classifier_name = args.classifier
+    #print args.datapath
+    #rad = args.rad
+    #if len(sys.argv)<2:
+    #    print "Missing required arguments: first argument is radius to draw patches"
+    #    raise
+    #rad = int(sys.argv[1])
+    #classifier_name = sys.argv[2]
+    #paths = sys.argv[3:]
 
 
     #Load and setup data to train classifier with
     pairs = get_roi_paths(paths)
 
     sets = get_mean_im_roi_centroids(pairs)
-    boutons,non_boutons = get_training_sets(sets,rad)
+    boutons,non_boutons = get_training_sets(sets,rad,shifts=eg_shift)
     #print type(boutons), type(non_boutons)
     #print boutons.shape, non_boutons.shape
     train_set = np.vstack([np.array(boutons),np.array(non_boutons)])
@@ -224,9 +223,9 @@ if __name__=="__main__":
     rfClass = RandomForestClassifier(n_estimators=25,n_jobs=10,min_samples_split=5,min_samples_leaf=5) #good version
     #rfClass = RandomForestClassifier(n_estimators=25,n_jobs=10,min_samples_split=15,min_samples_leaf=15) #good version
     rfC_fit = rfClass.fit(np.vstack([np.array(boutons),np.array(non_boutons)]),labels)
-    twoptb_path = findpath()
-    classifier_path = os.path.join(twoptb_path,'twoptb','classifiers')
-
+    twoptb_path = os.path.split(twoptb.__file__)[0]
+    classifier_path = os.path.join(twoptb_path,'classifiers')
+    print "saving classifier in: %s" %classifier_path
     if not os.path.isdir(classifier_path):
         os.mkdir(classifier_path)
 

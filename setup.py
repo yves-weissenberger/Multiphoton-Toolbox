@@ -19,4 +19,5 @@ setup(name='twoptb',
                      'twoptb/across_days/across_day_rois.py',
       		   ],
       packages=find_packages(),
+      include_package_data=True,
       zip_safe=False)

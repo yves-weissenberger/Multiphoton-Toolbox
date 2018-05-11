@@ -3,38 +3,7 @@ TO-DO List
 1. Write README that is useful
 
 
+2. Update all functions with parseargs
 
 
-Visualisation
-1. Create Basic Visualisation for full-frame videos
-
-
-loggers for 
-1. registration  x
-2. ROI masks     x
-
-
-Trace Extraction
-1. Output spike times
-2. 
-
-
-
-ROI localisation in imaging field
-1.
-
-
-
-
-Analysis
-1. GLMs ....  x
-	1.1 Integrate GLM fitting
-2. p-GPFA  x
-	2.1 Integrate p-GPFA fitting
-
-
-Bugs:
-1. with not inRAM on motion registration, can't access hdf5 attributes.
-2. Multiple runs of motion registration not working
-3. Doesn't automatically associate the outDat Files x
-4. Delete problems with ROI drawer
+3. Write documentation

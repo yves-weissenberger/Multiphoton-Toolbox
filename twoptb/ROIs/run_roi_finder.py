@@ -15,9 +15,37 @@ import sys
 from skimage.exposure import equalize_adapthist
 import skimage
 import argparse
-import twoptb as MP
+import twoptb
+
+def find_classifier(path,search_str):
+
+    all_classS = os.listdir(path)
+
+    class_path = []
+
+    for classN in all_classS:
+        if search_str in classN:
+            print 'selected classifier: %s' %classN
+            class_path.append(classN)
 
 
+    if (len(class_path)==0):
+        print "No roi_finders match the name you suggested available ones are:"
+
+        for i in all_classS:
+            print i
+        raise Exception("Try again using one of these")
+
+    elif (len(class_path)>1):
+        print "The search string you used is not specific enough and has matched multiple roi_finders: here are availabel ones"
+
+        for i in all_classS:
+            print i
+        raise Exception("Try again using one of these")
+    else:
+        pass
+
+    return class_path[0]
 
 if __name__ =="__main__":
 
@@ -25,18 +53,20 @@ if __name__ =="__main__":
 
     parser = argparse.ArgumentParser(description="""Automatically find ROIs based on a mean image example usage is:
 
-python run_roi_finder -sess 0 -ded 3 2 3 /path/to/hdf5.py /path/to/classifier
+python run_roi_finder -sess 0 -ded 3 2 3 classifier_name /path/to/hdf5.py
 
 Optional arguments, i.e. those with a hyphen preceding may be omitted note that here
 0 refers to sess and 3 2 3 refers to ded
 =============================================================================""",
                                                     formatter_class=argparse.RawTextHelpFormatter)
 
+    parser.add_argument("classifier", type=str,
+                    help="name of classifier, write help to get names of availabel classifiers")
+
+
     parser.add_argument("hdfPath", type=str,
                     help="Full path to HDF5 file to open and search for ROIs in")
 
-    parser.add_argument("classifier", type=str,
-                    help="Full path to classifer")
     
     parser.add_argument("-sess",type=int,dest='sess',default=1,
                     help="Session to run automatic ROI finding on")
@@ -49,7 +79,12 @@ Optional arguments, i.e. those with a hyphen preceding may be omitted note that 
 
     args = parser.parse_args()
 
-    rfC_fit,rad = pickle.load(open(args.classifier))
+
+    pth0 = os.path.join(os.path.split(twoptb.__file__)[0],'classifiers')
+
+    class_path = find_classifier(pth0,args.classifier)
+
+    rfC_fit,rad = pickle.load(open(os.path.join(pth0,class_path)))
     hdfF11 = h5py.File(args.hdfPath)
 
     #ded = [5,4,5] #for zoom 2
