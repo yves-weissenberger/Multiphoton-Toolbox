@@ -59,6 +59,11 @@
           
             <li class="toctree-l1">
 		
+    <a class="" href="../../overview/">Quickstart</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
     <span class="caption-text">User Guide</span>
     <ul class="subnav">
                 <li class=" current">
@@ -71,6 +76,8 @@
         <ul>
         
             <li><a class="toctree-l4" href="#linking-stimulus-scripts">Linking stimulus scripts</a></li>
+        
+            <li><a class="toctree-l4" href="#output-folder-structure">Output Folder Structure</a></li>
         
         </ul>
     
@@ -133,31 +140,69 @@
             <div class="section">
               
                 <h1 id="data-conversion">Data conversion</h1>
-<p>The code expects a certain directory structure when it comes to the storage of data. Firstly, it assumes that data are stored in the form of .tif files with the metadata required for reading them.  </p>
+<p>Prior to any preprocessing or analysis of the raw data, it is converted from the raw data format, (i.e. .tif) to HDF5 for convenience. The resulting HDF file serves as a central access point for the multimodal (i.e. two-photon imaging data, video-data, stimulus files etc.).  </p>
+<p>Data is converted to HDF5 by running, in terminal </p>
+<pre><code>python /path/to/twoptb/twoptb/scripts/convert_to_hdf5.py /path/to/data_folder/
+</code></pre>
+<p>In order to preprocess data properly, the script requires a certain directory and file structure.  Firstly, it assumes that imaging data are stored in the form of .tif files with the metadata required for reading them. Additionally, it assumes that these .tif files are stored in directories containing GRABinfo files (which contain image acquisition parameters) and optionally stimulus script files (outDat.mat file in the example, see below for further details). Finally, it assumes that data are in a certain directory structure: </p>
 <pre><code>Expects certain folder structure e.g.
 /home
 /AIAK_2
     /29082017
-        /Area01
+        /session01
             /Acq1.tif
             GRABinfo.mat
             outDat.mat
             ...
 
-        /Area02
+        /session02
             /Acq1.tif
             GRABinfo.mat
             outDat.mat
             ...
 
-        /Area03
+        /session03
             /Acq1.tif
             GRABinfo.mat
             outDat.mat
             ...
 </code></pre>
+<p>In the case of the above directory structure, the script above would be run as</p>
+<pre><code>python /path/to/twoptb/twoptb/scripts/convert_to_hdf5.py /home/AIAK_2/
+</code></pre>
+<p>and would create a single HDF5 file with data from all acquired sessions. Importantly, to optimally use this toolbox, all sessions in the example above should either be acquisitions of the same group of cells, or should all be acquisitions of different groups of cells. 
+Running this command would create a single HDF5 file from which raw-data, acquisition parameters and stimulus data could be convienetly and reproducibly accessed. </p>
 <h2 id="linking-stimulus-scripts">Linking stimulus scripts</h2>
-<p>As stated in the introduction a core feature of the toolbox is the centrality of the hdf5 file as a link for the multimodal data com</p>
+<p>A core feature of the toolbox is the centrality of the hdf5 file as a link for the multimodal data. For the analysis of most imaging datasets, additional information is required. This can be of the form of behavioural timestamps, simultaneously recorded video (currently not supported), or stimulus timestamps. Integrating this timestamped data with the HDF5 file requires processing of the raw form of the timestamp data. In order to link custom scripts to the HDF5 file, a readout script must be added to the "load_events.py" file which can be found in </p>
+<pre><code>twoptb/twoptb/file_management/load_events.py
+</code></pre>
+<p>After adding the appropriate function, the data must be directed to this function by adding the appropriate path to</p>
+<pre><code>twoptb/twoptb/file_management/load_images.py
+</code></pre>
+<p>For example, to extract data from the ouDat.mat file in the example directory structure above "load_images.py" contains the following elif statement </p>
+<pre><code>    elif 'outDat' in fname:
+        if '._' not in fname:
+            matFilePth = os.path.join(directory,fname)
+            print matFilePth
+            stimattrs = get_triggers(matFilePth)
+</code></pre>
+<p>which directs processing of the outDat file to the function "get_triggers" which can be found in load_events.py.</p>
+<h2 id="output-folder-structure">Output Folder Structure</h2>
+<p>Running the above script should give rise to the above directory structure
+    /home
+    /AIAK_2
+        /29082017
+            /...
+        /processed
+            /29082017_AIAK_2
+                29082017_AIAK_2.h5
+                /GRABinfos
+                /stims
+                /regInfo
+                /ROIs</p>
+<pre><code>    proc_log.txt
+</code></pre>
+<p>After this initial preprocessing step next is <a href="../motionreg/">motion registration</a></p>
               
             </div>
           </div>
@@ -168,7 +213,7 @@
         <a href="../motionreg/" class="btn btn-neutral float-right" title="Motion Registration">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../../install/" class="btn btn-neutral" title="Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../overview/" class="btn btn-neutral" title="Quickstart"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -194,7 +239,7 @@
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href="../../install/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../../overview/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
         <span style="margin-left: 15px"><a href="../motionreg/" style="color: #fcfcfc">Next &raquo;</a></span>

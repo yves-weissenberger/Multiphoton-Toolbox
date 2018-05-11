@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>Installation - twoptb</title>
+  <title>Quickstart - twoptb</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -17,9 +17,9 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Installation";
-    var mkdocs_page_input_path = "install.md";
-    var mkdocs_page_url = "/install/";
+    var mkdocs_page_name = "Quickstart";
+    var mkdocs_page_input_path = "overview.md";
+    var mkdocs_page_url = "/overview/";
   </script>
   
   <script src="../js/jquery-2.1.1.min.js"></script>
@@ -52,26 +52,28 @@
     <a class="" href="..">Home</a>
 	    </li>
           
+            <li class="toctree-l1">
+		
+    <a class="" href="../install/">Installation</a>
+	    </li>
+          
             <li class="toctree-l1 current">
 		
-    <a class="current" href="./">Installation</a>
+    <a class="current" href="./">Quickstart</a>
     <ul class="subnav">
             
-    <li class="toctree-l2"><a href="#installation">Installation</a></li>
+    <li class="toctree-l2"><a href="#overview">Overview</a></li>
     
         <ul>
         
-            <li><a class="toctree-l3" href="#windows">Windows</a></li>
+            <li><a class="toctree-l3" href="#typical-set-of-function-calls-to-preprocess-data">Typical Set of function calls to preprocess data</a></li>
+        
+            <li><a class="toctree-l3" href="#general-advice">General Advice</a></li>
         
         </ul>
     
 
     </ul>
-	    </li>
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="../overview/">Quickstart</a>
 	    </li>
           
             <li class="toctree-l1">
@@ -123,7 +125,7 @@
     
       
     
-    <li>Installation</li>
+    <li>Quickstart</li>
     <li class="wy-breadcrumbs-aside">
       
     </li>
@@ -133,25 +135,34 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="installation">Installation</h1>
-<p>The package has many dependencies so by far the easiest way to install the package is to download <a href="https://www.anaconda.com/download/"> Anaconda 2.7</a>. Thereafter only two additional packages need to be installed. These are:</p>
-<li> tifffile </li>
-
-<li> pyqtgraph </li>
-
-<p>For windows the former is easily installed from <a href="https://www.lfd.uci.edu/~gohlke/pythonlibs/#tifffile"> here </a>, the latter from <a href="http://www.pyqtgraph.org/"> here </a>.</p>
-<p>Thereafter simply download the repository from <a href="https://github.com/yves-weissenberger/twoptb"> here </a> and install it by running</p>
-<pre><code>pip install .
+                <h1 id="overview">Overview</h1>
+<p>This page is intended to provide a quick overview of the workflow. For more information please see the <a href="../user_guide/data_conversion/">User Guide</a></p>
+<h2 id="typical-set-of-function-calls-to-preprocess-data">Typical Set of function calls to preprocess data</h2>
+<p>Most important functions have (will soon have) help. To view the help run the function simply as:</p>
+<p>First format data by calling </p>
+<pre><code>python /path/to/twoptb/twoptb/scripts/convert_to_hdf5.py
 </code></pre>
-<p>in the first twoptb directory (i.e. the one containing setup.py).</p>
-<h2 id="windows">Windows</h2>
-<p>The package has many dependencies so by far the easiest way to install the package is to download Anaconda 2.7. Thereafter only two additional packages need to be installed. These are:</p>
-<p>tifffile
-pyqtgraph
-For windows the former is easily installed from here , the latter from here .</p>
-<p>Thereafter simply download the repository and install it by running</p>
-<p>pip install . 
-in the first twoptb directory (i.e. the one containing setup.py).</p>
+<p>Next motion register data</p>
+<pre><code>python /path/to/twoptb/twoptb/scripts/motion_register_data.py
+</code></pre>
+<p>Then draw ROIs either manually</p>
+<pre><code>python /path/to/twoptb/twoptb/ROIs/ROI_Drawer.py
+</code></pre>
+<p>or automatically</p>
+<pre><code>/path/to/twoptb/twoptb/ROIs/run_roi_finder.py
+</code></pre>
+<p>followed by manul curation using the "ROI_Drawer"</p>
+<p>Then, if the data contains several separate acquisition runs involving the same cells</p>
+<pre><code>/path/to/twoptb/twoptb/ROIs/share_roiinfo.py
+</code></pre>
+<p>Finally extract traces from the cells:</p>
+<pre><code>/path/to/twoptb/twoptb/ROIs/extract_roi_traces.py
+</code></pre>
+<h2 id="general-advice">General Advice</h2>
+<p>If you know how to, I would strongly recommend adding the twoptb scripts and ROI paths to you python path as it will make calling scripts much quicker.</p>
+<p>The main purpose of this toolbox is two-photon imaging data preprocessing. The key functions defining the pipeline are run by calling (via command line)</p>
+<pre><code>python /path/to/twoptb/twoptb/scripts/generic_script.py -h
+</code></pre>
               
             </div>
           </div>
@@ -159,10 +170,10 @@ in the first twoptb directory (i.e. the one containing setup.py).</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../overview/" class="btn btn-neutral float-right" title="Quickstart">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../user_guide/data_conversion/" class="btn btn-neutral float-right" title="Data Conversion">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href=".." class="btn btn-neutral" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../install/" class="btn btn-neutral" title="Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -188,10 +199,10 @@ in the first twoptb directory (i.e. the one containing setup.py).</p>
     <span class="rst-current-version" data-toggle="rst-current-version">
       
       
-        <span><a href=".." style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../install/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../overview/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../user_guide/data_conversion/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
