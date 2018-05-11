@@ -12,25 +12,7 @@ import numpy as np
 
 import sys
 import os
-
-"""def findpath():
-    cDir = os.path.dirname(os.path.realpath(__file__))
-
-    found = False
-    while not found:
-        cDir,ext = os.path.split(cDir) 
-        if ext=='twoptb':
-            found = False
-            twoptb_path = cDir
-            print 
-            break
-    return twoptb_path
-
-twoptb_path = findpath()
-sys.path.append(twoptb_path)
-
-"""
-
+import argparse
 def extract_traces(areaFile,roiattrs):
         
     nROIs = len(roiattrs['idxs'])
@@ -76,7 +58,13 @@ def save_ROIS(areaFile,ROI_attrs):
 
 if __name__=='__main__':
     
-    hdf_path = os.path.abspath(sys.argv[1])
+    parser = argparse.ArgumentParser(description="Motion register data that has been converted to hdf5")
+    parser.add_argument("hdfPath", type=str,
+                    help="Specify path to HDF5 file that should be motion registered")
+    args = parser.parse_args()
+
+    fpath = os.path.abspath(args.hdfPath)
+
     #roi_pth = os.path.join(hdf_path[:-3],'ROIs')
     with h5py.File(hdf_path,'a',libver='latest') as hdf:
         keys = hdf.keys()

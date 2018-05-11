@@ -9,23 +9,6 @@ import copy as cp
 import numpy as np
 import sys
 import os
-
-"""def findpath():
-    cDir = os.path.dirname(os.path.realpath(__file__))
-
-    found = False
-    while not found:
-        cDir,ext = os.path.split(cDir) 
-        if ext=='twoptb':
-            found = False
-            twoptb_path = cDir
-            print 
-            break
-    return twoptb_path
-
-twoptb_path = findpath()
-sys.path.append(twoptb_path)
-#sys.path.append(os.path.abspath())"""
 import twoptb as MP
 
 

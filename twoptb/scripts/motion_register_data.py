@@ -44,7 +44,7 @@ parser.add_argument("-show_ref",action='store', type=bool,default=False,
 #parser.add_argument("-h",'--help','--h',required=False,help=helpm)
 args = parser.parse_args()
 
-fpath = args.hdfPath
+fpath = os.path.abspath(args.hdfPath)
 #print fpath
 absPath = os.path.split(os.path.abspath(fpath))[0]
 fName = os.path.split(os.path.abspath(fpath))[1]

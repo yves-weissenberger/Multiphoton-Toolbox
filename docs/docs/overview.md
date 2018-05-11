@@ -34,10 +34,8 @@ Finally extract traces from the cells:
 
 ## General Advice
 
-If you know how to, I would strongly recommend adding the twoptb scripts and ROI paths to you python path as it will make calling scripts much quicker.
 
-
-The main purpose of this toolbox is two-photon imaging data preprocessing. The key functions defining the pipeline are run by calling (via command line)
+The key functions defining the pipeline are run by calling (via command line)
 
 	python /path/to/twoptb/twoptb/scripts/generic_script.py -h
 
