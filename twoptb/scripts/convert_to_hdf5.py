@@ -149,6 +149,7 @@ if __name__ == "__main__":
     #    print 'first argument specifies what folders to exclude'
     #elif sys.argv[1]==None:
     base_path = os.path.abspath(args.dir)
+    print "paths: %s" %base_path
     #print 'No explicit directory to load specified, using currenct directory \n %s' %base_path
     #else:
     #    base_path = os.path.abspath(sys.argv[1])
