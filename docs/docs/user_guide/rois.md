@@ -23,6 +23,8 @@ where roi_finder name is an automatic roi finder derived from training.
 
 <h2 id="manual">Manual Curation</h2>
 
+    ROI_Drawer.py /path/to/hdf5.h5
+
 ### Image of the GUI used for ROI and data curation
 
 ![Screenshot](ims/ROI_Drawer.png)

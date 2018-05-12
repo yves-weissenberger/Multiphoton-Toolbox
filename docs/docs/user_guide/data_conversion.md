@@ -4,7 +4,7 @@ Prior to any preprocessing or analysis of the raw data, it is converted from the
 
 Data is converted to HDF5 by running, in terminal 
 
-	python /path/to/twoptb/twoptb/scripts/convert_to_hdf5.py /path/to/data_folder/
+	convert_to_hdf5.py /path/to/data_folder/
 
 In order to preprocess data properly, the script requires a certain directory and file structure.  Firstly, it assumes that imaging data are stored in the form of .tif files with the metadata required for reading them. Additionally, it assumes that these .tif files are stored in directories containing GRABinfo files (which contain image acquisition parameters) and optionally stimulus script files (outDat.mat file in the example, see below for further details). Finally, it assumes that data are in a certain directory structure: 
 	
@@ -33,7 +33,7 @@ In order to preprocess data properly, the script requires a certain directory an
 
 In the case of the above directory structure, the script above would be run as
 
-	python /path/to/twoptb/twoptb/scripts/convert_to_hdf5.py /home/AIAK_2/
+	convert_to_hdf5.py /home/AIAK_2/
 
 and would create a single HDF5 file with data from all acquired sessions. Importantly, to optimally use this toolbox, all sessions in the example above should either be acquisitions of the same group of cells, or should all be acquisitions of different groups of cells. 
 Running this command would create a single HDF5 file from which raw-data, acquisition parameters and stimulus data could be convienetly and reproducibly accessed. 

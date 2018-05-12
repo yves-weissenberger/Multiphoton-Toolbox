@@ -61,7 +61,9 @@
     
         <ul>
         
-            <li><a class="toctree-l3" href="#windows">Windows</a></li>
+            <li><a class="toctree-l3" href="#main-package">Main package</a></li>
+        
+            <li><a class="toctree-l3" href="#spike-extraction">Spike Extraction</a></li>
         
         </ul>
     
@@ -134,24 +136,25 @@
             <div class="section">
               
                 <h1 id="installation">Installation</h1>
+<h2 id="main-package">Main package</h2>
 <p>The package has many dependencies so by far the easiest way to install the package is to download <a href="https://www.anaconda.com/download/"> Anaconda 2.7</a>. Thereafter only two additional packages need to be installed. These are:</p>
 <li> tifffile </li>
 
 <li> pyqtgraph </li>
 
-<p>For windows the former is easily installed from <a href="https://www.lfd.uci.edu/~gohlke/pythonlibs/#tifffile"> here </a>, the latter from <a href="http://www.pyqtgraph.org/"> here </a>.</p>
+<p>The latter from <a href="http://www.pyqtgraph.org/"> here </a> cross plattform. For unix (mac+linux) users, the former is easily obtained by simply running </p>
+<pre><code>pip install tifffile
+</code></pre>
+<p>while for windows, it can be downloaded from <a href="https://www.lfd.uci.edu/~gohlke/pythonlibs/#tifffile"> here </a> and installed by running:</p>
+<pre><code>pip install /path/to/tifffile‑2018.5.10‑cp27‑cp27m‑win_amd64.whl
+</code></pre>
+<p>assuming you are running a 64 bit version of windows.</p>
 <p>Thereafter simply download the repository from <a href="https://github.com/yves-weissenberger/twoptb"> here </a> and install it by running</p>
 <pre><code>pip install .
 </code></pre>
 <p>in the first twoptb directory (i.e. the one containing setup.py).</p>
-<h2 id="windows">Windows</h2>
-<p>The package has many dependencies so by far the easiest way to install the package is to download Anaconda 2.7. Thereafter only two additional packages need to be installed. These are:</p>
-<p>tifffile
-pyqtgraph
-For windows the former is easily installed from here , the latter from here .</p>
-<p>Thereafter simply download the repository and install it by running</p>
-<p>pip install . 
-in the first twoptb directory (i.e. the one containing setup.py).</p>
+<h2 id="spike-extraction">Spike Extraction</h2>
+<p>The spike extraction algorithm currently used is <a href="https://github.com/lucastheis/c2s"> c2s </a>. For windows users hopes for installing this package are slim at best while for unix users the installation process seems to work fine.</p>
               
             </div>
           </div>

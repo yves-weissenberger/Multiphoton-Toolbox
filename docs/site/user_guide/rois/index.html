@@ -83,9 +83,11 @@
     
         <ul>
         
-            <li><a class="toctree-l4" href="#automatic-approach">Automatic approach</a></li>
+            <li><a class="toctree-l4" href="#training-an-roi-classifer">Training an ROI classifer</a></li>
         
-            <li><a class="toctree-l4" href="#manual-curation">Manual curation</a></li>
+            <li><a class="toctree-l4" href="#using-a-pre-trained-roi-classifier">Using a pre-trained ROI classifier</a></li>
+        
+            <li><a class="toctree-l4" href="#image-of-the-gui-used-for-roi-and-data-curation">Image of the GUI used for ROI and data curation</a></li>
         
         </ul>
     
@@ -140,14 +142,21 @@
             <div class="section">
               
                 <h1 id="roi-definition-methods">ROI Definition Methods</h1>
-<h2 id="automatic-approach">Automatic approach</h2>
+<p>There are two approaches to ROI definition that can be used in the context of this toolbox and they are by and large complementary. The first is an <a href="./#auto">automatic algorithm</a>; the second is a <a href="./#manual">Manual Curation GUI</a></p>
+<h2 id="auto">Automatic Approach</h2>
+
+<p>The automatic approach to ROI definition is a two-step process. In the first step, putative centroids of ROIs are identified. This is done by moving a sliding window </p>
 <h3 id="training-an-roi-classifer">Training an ROI classifer</h3>
 <h3 id="using-a-pre-trained-roi-classifier">Using a pre-trained ROI classifier</h3>
 <p>We have developed a simple algorithm for automatic roi definition. To run this algorithm, run:</p>
-<pre><code>python /path/to/twoptb/twoptb/ROIs/run_roi_finder.py -sess -1 -ded 3 2 2 -thresh 0.96 /path/to/hdf5.h5 /path/to/twoptb/twoptb/classifiers/zoom1_GTMK.p
+<pre><code>run_roi_finder.py -sess -1 -ded 3 2 2 -thresh 0.96 roi_finder_name /path/to/hdf5.h5
 </code></pre>
+<p>where roi_finder name is an automatic roi finder derived from training. </p>
 <p><img alt="Screenshot" src="../ims/auto_roi.png" /></p>
-<h2 id="manual-curation">Manual curation</h2>
+<h2 id="manual">Manual Curation</h2>
+
+<pre><code>ROI_Drawer.py /path/to/hdf5.h5
+</code></pre>
 <h3 id="image-of-the-gui-used-for-roi-and-data-curation">Image of the GUI used for ROI and data curation</h3>
 <p><img alt="Screenshot" src="../ims/ROI_Drawer.png" /></p>
               
