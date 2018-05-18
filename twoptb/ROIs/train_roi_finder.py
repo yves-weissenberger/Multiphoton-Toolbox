@@ -114,6 +114,7 @@ def get_mean_im_roi_centroids(pairs):
             roiB = pickle.load(open(pair[0]))
             tar_area = re.findall(r'.*(\(201.*)_ROIs.p',os.path.split(pair[0])[1])[0]
             mnIm = bhdf1[tar_area].attrs['mean_image']
+            mxIm = np.max(bhdf1[tar_area],axis=0)
         
         mnIm = equalize_adapthist(mnIm/np.max(mnIm),clip_limit=0.005)
         roi_mIm_sets.append([mnIm,roiB])
