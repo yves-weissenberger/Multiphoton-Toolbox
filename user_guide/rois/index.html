@@ -87,8 +87,6 @@
         
             <li><a class="toctree-l4" href="#using-a-pre-trained-roi-classifier">Using a pre-trained ROI classifier</a></li>
         
-            <li><a class="toctree-l4" href="#image-of-the-gui-used-for-roi-and-data-curation">Image of the GUI used for ROI and data curation</a></li>
-        
         </ul>
     
 
@@ -147,22 +145,37 @@
 
 <p>The automatic approach to ROI definition is a two-step process. In the first step, putative centroids of ROIs are identified. This is done by moving a sliding window </p>
 <h3 id="training-an-roi-classifer">Training an ROI classifer</h3>
+<p>A new ROI classifier can be trained (specifying all optional arguments here) by running the following command    </p>
+<pre><code>train_roi_finder.py -rad 7 -shifts 3 7 ai93_zoom1 /path/to/folder
+</code></pre>
+<p>There are two requried arguments, which will be addressed first. The first, in this case "ai93_zoom1" is the name to be given to the roi_finder algorithm that is being trained.
+The second argument, "/path/to/folder" is a path to a folder containing one or more hdf5 files for which ROIs have already been defined, to be used as a training set. Importantly, multiple folders can be specified if this is appropriate:</p>
+<pre><code>train_roi_finder.py -rad 7 -shifts 3 7 ai93_zoom1 /path/to/folder1 /path/to/folder2
+</code></pre>
+<p>the rad argument specifies the size of the image patch that will be used to train the ROI_finder on, in pixels. 
+Shifts specifies the size of shifts away from previously</p>
 <h3 id="using-a-pre-trained-roi-classifier">Using a pre-trained ROI classifier</h3>
 <p>We have developed a simple algorithm for automatic roi definition. To run this algorithm, run:</p>
 <pre><code>run_roi_finder.py -sess -1 -ded 3 2 2 -thresh 0.96 roi_finder_name /path/to/hdf5.h5
 </code></pre>
 <p>where roi_finder name is an automatic roi finder derived from training.</p>
+<p>Below is an example of a 1mm patch of cortex in which automatic roi segmentation has been run</p>
+<p><img src="../ims/auto_roi.png" width=512> </img></p>
 <h4 id="physiological-validation">Physiological Validation</h4>
 <p>A potential concern is that our automatic method relies soley on the mean image for identification. This may bias cell selection towards those that are uninteresting. We therefore validated the approach by comparing topographic organisation estimated using ROIs selected manually based on both mean image and full image stack (acquired by <a href="./#manual">Manual Curation GUI</a>) and those based purely on automatic ROI drawing. Included in the images are those ROIs which, after a simple ANOVA, are deemed significantly frequency tuned (p&lt;0.01). </p>
 <p><img alt="Screenshot" src="../ims/phys_val.png" /></p>
-<p>Data and and analysis generously run by  <a href= https://www.dpag.ox.ac.uk/team/samuel-picard> Samuel Picard </a></p>
-<p><img alt="Screenshot" src="../ims/auto_roi.png" /></p>
+<p>Data and and analysis run by  <a href= https://www.dpag.ox.ac.uk/team/samuel-picard> Samuel Picard </a></p>
 <h2 id="manual">Manual Curation</h2>
 
+<p>To open the GUI for manual curation of ROIs run</p>
 <pre><code>ROI_Drawer.py /path/to/hdf5.h5
 </code></pre>
-<h3 id="image-of-the-gui-used-for-roi-and-data-curation">Image of the GUI used for ROI and data curation</h3>
-<p><img alt="Screenshot" src="../ims/ROI_Drawer.png" /></p>
+<p>This tool can be run with two optional arguments the first being whether to extract traces as ROIs are drawn (default is false). To enable rapid drawing run</p>
+<pre><code>ROI_Drawer.py -o /path/to/hdf5.h5
+</code></pre>
+<p>Secondly, and analogously, adding the -restart flag starts ROI drawing for this hdf file from the beginning, deleting previous work</p>
+<p>which should open a dialog asking which session you wish to 
+<img src="../ims/ROI_Drawer.png" width=512> </img></p>
               
             </div>
           </div>
