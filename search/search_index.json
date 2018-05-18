@@ -2,18 +2,13 @@
     "docs": [
         {
             "location": "/", 
-            "text": "twoptb - Two photon tool-box\n\n\nThis is a toolbox for the analysis of two-photon imaging data. It is optimised for the analysis of two-photon calcium imaging data. \n\n\nThe toolbox is centred around efficient data handling via linking of data to hdf5 files. This enables access to diverse aspects of the data and underlies in large part the extensibility of the toolbox. \n\n\nThe main strength of this toolbox, as compared to the many that already exist, are several powerful tools for data visualisation.\n\n\nA link to the repository may be found \n here \n\n\nContributors\n\n\n\n    \n Yves Weissenberger \n\n    \n Samuel Picard", 
+            "text": "twoptb - Two photon tool-box\n\n\nThis is a toolbox for the analysis of two-photon imaging data. It is optimised for the analysis of two-photon calcium imaging data. \n\n\nThe toolbox is centred around efficient data handling via linking of data to hdf5 files. This enables access to diverse aspects of the data and underlies in large part the extensibility of the toolbox. \n\n\nThe main strength of this toolbox, as compared to the many that already exist, are several powerful tools for data visualisation.\n\n\nA link to the repository may be found \n here", 
             "title": "Home"
         }, 
         {
             "location": "/#twoptb-two-photon-tool-box", 
             "text": "This is a toolbox for the analysis of two-photon imaging data. It is optimised for the analysis of two-photon calcium imaging data.   The toolbox is centred around efficient data handling via linking of data to hdf5 files. This enables access to diverse aspects of the data and underlies in large part the extensibility of the toolbox.   The main strength of this toolbox, as compared to the many that already exist, are several powerful tools for data visualisation.  A link to the repository may be found   here", 
             "title": "twoptb - Two photon tool-box"
-        }, 
-        {
-            "location": "/#contributors", 
-            "text": "Yves Weissenberger  \n      Samuel Picard", 
-            "title": "Contributors"
         }, 
         {
             "location": "/install/", 
