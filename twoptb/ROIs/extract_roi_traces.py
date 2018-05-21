@@ -170,7 +170,12 @@ if __name__=='__main__':
             print "\n"
             if kf:
                 roiattrs2 = baseline_correct(roiattrs2)
-            roiattrs2 = extract_spikes(roiattrs2)
+            try:
+                import c2s
+                roiattrs2 = extract_spikes(roiattrs2)
+
+            except ImportError::
+                print "WARNING COULD NOT INFER SPIKE RATES AS c2s HAS NOT BEEN INSTALLED"
             with open(FLOC,'wb') as fi:
                 pickle.dump(roiattrs2,fi)
 

@@ -174,7 +174,7 @@ if __name__=="__main__":
 
     parser = argparse.ArgumentParser(description="""Train an automatic algorithm to identify ROIs based on previously drawn ROIs example usage is:
 
-    python train_roi_finder.py -sess 0 -ded 3 2 3 /path/to/hdf5.py /path/to/classifier
+    python train_roi_finder.py zomm1GTMK 0 -ded 3 2 3 /path/to/hdf5.py /path/to/classifier
 
     Optional arguments, i.e. those with a hyphen preceding may be omitted note that here
     0 refers to sess and 3 2 3 refers to ded
