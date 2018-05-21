@@ -56,7 +56,7 @@ For example, to extract data from the ouDat.mat file in the example directory st
                 print matFilePth
                 stimattrs = get_triggers(matFilePth) 
 
-which directs processing of the outDat file to the function "get_triggers" which can be found in load_events.py.
+which directs processing of the outDat file to the function "get_triggers" which can be found in load_events.py. If succesfuly, this should create additional pickled datafiles in the stims directory.
 
 
 ## Output Folder Structure
