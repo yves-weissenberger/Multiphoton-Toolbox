@@ -176,9 +176,15 @@ Shifts specifies the size of shifts away from previously</p>
 <pre><code>ROI_Drawer.py -o /path/to/hdf5.h5
 </code></pre>
 <p>Secondly, and analogously, adding the -restart flag starts ROI drawing for this hdf file from the beginning, deleting previous work</p>
-<p>which should open a dialog asking which session you wish to 
-<img src="../ims/ROI_Drawer.png" width=512> </img></p>
+<p>which should open a dialog asking which session you wish to process:</p>
+<p><img src="../ims/ROI_Drawer.png" width=512> </img></p>
 <h3 id="controls">Controls</h3>
+<h2 id="manual">Sharing ROIs across sessions </h2>
+
+<p>In many cases, multiple acquisitions run on the same day will be of the same field of view. In this case, it is desirable to share ROIs across those sessions. To do this, after drawing ROIs for one session using manual curation, run</p>
+<pre><code>share_roi_info.py /path/to/hdf5.h5
+</code></pre>
+<p>after drawing <b> EACH </b> session. Running it after drawing the ROIs for each session is crucial here as <b> running this code block will overwrite ROIs drawn which belong to other sessions.</p>
               
             </div>
           </div>
