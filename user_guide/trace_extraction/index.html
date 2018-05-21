@@ -83,6 +83,9 @@
     <a class="current" href="./">Trace Extraction</a>
     <ul class="subnav">
             
+    <li class="toctree-l3"><a href="#extracting-roi-traces">Extracting ROI traces</a></li>
+    
+
     </ul>
                 </li>
                 <li class="">
@@ -128,7 +131,12 @@
           <div role="main">
             <div class="section">
               
-                
+                <h2 id="extracting-roi-traces">Extracting ROI traces</h2>
+<p>Having drawn ROIs, traces may be extracted by running:</p>
+<pre><code>extract_roi_traces.py /path/to/hdf5.h5 y y
+</code></pre>
+<p>where the two additional arguments specify whether to neuropil and baseline correct the data which should essentially always be done...
+The traces will be extracted into the earlier creates pickle files in the ROI folder</p>
               
             </div>
           </div>
