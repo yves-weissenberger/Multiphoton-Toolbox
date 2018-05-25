@@ -137,11 +137,16 @@ def get_training_sets(roi_mIm_sets,rad=7,shifts=[3,7]):
                 pass
             else:
                 rIMS.append((mIm[yc-rad:yc+rad,xc-rad:xc+rad]))
-                t_ = (mIm[yc-rad:yc+rad,xc-rad:xc+rad]).flatten()
+                t_0 = (mIm[yc-rad:yc+rad,xc-rad:xc+rad])
                 if np.max(t_)==0:
                     pass
                 else:
-                    boutons.append(np.concatenate([t_/np.max(t_),[np.mean(t_)]]))
+                    t_ = t_0.flatten()
+                    mxT = np.max(t_.flatten())
+                    boutons.append(np.concatenate([t_0.flatten()/mxT, [np.mean(t_)]]))
+                    boutons.append(np.concatenate([np.fliplr(t_0).flatten()/mxT, [np.mean(t_)]]))
+                    boutons.append(np.concatenate([np.flipud(t_0).flatten()/mxT, [np.mean(t_)]]))
+                    boutons.append(np.concatenate([np.flipud(np.fliplr(t_0)).flatten()/mxT, [np.mean(t_)]]))
 
                 RN = np.random.randint(0,10)
                 if RN<2:
