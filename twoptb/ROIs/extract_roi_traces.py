@@ -134,9 +134,11 @@ if __name__=='__main__':
     hdf_path = os.path.abspath(sys.argv[1])
     npc = sys.argv[2]=='y'
     kf = sys.argv[3]=='y'
+    spks = sys.argv[4]=='y'
     print "neuropil correct: %s" %npc
     print "kalman filter: %s" %kf
-    
+    print "kalman filter: %s" %extract_spikes
+
     #roi_pth = os.path.join(hdf_path[:-3],'ROIs')
     with h5py.File(hdf_path,'a',libver='latest') as hdf:
         keys = hdf.keys()
@@ -170,14 +172,15 @@ if __name__=='__main__':
             print "\n"
             if kf:
                 roiattrs2 = baseline_correct(roiattrs2)
-            try:
-                import c2s
-                roiattrs2 = extract_spikes(roiattrs2)
+            if spks:
+                try:
+                    import c2s
+                    roiattrs2 = extract_spikes(roiattrs2)
 
-            except ImportError::
-                print "WARNING COULD NOT INFER SPIKE RATES AS c2s HAS NOT BEEN INSTALLED"
-            with open(FLOC,'wb') as fi:
-                pickle.dump(roiattrs2,fi)
+                except ImportError:
+                    print "WARNING COULD NOT INFER SPIKE RATES AS c2s HAS NOT BEEN INSTALLED"
+                with open(FLOC,'wb') as fi:
+                    pickle.dump(roiattrs2,fi)
 
 
 
