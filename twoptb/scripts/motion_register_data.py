@@ -37,7 +37,7 @@ import twoptb as MP
 parser = argparse.ArgumentParser(description="Motion register data that has been converted to hdf5")
 parser.add_argument("hdfPath", type=str,
                 help="Specify path to HDF5 file that should be motion registered")
-parser.add_argument("common", type=bool,
+parser.add_argument("common", type=str,
                 help="Should all data be registered to a common reference image? \nOptions are 1 or 0")
 parser.add_argument("-show_ref",action='store', type=bool,default=False,
                 help="Show selected reference image before running registration?")
@@ -49,13 +49,20 @@ fpath = os.path.abspath(args.hdfPath)
 absPath = os.path.split(os.path.abspath(fpath))[0]
 fName = os.path.split(os.path.abspath(fpath))[1]
 print fName
-common_ref = args.common
-
+if args.common==str(1):
+  common_ref = 1
+elif args.common==str(0):
+  common_ref = 0
+else:
+  raise("ERROR common must either be 0 or 1")
+print args.common
 srm = args.show_ref
 print "Using common reference %s" %common_ref
 
 if srm==True:
   print 'Showing common refernce'
+else:
+  print("Not showing common reference")
 #print os.path.split(absPath)[0]
 ############## Load the HDF File
 
