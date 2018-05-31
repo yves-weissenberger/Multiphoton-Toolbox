@@ -179,8 +179,8 @@ if __name__=='__main__':
 
                 except ImportError:
                     print "WARNING COULD NOT INFER SPIKE RATES AS c2s HAS NOT BEEN INSTALLED"
-                with open(FLOC,'wb') as fi:
-                    pickle.dump(roiattrs2,fi)
+            with open(FLOC,'wb') as fi:
+                pickle.dump(roiattrs2,fi)
 
 
 

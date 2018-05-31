@@ -151,7 +151,7 @@ Optional arguments, i.e. those with a hyphen preceding may be omitted note that 
         nIxs = np.where(label_im==i)
         nIxs2 = np.where(mask_temp>0)
 
-        if not np.logical_or(np.any(np.array(nIxs)<30),np.any(np.array(nIxs)>480)):
+        if not np.logical_or(np.any(np.array(nIxs)<20),np.any(np.array(nIxs)>490)):
                 #np.logical_or.reduce(np.any(np.array(nIxs[0]).flatten()<20),
                 #                    np.any(np.array(nIxs[0]).flatten()>490),
                 #                    np.any(np.array(nIxs[1]).flatten()<20),

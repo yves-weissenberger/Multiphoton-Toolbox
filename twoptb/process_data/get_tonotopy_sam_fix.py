@@ -218,7 +218,7 @@ def get_tuning_curves(areaF,centre=None):
             popt,_ = curve_fit(gauss_function,np.arange(len(n)),n)
             tunstrength.append(np.corrcoef(n,gauss_function(np.arange(len(n)),popt[0],popt[1],popt[2]))[0,1])
             
-        except RuntimeError:
+        except:
             tunstrength.append(0)
             popt = [np.nan]*3
 
