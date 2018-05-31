@@ -149,34 +149,43 @@ Optional arguments, i.e. those with a hyphen preceding may be omitted note that 
     for i in np.unique(label_im)[1:]:
         mask_temp = np.zeros([512,512])
         nIxs = np.where(label_im==i)
-        #masks.append(mask)
-
-
-        #roi_idxs.append(nIxs)
-
-        nIxs_flat = np.ravel_multi_index(nIxs,mask.shape)
-        mask_temp[nIxs[0],nIxs[1]] = 1
-
-
-
-        mask_temp = morphology.dilation(mask_temp,morphology.disk(ded[2]))
-
         nIxs2 = np.where(mask_temp>0)
 
-        ROI_attrs['idxs'].append([nIxs2[1],nIxs2[0]])
-        ROI_attrs['centres'].append(np.flipud(np.mean(np.array(nIxs2),axis=1)))
-        ROI_attrs['patches'].append(np.nan)
-
-        #PRETTY SURE THESE TWO ARE THE CORRECT WAY AROUND BUT NOT 100%...
-        xLims = [np.min(nIxs2[1])-10,np.max(nIxs2[1])+10]
-        yLims = [np.min(nIxs2[0])-10,np.max(nIxs2[0])+10]
-
-        ROI_attrs['masks'].append(mask_temp[yLims[0]:yLims[1],xLims[0]:xLims[1]])
-        ROI_attrs['traces'].append([0])
+        if not np.logical_or(np.any(np.array(nIxs)<30),np.any(np.array(nIxs)>480)):
+                #np.logical_or.reduce(np.any(np.array(nIxs[0]).flatten()<20),
+                #                    np.any(np.array(nIxs[0]).flatten()>490),
+                #                    np.any(np.array(nIxs[1]).flatten()<20),
+                #                    np.any(np.array(nIxs[1]).flatten()>490)):
+            #masks.append(mask)
 
 
-        mask_fin = mask_fin + (np.dstack([mask_temp[:,:,np.newaxis]]*4)*
-            np.concatenate([clrs[:,i],[0.2]])[np.newaxis,np.newaxis,:])
+            #roi_idxs.append(nIxs)
+
+            nIxs_flat = np.ravel_multi_index(nIxs,mask.shape)
+            mask_temp[nIxs[0],nIxs[1]] = 1
+
+
+
+            mask_temp = morphology.dilation(mask_temp,morphology.disk(ded[2]))
+
+            nIxs2 = np.where(mask_temp>0)
+
+            ROI_attrs['idxs'].append([nIxs2[1],nIxs2[0]])
+            ROI_attrs['centres'].append(np.flipud(np.mean(np.array(nIxs2),axis=1)))
+            ROI_attrs['patches'].append(np.nan)
+
+            #PRETTY SURE THESE TWO ARE THE CORRECT WAY AROUND BUT NOT 100%...
+            xLims = [np.min(nIxs2[1])-10,np.max(nIxs2[1])+10]
+            yLims = [np.min(nIxs2[0])-10,np.max(nIxs2[0])+10]
+
+            ROI_attrs['masks'].append(mask_temp[yLims[0]:yLims[1],xLims[0]:xLims[1]])
+            ROI_attrs['traces'].append([0])
+
+
+            mask_fin = mask_fin + (np.dstack([mask_temp[:,:,np.newaxis]]*4)*
+                np.concatenate([clrs[:,i],[0.2]])[np.newaxis,np.newaxis,:])
+        else:
+            pass
 
 
     mask = np.dstack([mask,mask*.4,mask*.2,mask*.2])
