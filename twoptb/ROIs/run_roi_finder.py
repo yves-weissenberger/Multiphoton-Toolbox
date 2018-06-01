@@ -233,6 +233,7 @@ Optional arguments, i.e. those with a hyphen preceding may be omitted note that 
         #plt.scatter(np.array([i[1] for i in ixs_sets])[bouton_pred_ixs],
         #            np.array([i[0] for i in ixs_sets])[bouton_pred_ixs],s=8)
         if confirm_rois==1:
+            plt.show()
             yn = raw_input("save these ROIs?: (y/n)\nWarning will overwrite any you have drawn manually...")
         else:
             yn = 'y'
@@ -252,7 +253,8 @@ Optional arguments, i.e. those with a hyphen preceding may be omitted note that 
         else:
             print "done!"
 
-    plt.show()
+    if not confirm_rois==1:
+        plt.show()
     hdfF11.close()
 
 

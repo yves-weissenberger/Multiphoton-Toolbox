@@ -147,25 +147,26 @@ def get_training_sets(roi_mIm_sets,rad=7,shifts=[3,7]):
                     boutons.append(np.concatenate([np.flipud(t_0).flatten()/mxT, [np.mean(t_)]]))
                     boutons.append(np.concatenate([np.flipud(np.fliplr(t_0)).flatten()/mxT, [np.mean(t_)]]))
 
-                RN = np.random.randint(0,10)
-                if RN<2:
+                for _ in range(4):
+                    RN = np.random.randint(0,10)
+                    if RN<2:
 
-                    #xcR,ycR = np.array([xc,yc]) + np.array([np.random.randint(6,14),np.random.randint(6,14)]) #for zoom 2
-                    xcR,ycR = np.array([xc,yc]) + np.array([np.random.randint(3,7),np.random.randint(3,7)]) #for zoom 1
-                    tR_ = (mIm[ycR-rad:ycR+rad,xcR-rad:xcR+rad]).flatten()
+                        #xcR,ycR = np.array([xc,yc]) + np.array([np.random.randint(6,14),np.random.randint(6,14)]) #for zoom 2
+                        xcR,ycR = np.array([xc,yc]) + np.array([np.random.randint(3,7),np.random.randint(3,7)]) #for zoom 1
+                        tR_ = (mIm[ycR-rad:ycR+rad,xcR-rad:xcR+rad]).flatten()
 
-                    if np.logical_or.reduce([np.max(tR_)==0,xcR<(rad+5),ycR<(rad+5),xcR>(510-rad),ycR>(510-rad)]):
-                        pass
-                    else:
-                        non_boutons.append(np.concatenate([tR_/np.max(tR_),[np.mean(tR_)]]))
-                elif RN in range(4,5):
-                    xcR,ycR = np.clip((np.random.randint(50,450),np.random.randint(5+rad,510-rad)),rad,510-rad)
-                    tR_ = (mIm[ycR-rad:ycR+rad,xcR-rad:xcR+rad]).flatten()
+                        if np.logical_or.reduce([np.max(tR_)==0,xcR<(rad+5),ycR<(rad+5),xcR>(510-rad),ycR>(510-rad)]):
+                            pass
+                        else:
+                            non_boutons.append(np.concatenate([tR_/np.max(tR_),[np.mean(tR_)]]))
+                    elif RN in range(4,5):
+                        xcR,ycR = np.clip((np.random.randint(50,450),np.random.randint(5+rad,510-rad)),rad,510-rad)
+                        tR_ = (mIm[ycR-rad:ycR+rad,xcR-rad:xcR+rad]).flatten()
 
-                    if np.logical_or.reduce([np.max(tR_)==0,xcR<(rad+5),ycR<(rad+5),xcR>(510-rad),ycR>(510-rad)]):
-                        pass
-                    else:
-                        non_boutons.append(np.concatenate([tR_/np.max(tR_),[np.mean(tR_)]]))
+                        if np.logical_or.reduce([np.max(tR_)==0,xcR<(rad+5),ycR<(rad+5),xcR>(510-rad),ycR>(510-rad)]):
+                            pass
+                        else:
+                            non_boutons.append(np.concatenate([tR_/np.max(tR_),[np.mean(tR_)]]))
 
 
     boutons = np.array(boutons)
@@ -230,7 +231,7 @@ if __name__=="__main__":
     rfC_fit = rfClass.fit(np.vstack([np.array(boutons),np.array(non_boutons)]),labels)
     twoptb_path = os.path.split(twoptb.__file__)[0]
     classifier_path = os.path.join(twoptb_path,'classifiers')
-    print "saving classifier in: %s" %classifier_path
+    print("saving classifier in: %s" %classifier_path)
     if not os.path.isdir(classifier_path):
         os.mkdir(classifier_path)
 
