@@ -85,16 +85,19 @@ def baseline_correct(roiattrs):
 
     roiattrs['dfF'] = np.zeros([nROIs,cFrames])
     roiattrs['raw_traces'] = cp.deepcopy(roiattrs['traces'])
+    len_trace = len(roiattrs['traces'][0])
+
+    st_window = 200#np.min([.2*len_trace,2000])
     for idx in range(nROIs):
         sys.stdout.write('\r Baseline Correcting ROI: %s' %idx)
         sys.stdout.flush()
 
-        roiattrs['traces'][idx] = roiattrs['traces'][idx] - MP.process_data.runkalman(roiattrs['traces'][idx],50000,5000)
-        baseline = MP.process_data.runkalman(roiattrs['corr_traces'][idx],50000,5000)
+        roiattrs['traces'][idx] = roiattrs['traces'][idx] - MP.process_data.runkalman(roiattrs['traces'][idx],50000,st_window)
+        baseline = MP.process_data.runkalman(roiattrs['corr_traces'][idx],50000,st_window)
         roiattrs['corr_traces'][idx] = roiattrs['corr_traces'][idx] - baseline
         roiattrs['dfF'][idx] = roiattrs2['corr_traces'][idx]/baseline
         if 'neuropil_traces' in roiattrs.keys():
-            roiattrs['neuropil_traces'][idx] -= MP.process_data.runkalman(roiattrs['neuropil_traces'][idx],50000,5000)
+            roiattrs['neuropil_traces'][idx] -= MP.process_data.runkalman(roiattrs['neuropil_traces'][idx],50000,st_window)
 
 
     return roiattrs
@@ -152,7 +155,7 @@ if __name__=='__main__':
         n_sess = len(sessions)
         for idx,fn in enumerate(sessions):
 
-            print '\narea %s/%s: %s' %(idx,n_sess,fn)
+            print '\narea %s/%s: %s' %((idx+1),n_sess,fn)
 
             areaFile = f[fn]
             if 'ROI_dataLoc' in areaFile.attrs.keys():

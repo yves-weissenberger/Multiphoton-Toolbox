@@ -11,7 +11,7 @@ import seaborn
 import matplotlib
 import math
 
-seaborn.set_style('whitegrid')
+seaborn.set_style('ticks')
 
 def findpath():
     cDir = os.path.dirname(os.path.realpath(__file__))
@@ -34,7 +34,7 @@ import twoptb as MP
 hdf_path = os.path.abspath(sys.argv[1])
 hdf = h5py.File(hdf_path,'r',libver='latest') #MP.file_management.load_hdf5(hdf_path,'wb')
 #print hdf.keys()
-tonemap = hdf[u'tonemapping']['registered_data']#hdf['tonemapping']['registered_data']
+tonemap = hdf[hdf.keys()[0]]['registered_data']#hdf['tonemapping']['registered_data']
 areas = tonemap.keys()
 print areas
 
@@ -150,7 +150,7 @@ def get_tuning_curves(areaF,centre=None):
 
     #absolute locations
     if centre==None:
-        FOV_centre = np.array(grabI['xyzPosition'][:2])
+        #FOV_centre = np.array(grabI['xyzPosition'][:2])
         FOV_centre = np.flipud(np.array(grabI['xyzPosition'][:2]))
         print FOV_centre
     else:
@@ -176,8 +176,8 @@ def get_tuning_curves(areaF,centre=None):
     for neuron in range(n_neurons):
         #print neuron,
         if True:#'df_F' not in ROI_attrs.keys():
-            trace = ROI_attrs['traces'][neuron]
-            filt_trace = MP.process_data.runkalman(trace,50000)
+            trace = ROI_attrs['raw_traces'][neuron]
+            filt_trace = MP.process_data.runkalman(trace,10000,500)
             use_trace = (trace - filt_trace)/filt_trace
         else:
             use_trace = ROI_attrs['df_F']
@@ -219,6 +219,7 @@ def get_tuning_curves(areaF,centre=None):
             tunstrength.append(np.corrcoef(n,gauss_function(np.arange(len(n)),popt[0],popt[1],popt[2]))[0,1])
             
         except:
+            print("WARNING!!")
             tunstrength.append(0)
             popt = [np.nan]*3
 
@@ -235,7 +236,7 @@ def get_tuning_curves(areaF,centre=None):
     for r in all_resps:
         _,p = f_oneway(*[i for i in r])
         #print p
-        if p<0.005:
+        if p<0.1:
             good.append(1)
         else:
             good.append(0)
@@ -258,7 +259,7 @@ def get_tuning_curves(areaF,centre=None):
 
     #plt.ylim(-.2,2.5)
 
-    return absROI_pos[:,:n_neurons],BFs,gBFs, gPos, resps[good], (np.max(resps,axis=1) - np.mean(resps,axis=1))
+    return absROI_pos[:,:n_neurons],BFs,gBFs, gPos, resps[good], (np.max(resps,axis=1) - np.mean(resps,axis=1)), FOV_centre
 
 
 
@@ -270,6 +271,7 @@ def get_tuning_curves(areaF,centre=None):
 #####################################################################
     #cs = 0
 idx =0
+centre_coords = []
 for area in areas:
     #centre = FOV_centres_mary[idx]
     centre = None
@@ -286,9 +288,11 @@ for area in areas:
 
             if 'ROI_dataLoc' in areaF.attrs.keys():
                 if idx==0:
-                    absROI_pos,BFs,gBFs,gPos,Tcs,goodN = get_tuning_curves(areaF,centre=centre)
+                    absROI_pos,BFs,gBFs,gPos,Tcs,goodN, cXY = get_tuning_curves(areaF,centre=centre)
+                    centre_coords.append(cXY)
                 else:
-                    T_absROI_pos,T_BFs,T_gBFs, T_gPos, T_Tcs,T_goodN = get_tuning_curves(tonemap[area],centre=centre)
+                    T_absROI_pos,T_BFs,T_gBFs, T_gPos, T_Tcs,T_goodN, cXY = get_tuning_curves(tonemap[area],centre=centre)
+                    centre_coords.append(cXY)
                     absROI_pos = np.hstack([absROI_pos,T_absROI_pos])
                     BFs = np.concatenate([BFs,T_BFs])
                     gBFs = np.concatenate([gBFs,T_gBFs])
@@ -305,6 +309,7 @@ for area in areas:
 
 
 #cmapN = 'viridis'
+from matplotlib import patches
 cmapN = "jet"
 cmap = matplotlib.cm.ScalarMappable(cmap=cmapN )
 norm = matplotlib.colors.Normalize(vmin=0, vmax=15)
@@ -334,6 +339,14 @@ ax1 = fig.add_axes([0.1,0.1,.7,.8])
 
 scat = ax1.scatter(-absROI_pos[0],absROI_pos[1],c=cls,
             s=48,linewidth=.5,edgecolor=[.4]*3,cmap=cmap)
+
+
+for i,j in zip(centre_coords,areas):
+    ax1.text(i[0]-real_fov/2.,i[1]-real_fov/2.,"Area: %s" %(re.findall(r'rea([0-9]{1,2})',j)[0]))
+    pch = patches.Rectangle(np.array(i)-real_fov/2.,1000,1000,linewidth=1,edgecolor='.3',facecolor='none')
+    ax1.add_patch(pch)
+
+
 
 plt.xlim(-1500,1500)
 plt.ylim(-1500,1500)
@@ -366,5 +379,6 @@ plt.scatter(-gPos[0],gPos[1],c=cls,#gBFs,
 #plt.savefig('~/Desktop/map_peter.svg')
 plt.xlim(-1500,1500)
 plt.ylim(-1500,1500)
+seaborn.despine()
 plt.show()
 #plt.savefig('/home/yves/Desktop/mary.png')

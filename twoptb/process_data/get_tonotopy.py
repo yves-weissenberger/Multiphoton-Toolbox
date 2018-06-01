@@ -156,11 +156,11 @@ def get_tuning_curves(areaF,centre=None):
     for neuron in range(n_neurons):
         #print neuron,
         if True:#'df_F' not in ROI_attrs.keys():
-            trace = ROI_attrs['traces'][neuron]
+            trace = ROI_attrs['raw_traces'][neuron]
             filt_trace = MP.process_data.runkalman(trace,50000)
             use_trace = (trace - filt_trace)/filt_trace
         else:
-            use_trace = ROI_attrs['df_F']
+            use_trace = ROI_attrs['dfF']
 
 
         stimSP = outDat['stim_spacing']
@@ -209,7 +209,7 @@ def get_tuning_curves(areaF,centre=None):
     for r in all_resps:
         _,p = f_oneway(*[i for i in r])
         #print p
-        if p<0.005:
+        if p<0.05:
             good.append(1)
         else:
             good.append(0)
@@ -244,7 +244,7 @@ def get_tuning_curves(areaF,centre=None):
 #####################################################################
     #cs = 0
 idx =0
-for area in areas:
+for area in areas[-1:]:
     #centre = FOV_centres_mary[idx]
     centre = None
 

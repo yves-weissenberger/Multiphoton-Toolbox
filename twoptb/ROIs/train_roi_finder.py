@@ -5,7 +5,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-from skimage import morphology
 import h5py
 from IPython import display
 import os
@@ -138,7 +137,7 @@ def get_training_sets(roi_mIm_sets,rad=7,shifts=[3,7]):
             else:
                 rIMS.append((mIm[yc-rad:yc+rad,xc-rad:xc+rad]))
                 t_0 = (mIm[yc-rad:yc+rad,xc-rad:xc+rad])
-                if np.max(t_)==0:
+                if np.max(t_0)==0:
                     pass
                 else:
                     t_ = t_0.flatten()
