@@ -66,7 +66,7 @@ if __name__=='__main__':
     fpath = os.path.abspath(args.hdfPath)
 
     #roi_pth = os.path.join(hdf_path[:-3],'ROIs')
-    with h5py.File(hdf_path,'a',libver='latest') as hdf:
+    with h5py.File(fpath,'a',libver='latest') as hdf:
         keys = hdf.keys()
         Folder = os.path.split(os.path.abspath(hdf.filename))[0]
         roi_pth = os.path.join(Folder,'ROIs')
