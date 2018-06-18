@@ -398,7 +398,8 @@ def MASK_DRAWER_GUI(roi_sets):
 
             if modifiers != QtCore.Qt.ShiftModifier:
                 if key==16777234:
-                    self.roi_idx = np.clip(self.roi_idx-1,0,1e3).astype('int')
+                    ln2 = len(self.roi_sets[self.selected_window][0]['patches'])
+                    self.roi_idx = np.clip(self.roi_idx-1,0,ln2).astype('int')
                     print 'Previous ROI: %s' %(self.roi_idx)
 
                     self.selected_window = None
@@ -406,7 +407,8 @@ def MASK_DRAWER_GUI(roi_sets):
 
 
                 elif key==16777236:
-                    self.roi_idx = np.clip(self.roi_idx+1,0,1e3).astype('int')
+                    ln2 = len(self.roi_sets[self.selected_window][0]['patches'])
+                    self.roi_idx = np.clip(self.roi_idx+1,0,ln2).astype('int')
                     print 'Next ROI: %s' %self.roi_idx
 
                     self.selected_window = None

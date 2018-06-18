@@ -332,7 +332,8 @@ cmap.set_array(cls)
 
 
 fig = plt.figure(figsize=(8,8))
-ax1 = fig.add_axes([0.1,0.1,.7,.8])
+plt.title(area)
+ax1 = plt.gca()
 
 #scat = ax1.scatter(-absROI_pos[1],absROI_pos[0],c=cls,
 #            s=48,linewidth=.5,edgecolor=[.4]*3,cmap=cmap)
@@ -342,8 +343,8 @@ scat = ax1.scatter(-absROI_pos[0],absROI_pos[1],c=cls,
 
 
 for i,j in zip(centre_coords,areas):
-    ax1.text(i[0]-real_fov/2.,i[1]-real_fov/2.,"Area: %s" %(re.findall(r'rea([0-9]{1,2})',j)[0]))
-    pch = patches.Rectangle(np.array(i)-real_fov/2.,1000,1000,linewidth=1,edgecolor='.3',facecolor='none')
+    ax1.text(i[0]-real_fov/2.,-i[1]-real_fov/2.,"Area: %s" %(re.findall(r'rea([0-9]{1,2})',j)[0]))
+    pch = patches.Rectangle(np.array([1,-1])*np.array(i)-real_fov/2.,1000,1000,linewidth=1,edgecolor='.3',facecolor='none')
     ax1.add_patch(pch)
 
 
@@ -364,14 +365,24 @@ plt.ylim(-1500,1500)
 plt.show(block=False)
 
 
-plt.figure(figsize=(8,8))
+fig2 = plt.figure(figsize=(8,8))
+plt.title(area)
+
+ax2 = plt.gca()
+
+
 
 cls = cmap.to_rgba(gBFs)
 
 #plt.scatter(-gPos[1],gPos[0],c=gBFs,
 #            s=36,linewidth=.5,edgecolor=[.4]*3,cmap=cmapN )
-plt.scatter(-gPos[0],gPos[1],c=cls,#gBFs,
+ax2.scatter(-gPos[0],gPos[1],c=cls,#gBFs,
             s=36,linewidth=.5,edgecolor=[.4]*3,cmap=cmapN )
+
+for i,j in zip(centre_coords,areas):
+    ax2.text(i[0]-real_fov/2.,-i[1]-real_fov/2.,"Area: %s" %(re.findall(r'rea([0-9]{1,2})',j)[0]))
+    pch = patches.Rectangle(np.array([1,-1])*np.array(i)-real_fov/2.,1000,1000,linewidth=1,edgecolor='.3',facecolor='none')
+    ax2.add_patch(pch)
 
 #plt.colorbar()
 
