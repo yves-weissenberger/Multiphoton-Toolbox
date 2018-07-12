@@ -30,8 +30,10 @@ def extract_traces(areaFile,roiattrs):
         temp = areaFile[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *roiattrs['masks'][idx]
         temp = temp.astype('float64')
         temp[temp==0] = np.nan
-                                                            
-        roiattrs['traces'][idx] = np.nanmean(temp,  axis=(1,2))
+        if np.all(areaFile[10:110,yLims[0]:yLims[1],xLims[0]:xLims[1]]>1000):
+            roiattrs['traces'][idx] = np.nanmean(temp-1000,  axis=(1,2))
+        else:
+            roiattrs['traces'][idx] = np.nanmean(temp,  axis=(1,2))
     return roiattrs
 
 
@@ -59,14 +61,24 @@ def neuropil_correct(areaF,roi_attrs):
         temp = areaF[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *np.abs(roi_attrs['masks'][idx]-1)
         temp = temp.astype('float64')
         temp[temp==0] = np.nan
-        neuropil_trace = np.nanmean(temp,axis=(1,2))
+
+        if np.all(areaFile[10:110,yLims[0]:yLims[1],xLims[0]:xLims[1]]>1000):
+            neuropil_trace = np.nanmean(temp-1000,axis=(1,2))
+        else:
+            neuropil_trace = np.nanmean(temp,axis=(1,2))
 
 
 
         temp = areaF[:,yLims[0]:yLims[1],xLims[0]:xLims[1]] *roi_attrs['masks'][idx]
         temp = temp.astype('float64')
         temp[temp==0] = np.nan
-        trace = np.nanmean(temp,axis=(1,2))
+
+        if np.all(areaFile[10:110,yLims[0]:yLims[1],xLims[0]:xLims[1]]>1000):
+            trace = np.nanmean(temp-1000,axis=(1,2))
+        else:
+            trace = np.nanmean(temp,axis=(1,2))
+
+        
         corrected_trace = trace - .4*neuropil_trace
 
         roiattrs['traces'][idx] = trace

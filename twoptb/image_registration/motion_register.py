@@ -181,7 +181,6 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
                 regFile.attrs['GRABinfo'] = raw_file.attrs['GRABinfo']
             except KeyError:
                 print "Warning could not find GRABinfo file"
-                pass
 
             if 'stimattrs' in raw_file.attrs.keys():
                 regFile.attrs['stimattrs'] = raw_file.attrs['stimattrs']

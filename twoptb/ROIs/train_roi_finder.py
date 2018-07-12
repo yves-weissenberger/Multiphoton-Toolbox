@@ -132,7 +132,7 @@ def get_training_sets(roi_mIm_sets,rad=7,shifts=[3,7]):
         for c in roiB['centres']:
             xc = int(np.round(c[0]))
             yc = int(np.round(c[1]))
-            if np.logical_or.reduce((xc>(510-rad),yc>(510-rad),xc<(5+rad),yc<(5+rad))):
+            if np.logical_or.reduce((xc>(500-rad),yc>(500-rad),xc<(10+rad),yc<(10+rad))):
                 pass
             else:
                 rIMS.append((mIm[yc-rad:yc+rad,xc-rad:xc+rad]))
