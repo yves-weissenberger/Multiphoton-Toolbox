@@ -164,6 +164,14 @@ def get_triggers(matFilePth,**kwargs):
                      'stimScriptName': 'search_tones',
                      'stim_spacing': stim_dict['sweepLengthFrames']
                     }
+
+    elif re.search(r'.*noise70_outDat.*',matFilePth):
+        stim_dict = load_GRABinfo(spio.loadmat(matFilePth,struct_as_record=False, squeeze_me=True)['outDat'])
+        stimattrs = {'stim_spacing': stim_dict['sweepLengthFrames'],
+                     'stimScriptName': 'noise70',
+                     'timestamp': stim_dict['timeStamp'],
+                    }
+
     elif any(s in matFilePth for s in ('Marco','Ted')):
 
         stimattrs = import_imaging_behaviour(matFilePth,pretraining_type='legacy')
