@@ -217,7 +217,8 @@ def load_data(hdfDir):
 
     """
     hdf2 = h5py.File(hdfDir,'r',libver='latest')
-    print hdfDir
+    hdfDir = os.path.abspath(hdfDir)
+    print os.path.abspath(hdfDir)
     d = hdf2.keys()[0]
 
     sharpness = []
@@ -245,10 +246,10 @@ def load_data(hdfDir):
 
 
     roiInfoloc = hdf2[d]['registered_data'][hdf2[d]['registered_data'].keys()[0]].attrs['ROI_dataLoc']
+    roiInfoloc1 = os.path.join(os.path.split(hdfDir)[0],'ROIs',os.path.split(roiInfoloc)[1])
     hdf2.close()
     print 'loading rois...'
-    roiinfo = pickle.load(open(roiInfoloc))
-    print 'done!'
+    roiinfo = pickle.load(open(roiInfoloc1))
     #plt.figure(figsize=(12,12))
     #plt.imshow(meanIm2,cmap='binary_r',interpolation='None')
     #plt.show(block=False)
@@ -267,19 +268,23 @@ if __name__=="__main__":
     n_basedirs = len(sys.argv) - 1
     
     hdfPaths = get_hdf_paths(n_basedirs,sys.argv)
+    print(hdfPaths)
+
+    hdfPaths = sorted(hdfPaths)
+    print(hdfPaths)
     #hdfPaths = ['/media/yves/imaging_yves/attention_data/tupac_attention_curated/28072017/processed/28072017_tupac_28072017/28072017_tupac_28072017.h5',
     #   '/media/yves/imaging_yves/tupac_learning/24072017/processed/24072017_tupac_24072017/24072017_tupac_24072017.h5',
     #   ]
 
 
-    globalIM,globalROI,mean_ims = load_data(hdfPaths[0])
+    globalIM,globalROI,mean_ims_glob = load_data(hdfPaths[0])
 
     backup = cp.deepcopy(globalROI)
     all_ROI = {'idxs': globalROI['idxs'],
                'centres': globalROI['centres'],
                'orig_index': range(len(globalROI['idxs'])),
                'drawn_onday':[1]*(len(globalROI['idxs'])),
-               'mean_ims':mean_ims}
+               'mean_ims':mean_ims_glob}
 
     nCells_day = len(all_ROI['idxs'])
 
@@ -421,7 +426,7 @@ if __name__=="__main__":
 
     ### This block of code runs over the other days like this
     #specifically, for each hdfPath you map all the ROIs over, unless
-    centroids, patches, masks,centroid_patches = get_patch_mask(all_ROI['idxs'],mean_ims,centroid_mask)
+    centroids, patches, masks,centroid_patches = get_patch_mask(all_ROI['idxs'],mean_ims_glob,centroid_mask)
     glob_rois = {'idxs': all_ROI['idxs'],
                   'centres': centroids,
                   'patches': patches,
@@ -436,6 +441,8 @@ if __name__=="__main__":
     fName = os.path.split(hdfPaths[0])[1][:-3] + 'ROIs_glob.p'
     #print os.path.join(self.Folder,fName)
     FLOC = os.path.join(Folder,fName)
+    print(FLOC)
+
     with open(FLOC,'wb') as f:
             pickle.dump(glob_rois,f)
 
@@ -500,7 +507,7 @@ if __name__=="__main__":
 
 
         drawn_onday = [hdfPath in i.keys() for i in drawn_on]
-        print np.sum(drawn_onday), nCells_day, 'these two sould be same'
+        print np.sum(drawn_onday), nCells_day, 'these two should be same'
 
         for i,dOn in enumerate(drawn_onday):
             if dOn==1:
@@ -559,7 +566,8 @@ if __name__=="__main__":
         #print os.path.join(self.Folder,fName)
         FLOC = os.path.join(Folder,fName)
         with open(FLOC,'wb') as f:
-                pickle.dump(glob_rois,f)
+            print(FLOC)
+            pickle.dump(glob_rois,f)
 
 
 
