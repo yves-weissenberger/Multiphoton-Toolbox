@@ -19,16 +19,16 @@ if __name__=="__main__":
 
     parser = argparse.ArgumentParser(description=""" Merge ROIs drawn on different fields intended for use together with 
         run_roi_finder with the -sess argument set to -1
-                                                    """
+                                                    """)
 
 
     parser.add_argument("hdfPath", type=str,
                 help="Full path to HDF5 file to open and search for ROIs in")
 
-    parser.add_argument("-clean",type=int,dest='clean',default=1,
+    parser.add_argument("-clean",type=int,dest='clean',default=65,
         help="Remove overly large ROIs? Specify size. Default size set to 65")
 
-    parser.add_argument("-plot",type=bool,default=1,dest='plot'
+    parser.add_argument("-plot",type=bool,default=1,dest='plot',
                         help='show ROI mask after running?')
 
 
@@ -49,9 +49,9 @@ if __name__=="__main__":
         added = 0
         not_added = 0
         for ar in areas[1:]:
-            print(ar)
+            print(ar,)
             roisX = pickle.load(open(baseF[ar].attrs['ROI_dataLoc'],'r'))
-            
+            print(len(roisX['idxs']))
             for ij,c in enumerate(roisX['centres']):
 
                 if np.any([np.sum((c - i)**2)<10 for i in allROIs['centres']]):
@@ -104,6 +104,6 @@ if __name__=="__main__":
             for ar in areas:
                 with open(baseF[ar].attrs['ROI_dataLoc'],'wb') as f:
                     pickle.dump(allROIs,f)
-
+                print(1)      
 
 

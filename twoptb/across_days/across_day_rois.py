@@ -103,7 +103,7 @@ def MASK_DRAWER_GUI(roi_sets):
 
 
             nCols = np.min([5,len(roi_sets)])
-            nRows = int(np.ceil([len(roi_sets)/5.])
+            nRows = int(np.ceil([len(roi_sets)/5.]))
             self.vbs = []
             self.grvs = []
             self.imgs = []
