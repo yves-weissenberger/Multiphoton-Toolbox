@@ -39,7 +39,7 @@ if __name__=="__main__":
 
     with h5py.File(args.hdfPath,'r') as hdf:
 
-        baseF = hdf[u'A2_plane1']['registered_data']
+        baseF = hdf[hdf.keys()[0]]['registered_data']
         areas = baseF.keys()
 
         rois1 = pickle.load(open(baseF[areas[0]].attrs['ROI_dataLoc'],'r'))
