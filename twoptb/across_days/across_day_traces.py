@@ -219,7 +219,7 @@ if __name__=='__main__':
             if not os.path.isdir(trace_path):
                 os.mkdir(trace_path)
 
-            with h5py.File(hdf_path,'a',libver='latest') as hdf:
+            with h5py.File(hdf_path,'r',libver='latest') as hdf:
                 keys = hdf.keys()
                 Folder = os.path.split(os.path.abspath(hdf.filename))[0]
                 roi_pth = os.path.join(Folder,'ROIs')
