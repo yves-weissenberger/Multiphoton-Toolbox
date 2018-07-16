@@ -156,28 +156,34 @@ def extract_spikes(roiattrs):
 
     """ Infer approximate spike rates """
     print "\nrunning spike extraction"
-    import c2s
+    try:
+        import c2s
 
-    frameRate = 25
-    if 'corr_traces' in roiattrs.keys():
-        trace_type = 'corr_traces'
-    else:
-        trace_type = 'traces'
-    data = [{'calcium':np.array([i]),'fps': frameRate} for i in roiattrs[trace_type]]
-    spkt = c2s.predict(c2s.preprocess(data),verbosity=0)
+        frameRate = 25
+        if 'corr_traces' in roiattrs.keys():
+            trace_type = 'corr_traces'
+        else:
+            trace_type = 'traces'
+        data = [{'calcium':np.array([i]),'fps': frameRate} for i in roiattrs[trace_type]]
+        spkt = c2s.predict(c2s.preprocess(data),verbosity=0)
 
-    nROIs = len(roiattrs['idxs'])
-    cFrames = np.array(roiattrs['traces']).shape[1]
+        nROIs = len(roiattrs['idxs'])
+        cFrames = np.array(roiattrs['traces']).shape[1]
 
-    spk_traces = np.zeros([nROIs,cFrames])
-    spk_long = []
-    for i in range(nROIs):
-        spk_traces[i] = np.mean(spkt[i]['predictions'].reshape(-1,4),axis=1)
-        spk_long.append(spkt[i]['predictions'])
+        spk_traces = np.zeros([nROIs,cFrames])
+        spk_long = []
+        for i in range(nROIs):
+            spk_traces[i] = np.mean(spkt[i]['predictions'].reshape(-1,4),axis=1)
+            spk_long.append(spkt[i]['predictions'])
 
-    roiattrs['spike_inf'] = spk_traces
-    roiattrs['spike_long'] = np.squeeze(np.array(spk_long))
-    return roiattrs
+        roiattrs['spike_inf'] = spk_traces
+        roiattrs['spike_long'] = np.squeeze(np.array(spk_long))
+    except ModuleNotFoundError:
+        roiattrs['spike_inf'] = np.array([np.nan])
+        roiattrs['spike_long'] = np.array([np.nan])
+
+
+        return roiattrs
 
 
 
@@ -186,10 +192,10 @@ if __name__=='__main__':
 
     npc = sys.argv[1]=='y'
     kf = sys.argv[2]=='y'
-    n_basedirs = len(sys.argv[3:])
-    print type(sys.argv[3:])
+    n_basedirs = len(sys.argv[4:])
+    print type(sys.argv[4:])
 
-    paths = get_paths(n_basedirs,sys.argv[3:])
+    paths = get_paths(n_basedirs,sys.argv[4:])
     print paths[0][1]
     print paths[0][0]
     #print os.path.split(paths[0][1])
