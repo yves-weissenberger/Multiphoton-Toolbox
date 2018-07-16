@@ -214,63 +214,63 @@ if __name__=='__main__':
     if 1:
 
         for roiP,hdf_path in paths:
-            try:
-                trace_path = os.path.join(os.path.split(roiP)[0],'glob_traces')
-                if not os.path.isdir(trace_path):
-                    os.mkdir(trace_path)
+            ##try:
+            trace_path = os.path.join(os.path.split(roiP)[0],'glob_traces')
+            if not os.path.isdir(trace_path):
+                os.mkdir(trace_path)
 
-                with h5py.File(hdf_path,'a',libver='latest') as hdf:
-                    keys = hdf.keys()
-                    Folder = os.path.split(os.path.abspath(hdf.filename))[0]
-                    roi_pth = os.path.join(Folder,'ROIs')
-                    print '\n\n'
-                    f = hdf[keys[0]]['registered_data']
-
-
-                    sessions = list((i for i in f.iterkeys()))
-                    n_sess = len(sessions)
-                    for idx,fn in enumerate(sessions):
-
-                        roiattrs = pickle.load(open(roiP,'r'))
-
-                        trace_path_sess = os.path.join(trace_path)
-
-                        print '\nsession %s/%s: %s' %(idx,n_sess,fn)
-
-                        areaFile = f[fn]
-                        #if 'ROI_dataLoc' in areaFile.attrs.keys():
-                        #    FLOC = areaFile.attrs['ROI_dataLoc']
-                        #else:
-                        #    Folder = os.path.split(os.path.abspath(areaFile.file.filename))[0]
-                        #    fName = areaFile.name[1:].replace('/','-') + '_ROIs.p'
-                        #    FLOC = os.path.join(Folder,'ROIs',fName)
-                        #    areaFile.attrs['ROI_dataLoc'] = FLOC
-
-                        #roiattrs = pickle.load(open(FLOC,'r'))
-                        #traces = extract_traces(areaFile,roiattrs)
-                        if npc:
-                            roiattrs2 = neuropil_correct(areaFile,roiattrs)
-                        else:
-                            roiattrs2 = roiattrs
-                            roiattrs2['corr_traces'] = roiattrs['traces']
-                        print "\n"
-                        if kf:
-                            roiattrs2 = baseline_correct(roiattrs2)
-                        roiattrs2 = extract_spikes(roiattrs2)
-                        
-                        sess_path = os.path.join(trace_path,fn)
-                        if not os.path.isdir(sess_path):
-                            os.mkdir(sess_path)
+            with h5py.File(hdf_path,'a',libver='latest') as hdf:
+                keys = hdf.keys()
+                Folder = os.path.split(os.path.abspath(hdf.filename))[0]
+                roi_pth = os.path.join(Folder,'ROIs')
+                print '\n\n'
+                f = hdf[keys[0]]['registered_data']
 
 
-                        for t_type in ['traces','neuropil_traces','corr_traces','raw_traces','dfF','spike_inf']:
-                            file_loca = os.path.join(sess_path,fn + '_' + t_type)
-                            np.save(file_loca, roiattrs2[t_type], allow_pickle=True, fix_imports=True)
-            except:
-                missed.append(hdf_path)
-                print ("!!!!!!!!! WARNING EXTRACTION FAILED FOR !!!!!!!!!")
-                print(hdf_path)
-                print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                sessions = list((i for i in f.iterkeys()))
+                n_sess = len(sessions)
+                for idx,fn in enumerate(sessions):
+
+                    roiattrs = pickle.load(open(roiP,'r'))
+
+                    trace_path_sess = os.path.join(trace_path)
+
+                    print '\nsession %s/%s: %s' %(idx,n_sess,fn)
+
+                    areaFile = f[fn]
+                    #if 'ROI_dataLoc' in areaFile.attrs.keys():
+                    #    FLOC = areaFile.attrs['ROI_dataLoc']
+                    #else:
+                    #    Folder = os.path.split(os.path.abspath(areaFile.file.filename))[0]
+                    #    fName = areaFile.name[1:].replace('/','-') + '_ROIs.p'
+                    #    FLOC = os.path.join(Folder,'ROIs',fName)
+                    #    areaFile.attrs['ROI_dataLoc'] = FLOC
+
+                    #roiattrs = pickle.load(open(FLOC,'r'))
+                    #traces = extract_traces(areaFile,roiattrs)
+                    if npc:
+                        roiattrs2 = neuropil_correct(areaFile,roiattrs)
+                    else:
+                        roiattrs2 = roiattrs
+                        roiattrs2['corr_traces'] = roiattrs['traces']
+                    print "\n"
+                    if kf:
+                        roiattrs2 = baseline_correct(roiattrs2)
+                    roiattrs2 = extract_spikes(roiattrs2)
+                    
+                    sess_path = os.path.join(trace_path,fn)
+                    if not os.path.isdir(sess_path):
+                        os.mkdir(sess_path)
+
+
+                    for t_type in ['traces','neuropil_traces','corr_traces','raw_traces','dfF','spike_inf']:
+                        file_loca = os.path.join(sess_path,fn + '_' + t_type)
+                        np.save(file_loca, roiattrs2[t_type], allow_pickle=True, fix_imports=True)
+            ##except:
+                ##missed.append(hdf_path)
+                ##print ("!!!!!!!!! WARNING EXTRACTION FAILED FOR !!!!!!!!!")
+                ##print(hdf_path)
+               ## print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
 
