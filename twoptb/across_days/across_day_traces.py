@@ -178,7 +178,7 @@ def extract_spikes(roiattrs):
 
         roiattrs['spike_inf'] = spk_traces
         roiattrs['spike_long'] = np.squeeze(np.array(spk_long))
-    except ModuleNotFoundError:
+    except ImportError:
         roiattrs['spike_inf'] = np.array([np.nan])
         roiattrs['spike_long'] = np.array([np.nan])
 

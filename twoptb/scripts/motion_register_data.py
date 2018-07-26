@@ -69,7 +69,7 @@ else:
 absDir = os.path.split(absPath)[0]
 
 procFDir = os.path.dirname(absDir)
-print absDir
+print( absDir)
 procFloc = os.path.join(procFDir,'proc_log.txt')
 
 with open(procFloc,'a') as f:
@@ -78,15 +78,15 @@ with open(procFloc,'a') as f:
 HDF_File = h5py.File(fpath,'a',libver='latest')
 session_ID = HDF_File.keys()[0]
 
-print 'Session ID: %s \n' %session_ID
+print('Session ID: %s \n' %session_ID)
 
 areas = HDF_File[session_ID]['raw_data'].keys()
 
 Areas = HDF_File[session_ID]['raw_data'].keys()
 
-print 'Registering areas:'
+print('Registering areas:')
 for a in Areas:
-    print a
+    print(a)
 st = time.time()
 
 #use inRAM if you have a lot of RAM. registering 40500 512x512 frames in

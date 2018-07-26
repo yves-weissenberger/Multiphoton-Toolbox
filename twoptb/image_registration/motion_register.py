@@ -6,18 +6,17 @@ from multiprocessing.dummy import Pool
 import matplotlib.pyplot as plt
 import sys, os, time, re
 import h5py
-
-
 import sys
 import os
-
+from scipy import ndimage
 from twoptb.util import progress_bar
 
 
 
 
 def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',common_ref=False,show_ref_mean=1):
-    print abs_loc
+    print('srm',show_ref_mean,type(show_ref_mean))
+    print(abs_loc)
     hdfPath = HDF_File.filename
     hdfDir = os.path.split(hdfPath)[0]
     global inRAM_flag
@@ -27,7 +26,7 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
         HDF_File[session_ID].create_group('registered_data')
         HDF_File.close()
         HDF_File = h5py.File(hdfPath,'a',libver='latest')
-        print 'Creating Registered Data Group'
+        print('Creating Registered Data Group')
 
     regData_dir = os.path.join(hdfDir,'regInfo')
     if not os.path.exists(regData_dir):
@@ -40,11 +39,9 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
 
 
 
-
-
-        if file_key in  HDF_File[session_ID]['registered_data'].keys():
+        if file_key in HDF_File[session_ID]['registered_data'].keys():
             del HDF_File[session_ID]['registered_data'][file_key]
-            print 'deleting old version'
+            print('deleting old version')
 
         st = time.time()
         try:
@@ -84,22 +81,54 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
 
                 refss = []
                 im_grads = []
-                hdf_keys = HDF_File[session_ID]['raw_data'].keys()
+                hdf_keys = sorted(HDF_File[session_ID]['raw_data'].keys())
                 st = time.time()
-                kix_ = hdf_keys[-1]
+                kix_ = hdf_keys[-2]
                 temp = np.array(HDF_File[session_ID]['raw_data'][kix_])
-                print 'load time:', np.round(time.time() - st,decimals=1)
+                print(kix_)
+                print ('load time:', np.round(time.time() - st,decimals=1))
+                ixs_sets = []
                 for ii in range(200):
                     #kix = np.random.randint(len(hdf_keys))
                     ixs = np.random.permutation(np.arange(HDF_File[session_ID]['raw_data'][kix_].shape[0]))[:500]
+                    print(len(ixs))
+                    ixs_sets.append(ixs)
                     
                     a_ = np.mean(temp[np.array(sorted(ixs)),:,:],axis=0)
                     refss.append(a_)
                     im_grads.append(np.sum(np.abs(np.gradient(refss[-1]))))
                     #print time.time() - st
-                    print '.',
+                    print('.'),
 
                 ord_grads = np.argsort(np.array(im_grads))[-10:]
+
+                sortImLst = []
+                print(len(ixs_sets[ord_grads[-1]]))
+                for iikk,imIx in enumerate(ixs_sets[ord_grads[-1]]):
+                    #print(iikk,)
+                    if iikk==0:
+                        REF__ =  refss[ord_grads[-1]]
+                    else:
+                        shift, _, _ = register_translation(REF__[128:-128,128:-128],temp[imIx][128:-128,128:-128],upsample_factor=2)
+                        if np.any(np.abs(shift)>20):
+                            shift = np.array([0,0])
+                        if np.sum(np.abs(shift))!=0:
+                            RegIm =  np.fft.ifftn(fourier_shift(np.fft.fftn(temp[imIx]), shift)).real
+                        else:
+                            RegIm = temp[imIx]
+
+                        sortImLst.append(RegIm)
+                        #REF__ = REF__/((1-1/(iikk+1))) + RegIm/float(iikk+1)
+
+
+
+
+
+
+    
+
+
+
                 #for ux in ord_grads:
                 #    plt.figure()
                 #    plt.title(ux)
@@ -107,10 +136,19 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
                 #    plt.show(block=False)
 
                 #sel_ref = int(raw_input("selected mean: "))
-                refIm_glob = refss[ord_grads[-1]]
+                #refIm_glob = refss[ord_grads[-1]]
+                refIm_glob = np.mean(np.array(sortImLst),axis=0)
+                print("IMPORVED2")
                 if show_ref_mean:
+                    print("Here")
+                    plt.figure()
+                    plt.title("NEW")
                     plt.imshow(refIm_glob,cmap='binary_r')
-                    plt.show(block=0)
+
+                    plt.figure()
+                    plt.title("OLD")
+                    plt.imshow(refss[ord_grads[-1]],cmap='binary_r')
+                    plt.show(block=1)
                 #np.mean(raw_file[:5000],axis=0)#raw_file[ord_[-100]].astype('float')
                 #for i in ord_[-99:]:
 
@@ -125,6 +163,7 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
                 #plt.imshow(refIm_glob,cmap='gray')
                 #plt.show()
                 refIm_glob = refIm_glob[128:-128,128:-128]
+                refIm_glob = refIm_glob - ndimage.gaussian_filter(refIm_glob,5)
 
 
             elif not common_ref:
@@ -345,15 +384,19 @@ def register_image(inp):
 
     #print refIm_.shape,
     if crop_==True:
-        shift, _, _ = register_translation(refIm_,image[128:-128,128:-128],upsample_factor=upsample_factor)
+        tmpII = image[128:-128,128:-128] - ndimage.gaussian_filter(image[128:-128,128:-128],5)
+
+        #shift, _, _ = register_translation(refIm_,image[128:-128,128:-128],upsample_factor=upsample_factor)
+        shift, _, _ = register_translation(refIm_,tmpII,upsample_factor=upsample_factor)
     else:
         shift, _, _ = register_translation(refIm_, image, upsample_factor=upsample_factor)
 
 
     #set this 
-    if np.any(shift>60):
-        print "!!!!!!WARNING VERY LARGE SHIFTS!!!!!!"
+    if np.any(np.abs(shift)>=20):
         shift = np.array([0,0])
+        #print("!   WARNING VERY LARGE SHIFTS   ! %s" %shift)
+
 
     
     if np.sum(np.abs(shift))!=0:
