@@ -91,14 +91,12 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
                 for ii in range(200):
                     #kix = np.random.randint(len(hdf_keys))
                     ixs = np.random.permutation(np.arange(HDF_File[session_ID]['raw_data'][kix_].shape[0]))[:500]
-                    print(len(ixs))
                     ixs_sets.append(ixs)
                     
                     a_ = np.mean(temp[np.array(sorted(ixs)),:,:],axis=0)
                     refss.append(a_)
                     im_grads.append(np.sum(np.abs(np.gradient(refss[-1]))))
                     #print time.time() - st
-                    print('.'),
 
                 ord_grads = np.argsort(np.array(im_grads))[-10:]
 
@@ -138,9 +136,7 @@ def register_dayData(HDF_File,session_ID,inRAM=True,poolSize=4,abs_loc='foo',com
                 #sel_ref = int(raw_input("selected mean: "))
                 #refIm_glob = refss[ord_grads[-1]]
                 refIm_glob = np.mean(np.array(sortImLst),axis=0)
-                print("IMPORVED2")
                 if show_ref_mean:
-                    print("Here")
                     plt.figure()
                     plt.title("NEW")
                     plt.imshow(refIm_glob,cmap='binary_r')
