@@ -127,7 +127,8 @@ Optional arguments, i.e. those with a hyphen preceding may be omitted note that 
         elif zoom==1:
             ded = [3,2,2]
         else:
-            ded = args.ded
+            pass
+        ded = args.ded
         meanIm11 = equalize_adapthist(meanIm11/np.max(meanIm11),clip_limit=0.005)
 
 

@@ -12,6 +12,9 @@ from scipy.ndimage.morphology import binary_fill_holes
 import matplotlib.pyplot as plt
 import argparse
 import twoptb as MP
+sys.path.append('/home/yves/Documents/OASIS-master/')
+from oasis.functions import deconvolve
+
 
 def get_paths(n_basedirs,in_args):
 
@@ -154,36 +157,63 @@ def baseline_correct(roiattrs):
 
 def extract_spikes(roiattrs):
 
+
+    frameRate = 25
+    if 'corr_traces' in roiattrs.keys():
+        trace_type = 'corr_traces'
+    else:
+        trace_type = 'traces'
+    nROIs = len(roiattrs['idxs'])
+    spk_traces = []
+    print(np.isfinite(roiattrs['corr_traces']).all())
+    print((roiattrs['corr_traces']).shape)
+
+    for tr in roiattrs['corr_traces']:
+        if np.all(np.isfinite(tr)):
+            spk_traces.append(deconvolve(tr,optimize_g=5)[1])
+        else:
+            print('setting nan')
+            spk_traces.append([np.nan]*len(tr))
+
+    roiattrs['spike_inf'] = np.array(spk_traces)
+    roiattrs['spike_long'] = np.nan
+    return roiattrs
+
+
+
+
+def extract_spikes_legacy(roiattrs):
+
     """ Infer approximate spike rates """
     print "\nrunning spike extraction"
-    try:
-        import c2s
+    #try:
+    import c2s
 
-        frameRate = 25
-        if 'corr_traces' in roiattrs.keys():
-            trace_type = 'corr_traces'
-        else:
-            trace_type = 'traces'
-        data = [{'calcium':np.array([i]),'fps': frameRate} for i in roiattrs[trace_type]]
-        spkt = c2s.predict(c2s.preprocess(data),verbosity=0)
+    frameRate = 25
+    if 'corr_traces' in roiattrs.keys():
+        trace_type = 'corr_traces'
+    else:
+        trace_type = 'traces'
+    data = [{'calcium':np.array([i]),'fps': frameRate} for i in roiattrs[trace_type]]
+    spkt = c2s.predict(c2s.preprocess(data),verbosity=0)
 
-        nROIs = len(roiattrs['idxs'])
-        cFrames = np.array(roiattrs['traces']).shape[1]
+    nROIs = len(roiattrs['idxs'])
+    cFrames = np.array(roiattrs['traces']).shape[1]
 
-        spk_traces = np.zeros([nROIs,cFrames])
-        spk_long = []
-        for i in range(nROIs):
-            spk_traces[i] = np.mean(spkt[i]['predictions'].reshape(-1,4),axis=1)
-            spk_long.append(spkt[i]['predictions'])
+    spk_traces = np.zeros([nROIs,cFrames])
+    spk_long = []
+    for i in range(nROIs):
+        spk_traces[i] = np.mean(spkt[i]['predictions'].reshape(-1,4),axis=1)
+        spk_long.append(spkt[i]['predictions'])
 
-        roiattrs['spike_inf'] = spk_traces
-        roiattrs['spike_long'] = np.squeeze(np.array(spk_long))
-    except ImportError:
-        roiattrs['spike_inf'] = np.array([np.nan])
-        roiattrs['spike_long'] = np.array([np.nan])
+    roiattrs['spike_inf'] = spk_traces
+    roiattrs['spike_long'] = np.squeeze(np.array(spk_long))
+    #except ImportError:
+    #roiattrs['spike_inf'] = np.array([np.nan])
+    #roiattrs['spike_long'] = np.array([np.nan])
 
 
-        return roiattrs
+    return roiattrs
 
 
 
@@ -213,7 +243,8 @@ if __name__=='__main__':
     missed = []
     if 1:
 
-        for roiP,hdf_path in paths:
+        for roiP,hdf_path in paths[-1:]:
+            print(hdf_path,'gogogo')
             ##try:
             trace_path = os.path.join(os.path.split(roiP)[0],'glob_traces')
             if not os.path.isdir(trace_path):
@@ -250,21 +281,31 @@ if __name__=='__main__':
                     #traces = extract_traces(areaFile,roiattrs)
                     if npc:
                         roiattrs2 = neuropil_correct(areaFile,roiattrs)
+                        if 'raw_traces' in roiattrs.keys():
+                            roiattrs2['raw_traces'] = cp.deepcopy(roiattrs['raw_traces'])
+                        else:
+                            roiattrs2['raw_traces'] = np.array([np.nan]*len(roiattrs['traces']))
+
+
                     else:
                         roiattrs2 = roiattrs
                         roiattrs2['corr_traces'] = roiattrs['traces']
                     print "\n"
                     if kf:
                         roiattrs2 = baseline_correct(roiattrs2)
+
                     roiattrs2 = extract_spikes(roiattrs2)
                     
                     sess_path = os.path.join(trace_path,fn)
                     if not os.path.isdir(sess_path):
                         os.mkdir(sess_path)
 
+                    print roiattrs2.keys()
+
 
                     for t_type in ['traces','neuropil_traces','corr_traces','raw_traces','dfF','spike_inf']:
                         file_loca = os.path.join(sess_path,fn + '_' + t_type)
+                        print(t_type)
                         np.save(file_loca, roiattrs2[t_type], allow_pickle=True, fix_imports=True)
             ##except:
                 ##missed.append(hdf_path)

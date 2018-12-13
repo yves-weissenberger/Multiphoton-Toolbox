@@ -1,6 +1,6 @@
 # A toolbox for processing two-photon imaging data
 
-More complete documentation can (soon) be found <a href="https://yves-weissenberger.github.io/twoptb/">here </a>
+More complete documentation can be found at <a href="https://yves-weissenberger.github.io/twoptb/">here </a>
 
 # Installation
 

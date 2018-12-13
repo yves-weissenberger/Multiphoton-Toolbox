@@ -206,6 +206,8 @@ if __name__=="__main__":
     rad = args.rad
     paths = args.datapath
     classifier_name = args.classifier
+    print(classifier_name, classifier_name)
+    print(100)
     #print args.datapath
     #rad = args.rad
     #if len(sys.argv)<2:
