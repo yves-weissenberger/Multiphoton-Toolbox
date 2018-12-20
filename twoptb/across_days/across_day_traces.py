@@ -12,7 +12,6 @@ from scipy.ndimage.morphology import binary_fill_holes
 import matplotlib.pyplot as plt
 import argparse
 import twoptb as MP
-sys.path.append('/home/yves/Documents/OASIS-master/')
 from oasis.functions import deconvolve
 
 

@@ -10,6 +10,7 @@ import numpy as np
 import sys
 import os
 import twoptb as MP
+from oasis.functions import deconvolve
 
 
 def extract_traces(areaFile,roiattrs):
@@ -114,7 +115,7 @@ def baseline_correct(roiattrs):
 
     return roiattrs
 
-def extract_spikes(roiattrs):
+def extract_spikes_alt(roiattrs):
 
     """ Infer approximate spike rates """
     print "\nrunning spike extraction"
@@ -142,6 +143,30 @@ def extract_spikes(roiattrs):
     return roiattrs
 
 
+
+def extract_spikes(roiattrs):
+
+
+    frameRate = 25
+    if 'corr_traces' in roiattrs.keys():
+        trace_type = 'corr_traces'
+    else:
+        trace_type = 'traces'
+    nROIs = len(roiattrs['idxs'])
+    spk_traces = []
+    print(np.isfinite(roiattrs['corr_traces']).all())
+    print((roiattrs['corr_traces']).shape)
+
+    for tr in roiattrs['corr_traces']:
+        if np.all(np.isfinite(tr)):
+            spk_traces.append(deconvolve(tr)[1])
+        else:
+            print('setting nan')
+            spk_traces.append([np.nan]*len(tr))
+
+    roiattrs['spike_inf'] = np.array(spk_traces)
+    roiattrs['spike_long'] = np.nan
+    return roiattrs
 
 
 if __name__=='__main__':
