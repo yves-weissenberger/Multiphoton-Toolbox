@@ -174,6 +174,7 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             grV1.setFixedHeight(self.fxW)
 
             self.timeLine = pg.InfiniteLine(pos=self.frame_idx,angle=90,movable=True)
+            self.timeLine.setPen(color='k')
             self.Gplt.addItem(self.timeLine)
             self.timeLine.sigDragged.connect(self.update_timeline)
             #self.timeLine.sigPositionChangeFinished(self._release_timeline)
@@ -374,7 +375,12 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             """ restore  rois from the previous session """
             areaFileLoc = os.path.split(os.path.abspath(areaFile.file.filename))[0]
             ROILoc = os.path.join(areaFileLoc,areaFile.attrs['ROI_dataLoc'])
-            print ROILoc
+            #print(areaFile.attrs.keys())
+            #print ROILoc
+            #print()
+            stimattrs_path = os.path.join(areaFileLoc,areaFile.attrs['stimattrs'])
+            self.stimattrs = pickle.load(open(stimattrs_path,'rb'))[1]
+            #print(self.stimattrs.keys())
             try:
                 with open(ROILoc) as f:
                     dat = pickle.load(f)
@@ -411,7 +417,11 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
 
                 self.Gplt.clear()
+                for i in self.stimattrs['clicks']:
+                    clt_L = pg.InfiniteLine(pos=i,angle=90,movable=False)
+                    self.Gplt.addItem(clt_L)
                 self.Gplt.addItem(self.timeLine)
+
 
                 self.Gplt.plot(self.ROI_attrs['traces'][-1])
                 #self.Gplt.plot(self.ROI_attrs['spike_inf'][-1],pen=mkPen(width=3,color=(200, 20, 25)))
@@ -457,6 +467,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     self.roi_idx = roi_nr
                     print self.roi_idx
                     self.Gplt.clear()
+                    for i in self.stimattrs['clicks']:
+                        clt_L = pg.InfiniteLine(pos=i,angle=90,movable=False)
+                        self.Gplt.addItem(clt_L)
                     self.Gplt.addItem(self.timeLine)
 
                     try:
@@ -511,6 +524,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                         self.ROI_attrs['traces'].append(np.nanmean(temp,axis=(1,2)))
                         #self.ROI_attrs['mask_arr'].append(temp_mask)
                         self.Gplt.clear()
+                        for i in self.stimattrs['clicks']:
+                            clt_L = pg.InfiniteLine(pos=i,angle=90,movable=False)
+                            self.Gplt.addItem(clt_L)
                         self.Gplt.addItem(self.timeLine)
                         self.Gplt.plot(self.ROI_attrs['traces'][-1])
                     else:
@@ -543,6 +559,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                     print 'viewing roi: %s' %self.roi_idx
 
                     self.Gplt.clear()
+                    for i in self.stimattrs['clicks']:
+                        clt_L = pg.InfiniteLine(pos=i,angle=90,movable=False)
+                        self.Gplt.addItem(clt_L)
                     self.Gplt.addItem(self.timeLine)
 
 
@@ -578,6 +597,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
 
                     #self.frame_idx = self.rolling_average
                     self.Gplt.clear()
+                    for i in self.stimattrs['clicks']:
+                        clt_L = pg.InfiniteLine(pos=i,angle=90,movable=False)
+                        self.Gplt.addItem(clt_L)
                     self.Gplt.addItem(self.timeLine)
 
                     #color previously looked at (ie roi_idx + 1) ROI Red if is not empty ROI
@@ -621,6 +643,10 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
                 self.mask_img.setImage(self.mask,autoLevels=False,levels=[0,2])
                 self.Gplt.clear()
                 self.Gplt.addItem(self.timeLine)
+
+                for i in self.stimattrs['clicks']:
+                    clt_L = pg.InfiniteLine(pos=i,angle=90,movable=False)
+                    self.Gplt.addItem(clt_L)
 
 
 
@@ -712,6 +738,9 @@ def MASK_DRAWER_GUI(areaFile,restart=False,online_trace_extract=0):
             #                                axis=(1,2)))
 
             self.Gplt.clear()
+            for i in self.stimattrs['clicks']:
+                clt_L = pg.InfiniteLine(pos=i,angle=90,movable=False)
+                self.Gplt.addItem(clt_L)
             self.Gplt.addItem(self.timeLine)
             self.Gplt.plot(self.ROI_attrs['traces'][idx])
 
